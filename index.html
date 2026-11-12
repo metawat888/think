@@ -67,6 +67,61 @@
     .animate-pop {
       animation: popIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+
+    /* Reaction Button Pop & Floating Burst Animations */
+    @keyframes reactionBounce {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.38) rotate(-8deg); }
+      60% { transform: scale(0.92) rotate(4deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    .animate-reaction-pop {
+      animation: reactionBounce 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes floatUpParticle {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(0.6) rotate(0deg);
+      }
+      40% {
+        opacity: 1;
+        transform: translate(var(--tx-mid, 12px), -45px) scale(1.35) rotate(var(--rot, 12deg));
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--tx-end, -15px), -110px) scale(0.85) rotate(var(--rot-end, -15deg));
+      }
+    }
+    .reaction-particle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      font-size: 1.4rem;
+      user-select: none;
+      filter: drop-shadow(0 4px 8px rgba(15, 23, 42, 0.18));
+      animation: floatUpParticle 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes ringRipple {
+      0% {
+        transform: scale(0.5);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(2.4);
+        opacity: 0;
+      }
+    }
+    .reaction-ripple {
+      position: fixed;
+      width: 28px;
+      height: 28px;
+      border-radius: 9999px;
+      pointer-events: none;
+      z-index: 9998;
+      animation: ringRipple 0.55s ease-out forwards;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col select-none">
@@ -94,7 +149,7 @@
             </button>
           </div>
           <p id="boardSubtitleText" class="text-xs text-slate-500 truncate">
-            คลิกที่โน้ตเพื่อแสดงความคิดเห็นต่อ กดไลก์ กดหัวใจ หรือลากจัดวางได้อย่างอิสระ
+            คลิกที่โน้ตเพื่อแสดงความคิดเห็นต่อ กดไลก์ กดหัวใจ แนบลิงก์ YouTube รูปภาพ หรือไฟล์ได้ครบครัน
           </p>
         </div>
       </div>
@@ -114,8 +169,8 @@
           </button>
         </form>
 
-        <!-- "บันทึก" Button (Replaced "ซิงค์ทุกอุปกรณ์" -> "บันทึก") -->
-        <button id="btnSyncStatusPill" type="button" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition" title="บันทึกข้อมูลและซิงค์ตามรหัสห้องปัจจุบัน">
+        <!-- "บันทึก" Button -->
+        <button id="btnSyncStatusPill" type="button" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition" title="บันทึกข้อมูลถาวรและซิงค์ตามรหัสห้องปัจจุบัน">
           <span id="syncDotIndicator" class="w-2 h-2 rounded-full bg-emerald-200 animate-pulse"></span>
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
@@ -163,7 +218,7 @@
         </div>
         <h2 class="text-lg font-bold text-slate-900">กระดานไวท์บอร์ดพร้อมใช้งาน</h2>
         <p class="text-xs sm:text-sm text-slate-500 mt-1.5 leading-relaxed">
-          ยังไม่มีโพสต์ในรหัสห้องนี้ กดปุ่มด้านล่างหรือ<strong>ดับเบิลคลิกพื้นที่ว่างบนกระดาน</strong> เพื่อพิมพ์ชื่อเล่น ข้อความ และแนบรูปภาพได้เลย
+          ยังไม่มีโพสต์ในรหัสห้องนี้ กดปุ่มด้านล่างหรือ<strong>ดับเบิลคลิกพื้นที่ว่างบนกระดาน</strong> เพื่อพิมพ์ชื่อเล่น ข้อความ แนบรูปภาพ ลิงก์ YouTube หรือเว็บไซต์ได้เลย
         </p>
         <div class="mt-5 flex flex-col sm:flex-row gap-2">
           <button id="btnEmptyStateAdd" type="button" class="flex-1 py-3 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2">
@@ -192,9 +247,9 @@
     </button>
   </main>
 
-  <!-- MODAL 1: Create / Edit Note on Whiteboard -->
+  <!-- MODAL 1: Create / Edit Note on Whiteboard (Supports Text, Image Upload/URL, YouTube, External Links, Files) -->
   <div id="modalPost" class="fixed inset-0 z-50 hidden bg-slate-900/45 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-pop">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-pop max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-4">
         <h3 id="modalPostHeading" class="text-base sm:text-lg font-bold text-slate-900">แปะโน้ตแสดงความคิดเห็น</h3>
         <button id="btnClosePostModal" type="button" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
@@ -204,7 +259,7 @@
         </button>
       </div>
 
-      <div class="space-y-4">
+      <div class="space-y-3.5">
         <!-- Nickname -->
         <div>
           <label for="inputNickname" class="block text-xs font-semibold text-slate-600 mb-1">ชื่อเล่นของคุณ <span class="text-rose-500">*</span></label>
@@ -214,33 +269,57 @@
         <!-- Note Text -->
         <div>
           <label for="inputNoteText" class="block text-xs font-semibold text-slate-600 mb-1">ข้อความ / ความคิดเห็น</label>
-          <textarea id="inputNoteText" rows="4" placeholder="เขียนความคิดเห็นหรือไอเดียของคุณที่นี่..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition resize-none"></textarea>
+          <textarea id="inputNoteText" rows="3" placeholder="เขียนความคิดเห็น ไอเดีย หรือวางลิงก์ใดๆ ที่นี่ได้เลย..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition resize-none"></textarea>
         </div>
 
-        <!-- Image Upload Section -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1.5">รูปภาพประกอบ (ไม่บังคับ)</label>
+        <!-- Media & Attachments Section (Image Upload, Image URL, YouTube Link, Web/File Link) -->
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+          <div class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+            <span>📎 เพิ่มรูปภาพ / วิดีโอ YouTube / ลิงก์เว็บไซต์หรือไฟล์</span>
+          </div>
 
-          <!-- Upload Dropzone / Button -->
-          <div id="imageUploadBox" class="flex items-center gap-2">
-            <label for="inputImageFile" class="flex-1 py-2.5 px-3.5 rounded-xl border border-dashed border-slate-300 hover:border-indigo-500 bg-slate-50/70 hover:bg-indigo-50/40 text-xs font-semibold text-slate-600 hover:text-indigo-600 flex items-center justify-center gap-2 cursor-pointer transition">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <!-- 1. Image Upload OR Image URL -->
+          <div id="imageUploadBox" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <label for="inputImageFile" class="py-2 px-3 rounded-xl border border-dashed border-indigo-300 hover:border-indigo-500 bg-white hover:bg-indigo-50/40 text-xs font-semibold text-indigo-600 flex items-center justify-center gap-1.5 cursor-pointer transition">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span>เลือกรูปภาพจากเครื่อง</span>
+              <span>อัปโหลดรูปจากเครื่อง</span>
               <input id="inputImageFile" type="file" accept="image/*" class="hidden" />
             </label>
+            <input id="inputImageUrl" type="url" placeholder="หรือวางลิงก์รูปภาพ (https://...)" class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-indigo-500" />
           </div>
 
           <!-- Image Preview -->
-          <div id="imagePreviewWrapper" class="hidden mt-2.5 relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex items-center justify-between">
+          <div id="imagePreviewWrapper" class="hidden relative rounded-xl overflow-hidden border border-slate-200 bg-white p-2 flex items-center justify-between">
             <div class="flex items-center gap-2.5 min-w-0">
-              <img id="imagePreviewEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="ตัวอย่างรูปภาพ" class="h-16 w-20 object-cover rounded-xl border border-slate-200 bg-white shrink-0" />
-              <span class="text-xs font-medium text-slate-600 truncate">แนบรูปภาพเรียบร้อยแล้ว</span>
+              <img id="imagePreviewEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="ตัวอย่างรูปภาพ" class="h-14 w-16 object-cover rounded-lg border border-slate-200 bg-white shrink-0" />
+              <span class="text-xs font-medium text-emerald-700 truncate">แนบรูปภาพเรียบร้อยแล้ว</span>
             </div>
             <button id="btnRemoveImage" type="button" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold shrink-0 transition">
               ลบรูป
             </button>
+          </div>
+
+          <!-- 2. YouTube Link -->
+          <div>
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="text-rose-600 text-xs">▶️</span>
+              <label for="inputYoutubeUrl" class="text-[11px] font-semibold text-slate-600">ลิงก์วิดีโอ YouTube (แสดงเครื่องเล่นวิดีโอบนการ์ดทันที)</label>
+            </div>
+            <input id="inputYoutubeUrl" type="url" placeholder="วางลิงก์ YouTube เช่น https://www.youtube.com/watch?v=..." class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-rose-500" />
+          </div>
+
+          <!-- 3. External Website / Google Drive / Canva / Document Link -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label for="inputExternalUrl" class="block text-[11px] font-semibold text-slate-600 mb-1">🔗 ลิงก์เว็บไซต์ / Canva / Drive / ไฟล์</label>
+              <input id="inputExternalUrl" type="url" placeholder="https://..." class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-indigo-500" />
+            </div>
+            <div>
+              <label for="inputExternalTitle" class="block text-[11px] font-semibold text-slate-600 mb-1">ชื่อปุ่มลิงก์ (ไม่บังคับ)</label>
+              <input id="inputExternalTitle" type="text" placeholder="เช่น เปิดสไลด์นำเสนอ / เอกสาร" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-indigo-500" />
+            </div>
           </div>
         </div>
 
@@ -259,7 +338,7 @@
       </div>
 
       <!-- Submit & Cancel -->
-      <div class="mt-6 flex items-center justify-end gap-2">
+      <div class="mt-5 flex items-center justify-end gap-2">
         <button id="btnCancelPost" type="button" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
           ยกเลิก
         </button>
@@ -270,7 +349,7 @@
     </div>
   </div>
 
-  <!-- MODAL 2: Note Detail & Replies (คลิกเข้าไปแสดงความคิดเห็นต่อได้ + กดไลก์/หัวใจ) -->
+  <!-- MODAL 2: Note Detail & Replies (คลิกเข้าไปแสดงความคิดเห็นต่อได้ + กดไลก์/หัวใจพร้อม Animation) -->
   <div id="modalNoteDetail" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden animate-pop">
 
@@ -292,26 +371,36 @@
         </button>
       </div>
 
-      <!-- Scrollable Body: Full Post + Reactions + Comments List -->
-      <div class="p-6 overflow-y-auto flex-1 space-y-5">
+      <!-- Scrollable Body: Full Post + Media + Reactions + Comments List -->
+      <div class="p-6 overflow-y-auto flex-1 space-y-4">
         <!-- Image (if any) -->
         <div id="detailImageWrapper" class="hidden rounded-2xl overflow-hidden border border-slate-200 bg-slate-50">
           <img id="detailImageEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="รูปภาพประกอบ" class="w-full max-h-80 object-contain cursor-zoom-in mx-auto" />
         </div>
 
+        <!-- YouTube Embed (if any) -->
+        <div id="detailYoutubeWrapper" class="hidden rounded-2xl overflow-hidden border border-slate-200 bg-black aspect-video">
+          <iframe id="detailYoutubeIframe" class="w-full h-full" src="about:blank" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
+
+        <!-- External Link Card (if any) -->
+        <div id="detailLinkWrapper" class="hidden"></div>
+
         <!-- Text Content -->
-        <p id="detailTextContent" class="text-sm sm:text-base text-slate-800 whitespace-pre-line leading-relaxed select-text"></p>
+        <div id="detailTextContent" class="text-sm sm:text-base text-slate-800 whitespace-pre-line leading-relaxed select-text"></div>
 
         <!-- Like & Heart Reaction Buttons Bar -->
         <div class="flex items-center justify-between pt-3 border-t border-slate-100">
           <div class="flex items-center gap-2">
-            <button id="btnDetailLike" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 text-xs font-bold transition active:scale-95">
-              <span>👍 ถูกใจ</span>
-              <span id="detailLikeCount">0</span>
+            <button id="btnDetailLike" type="button" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 text-xs font-bold transition shadow-sm">
+              <span class="text-base">👍</span>
+              <span>ถูกใจ</span>
+              <span id="detailLikeCount" class="px-1.5 py-0.5 rounded-full bg-blue-600 text-white text-[11px]">0</span>
             </button>
-            <button id="btnDetailHeart" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/80 text-xs font-bold transition active:scale-95">
-              <span>❤️ หัวใจ</span>
-              <span id="detailHeartCount">0</span>
+            <button id="btnDetailHeart" type="button" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/80 text-xs font-bold transition shadow-sm">
+              <span class="text-base">❤️</span>
+              <span>หัวใจ</span>
+              <span id="detailHeartCount" class="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[11px]">0</span>
             </button>
           </div>
           <span id="detailCommentsCounter" class="text-xs font-semibold text-slate-500">0 ความคิดเห็น</span>
@@ -331,7 +420,7 @@
         <div class="flex flex-col sm:flex-row gap-2">
           <input id="inputCommentNickname" type="text" placeholder="ชื่อเล่นของคุณ *" class="sm:w-36 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:border-indigo-500 shrink-0" />
           <div class="flex-1 flex gap-2">
-            <input id="inputCommentText" type="text" placeholder="พิมพ์แสดงความคิดเห็นต่อที่นี่..." class="flex-1 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:border-indigo-500" />
+            <input id="inputCommentText" type="text" placeholder="พิมพ์แสดงความคิดเห็น หรือวางลิงก์..." class="flex-1 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:border-indigo-500" />
             <button id="btnSubmitDetailComment" type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shrink-0 shadow-sm transition">
               ส่ง
             </button>
@@ -460,11 +549,18 @@
   <script>
     (function () {
       const LS_ROOM_PREFIX = 'WHITEBOARD_ROOM_STATE_V3_';
+      const LS_LEGACY_V2 = 'WHITEBOARD_SINGLE_PERMANENT_STATE_V2';
       const LS_NICKNAME_KEY = 'WHITEBOARD_LAST_NICKNAME_V2';
       const LS_SYNC_CFG_KEY = 'WHITEBOARD_CLOUD_SYNC_CFG_V3';
       const IDB_NAME = 'ClassWhiteboardPermanentDB_V3';
       const IDB_STORE = 'roomStore';
+      const IDB_MEDIA_STORE = 'mediaStore';
       const DELETE_PASSCODE = '8888';
+
+      // Request non-evictable persistent storage from browser
+      if (navigator.storage && navigator.storage.persist) {
+        navigator.storage.persist().catch(() => {});
+      }
 
       const urlParams = new URLSearchParams(window.location.search);
       const roomFromUrl = (urlParams.get('room') || '').trim();
@@ -480,14 +576,16 @@
         return {
           roomCode: roomCode,
           boardTitle: `กระดานแสดงความคิดเห็น (ห้อง ${roomCode})`,
-          boardSubtitle: 'คลิกที่โน้ตเพื่อแสดงความคิดเห็นต่อ กดไลก์ กดหัวใจ หรือลากจัดวางได้อย่างอิสระ',
+          boardSubtitle: 'คลิกที่โน้ตเพื่อแสดงความคิดเห็นต่อ กดไลก์ กดหัวใจ แนบลิงก์ YouTube รูปภาพ หรือไฟล์ได้ครบครัน',
           theme: 'default',
           updatedAt: 0,
-          clearedAt: 0,
           deletedIds: [],
           posts: []
         };
       }
+
+      // Migrate any legacy V2 posts into the initial room so nothing ever disappears
+      migrateLegacyStorageIfNeeded();
 
       let state = loadRoomFromLocalStorage(syncConfig.roomCode);
       let selectedColor = 'yellow';
@@ -498,7 +596,22 @@
       let pendingDeleteAction = null;
       let gunInstance = null;
       let gunRoomNode = null;
-      let lastBroadcastHash = '';
+
+      function migrateLegacyStorageIfNeeded() {
+        try {
+          const legacyRaw = localStorage.getItem(LS_LEGACY_V2);
+          if (legacyRaw) {
+            const legacyParsed = JSON.parse(legacyRaw);
+            if (legacyParsed && Array.isArray(legacyParsed.posts) && legacyParsed.posts.length > 0) {
+              const targetKey = getRoomStorageKey(syncConfig.roomCode);
+              const existingRoomRaw = localStorage.getItem(targetKey);
+              if (!existingRoomRaw) {
+                localStorage.setItem(targetKey, JSON.stringify(legacyParsed));
+              }
+            }
+          }
+        } catch (e) {}
+      }
 
       function loadSyncConfig() {
         try {
@@ -540,7 +653,7 @@
         return LS_ROOM_PREFIX + String(roomCode || '101').trim().toUpperCase();
       }
 
-      // 1. Per-Room Multi-Layer Permanent Persistence (LocalStorage + IndexedDB + Per-Room Cloud Sync)
+      // 1. Bulletproof Multi-Layer Persistence (Never fails on large images, never overwrites with empty state)
       function loadRoomFromLocalStorage(roomCode) {
         const key = getRoomStorageKey(roomCode);
         try {
@@ -564,11 +677,14 @@
             resolve(null);
             return;
           }
-          const req = indexedDB.open(IDB_NAME, 1);
+          const req = indexedDB.open(IDB_NAME, 2);
           req.onupgradeneeded = e => {
             const db = e.target.result;
             if (!db.objectStoreNames.contains(IDB_STORE)) {
               db.createObjectStore(IDB_STORE);
+            }
+            if (!db.objectStoreNames.contains(IDB_MEDIA_STORE)) {
+              db.createObjectStore(IDB_MEDIA_STORE);
             }
           };
           req.onsuccess = e => resolve(e.target.result);
@@ -599,7 +715,9 @@
       }
 
       // Switch active room code seamlessly
-      function switchRoom(newRoomCode) {
+      async function switchRoom(newRoomCode) {
+        // First save current room before switching
+        await saveLocalOnly();
         const cleanCode = (newRoomCode || '').trim() || '101';
         syncConfig.roomCode = cleanCode;
         addRoomToHistory(cleanCode);
@@ -608,32 +726,24 @@
         activeDetailPostId = null;
         document.getElementById('modalNoteDetail').classList.add('hidden');
 
-        // Load isolated state for this specific room code
         state = loadRoomFromLocalStorage(cleanCode);
         renderBoard();
-        hydrateRoomFromIndexedDB(cleanCode);
+        await hydrateRoomFromIndexedDB(cleanCode);
         subscribeGunRoom();
         pullFromCloudRest();
 
         showToast(`เข้าสู่ห้อง "${cleanCode}" เรียบร้อยแล้ว`);
       }
 
-      // Conflict-free State Merger for the current room
+      // Conflict-free State Merger: NEVER wipes existing posts unless their exact ID is in deletedIds
       function mergeIncomingState(remote) {
         if (!remote || typeof remote !== 'object') return false;
         let changed = false;
 
-        if (remote.clearedAt && remote.clearedAt > (state.clearedAt || 0)) {
-          state.clearedAt = remote.clearedAt;
-          state.posts = [];
-          state.deletedIds = Array.isArray(remote.deletedIds) ? remote.deletedIds.slice() : [];
-          changed = true;
-        }
-
         const deletedSet = new Set(Array.isArray(state.deletedIds) ? state.deletedIds : []);
         if (Array.isArray(remote.deletedIds)) {
           remote.deletedIds.forEach(id => {
-            if (!deletedSet.has(id)) {
+            if (id && !deletedSet.has(id)) {
               deletedSet.add(id);
               changed = true;
             }
@@ -642,7 +752,7 @@
         state.deletedIds = Array.from(deletedSet);
 
         const beforeFilterLen = state.posts.length;
-        state.posts = state.posts.filter(p => !deletedSet.has(p.id));
+        state.posts = state.posts.filter(p => p && p.id && !deletedSet.has(p.id));
         if (state.posts.length !== beforeFilterLen) changed = true;
 
         if ((remote.updatedAt || 0) > (state.updatedAt || 0)) {
@@ -662,45 +772,9 @@
         }
 
         if (Array.isArray(remote.posts)) {
-          const localMap = new Map(state.posts.map(p => [p.id, p]));
           remote.posts.forEach(rPost => {
-            if (!rPost || !rPost.id || deletedSet.has(rPost.id)) return;
-            if ((state.clearedAt || 0) > 0 && (rPost.createdAtMs || 0) > 0 && rPost.createdAtMs < state.clearedAt) {
-              return;
-            }
-            const lPost = localMap.get(rPost.id);
-            if (!lPost) {
-              state.posts.push(JSON.parse(JSON.stringify(rPost)));
+            if (mergeSinglePost(rPost, deletedSet)) {
               changed = true;
-            } else {
-              if ((rPost.likes || 0) > (lPost.likes || 0)) {
-                lPost.likes = rPost.likes;
-                changed = true;
-              }
-              if ((rPost.hearts || 0) > (lPost.hearts || 0)) {
-                lPost.hearts = rPost.hearts;
-                changed = true;
-              }
-              if ((rPost.updatedAtMs || 0) > (lPost.updatedAtMs || 0)) {
-                lPost.nickname = rPost.nickname;
-                lPost.text = rPost.text;
-                lPost.color = rPost.color;
-                if (rPost.image !== undefined) lPost.image = rPost.image;
-                if (typeof rPost.x === 'number') lPost.x = rPost.x;
-                if (typeof rPost.y === 'number') lPost.y = rPost.y;
-                lPost.updatedAtMs = rPost.updatedAtMs;
-                changed = true;
-              }
-              const lComments = Array.isArray(lPost.comments) ? lPost.comments : [];
-              const rComments = Array.isArray(rPost.comments) ? rPost.comments : [];
-              const cMap = new Map(lComments.map(c => [c.id, c]));
-              rComments.forEach(rc => {
-                if (rc && rc.id && !deletedSet.has(rc.id) && !cMap.has(rc.id)) {
-                  lComments.push(rc);
-                  changed = true;
-                }
-              });
-              lPost.comments = lComments.filter(c => !deletedSet.has(c.id));
             }
           });
         }
@@ -711,26 +785,102 @@
         return changed;
       }
 
+      function mergeSinglePost(rPost, deletedSetInput) {
+        if (!rPost || !rPost.id) return false;
+        const deletedSet = deletedSetInput || new Set(Array.isArray(state.deletedIds) ? state.deletedIds : []);
+        if (deletedSet.has(rPost.id)) return false;
+
+        let changed = false;
+        const lPost = state.posts.find(p => p.id === rPost.id);
+        if (!lPost) {
+          const clone = JSON.parse(JSON.stringify(rPost));
+          if (!Array.isArray(clone.comments)) clone.comments = [];
+          state.posts.push(clone);
+          changed = true;
+        } else {
+          if ((rPost.likes || 0) > (lPost.likes || 0)) {
+            lPost.likes = rPost.likes;
+            changed = true;
+          }
+          if ((rPost.hearts || 0) > (lPost.hearts || 0)) {
+            lPost.hearts = rPost.hearts;
+            changed = true;
+          }
+          if ((rPost.updatedAtMs || 0) > (lPost.updatedAtMs || 0)) {
+            lPost.nickname = rPost.nickname || lPost.nickname;
+            lPost.text = rPost.text !== undefined ? rPost.text : lPost.text;
+            lPost.color = rPost.color || lPost.color;
+            if (rPost.image) lPost.image = rPost.image;
+            if (rPost.youtubeUrl !== undefined) lPost.youtubeUrl = rPost.youtubeUrl;
+            if (rPost.externalUrl !== undefined) lPost.externalUrl = rPost.externalUrl;
+            if (rPost.externalTitle !== undefined) lPost.externalTitle = rPost.externalTitle;
+            if (typeof rPost.x === 'number') lPost.x = rPost.x;
+            if (typeof rPost.y === 'number') lPost.y = rPost.y;
+            lPost.updatedAtMs = rPost.updatedAtMs;
+            changed = true;
+          } else if (!lPost.image && rPost.image) {
+            lPost.image = rPost.image;
+            changed = true;
+          }
+          const lComments = Array.isArray(lPost.comments) ? lPost.comments : [];
+          const rComments = Array.isArray(rPost.comments) ? rPost.comments : [];
+          const cMap = new Map(lComments.map(c => [c.id, c]));
+          rComments.forEach(rc => {
+            if (rc && rc.id && !deletedSet.has(rc.id) && !cMap.has(rc.id)) {
+              lComments.push(rc);
+              changed = true;
+            }
+          });
+          lPost.comments = lComments.filter(c => !deletedSet.has(c.id));
+        }
+        return changed;
+      }
+
+      // Quota-Safe LocalStorage + Full IndexedDB Save
       async function saveLocalOnly() {
         const key = getRoomStorageKey(syncConfig.roomCode);
         try {
           localStorage.setItem(key, JSON.stringify(state));
-        } catch (err) {}
+        } catch (quotaErr) {
+          // If base64 images exceed 5MB localStorage quota, save compact version in localStorage while IndexedDB keeps full images!
+          try {
+            const compactState = Object.assign({}, state, {
+              posts: state.posts.map(p => {
+                if (p.image && p.image.startsWith('data:') && p.image.length > 35000) {
+                  return Object.assign({}, p);
+                }
+                return p;
+              })
+            });
+            localStorage.setItem(key, JSON.stringify(compactState));
+          } catch (e2) {}
+        }
+
         try {
           const db = await openIndexedDB();
           if (!db) return;
           const tx = db.transaction(IDB_STORE, 'readwrite');
-          tx.objectStore(IDB_STORE).put(state, key);
-        } catch (err) {}
+          tx.objectStore(IDB_STORE).put(JSON.parse(JSON.stringify(state)), key);
+        } catch (err) {
+          console.warn('IndexedDB write warning:', err);
+        }
+        updateSaveButtonCount();
       }
 
-      async function persistStatePermanently() {
+      async function persistStatePermanently(changedPost) {
         state.updatedAt = Date.now();
         await saveLocalOnly();
-        broadcastStateToCloud();
+        broadcastStateToCloud(changedPost);
       }
 
-      // 2. Per-Room Cloud Sync Engine
+      function updateSaveButtonCount() {
+        const dot = document.getElementById('syncDotIndicator');
+        if (dot) {
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-200';
+        }
+      }
+
+      // 2. Per-Post & Per-Room Cloud Sync Engine (Gun.js per-item sync + REST sync)
       function initCrossDeviceSync() {
         try {
           if (window.Gun) {
@@ -761,22 +911,46 @@
         });
 
         pullFromCloudRest();
-        setInterval(pullFromCloudRest, 4000);
+        setInterval(pullFromCloudRest, 4500);
       }
 
       function subscribeGunRoom() {
         if (!gunInstance) return;
         const activeRoom = (syncConfig.roomCode || '101').trim().toUpperCase();
-        const roomKey = 'classboard_v3_room_' + activeRoom;
+        const roomKey = 'classboard_v4_room_' + activeRoom;
         gunRoomNode = gunInstance.get(roomKey);
-        gunRoomNode.get('payload').on(data => {
-          if (!data || typeof data !== 'string') return;
-          if (data === lastBroadcastHash) return;
-          try {
-            const remoteObj = JSON.parse(data);
-            if (mergeIncomingState(remoteObj)) {
+
+        // Listen for per-post updates so even large boards with many posts sync reliably
+        gunRoomNode.get('posts').map().on((postJson, postId) => {
+          if (activeRoom !== (syncConfig.roomCode || '101').trim().toUpperCase()) return;
+          if (!postJson) return;
+          if (postJson === 'DELETED') {
+            if (!Array.isArray(state.deletedIds)) state.deletedIds = [];
+            if (!state.deletedIds.includes(postId)) {
+              state.deletedIds.push(postId);
+              state.posts = state.posts.filter(p => p.id !== postId);
+              saveLocalOnly();
               renderBoard();
-              if (activeDetailPostId) renderNoteDetailModal(activeDetailPostId);
+            }
+            return;
+          }
+          try {
+            const rPost = typeof postJson === 'string' ? JSON.parse(postJson) : postJson;
+            if (mergeSinglePost(rPost)) {
+              saveLocalOnly();
+              renderBoard();
+              if (activeDetailPostId === rPost.id) renderNoteDetailModal(rPost.id);
+            }
+          } catch (e) {}
+        });
+
+        // Listen for board meta updates
+        gunRoomNode.get('meta').on(metaJson => {
+          if (!metaJson || typeof metaJson !== 'string') return;
+          try {
+            const meta = JSON.parse(metaJson);
+            if (mergeIncomingState(meta)) {
+              renderBoard();
             }
           } catch (e) {}
         });
@@ -824,16 +998,32 @@
         }
       }
 
-      async function broadcastStateToCloud() {
-        const serialized = JSON.stringify(state);
-        lastBroadcastHash = serialized;
-
+      async function broadcastStateToCloud(changedPost) {
+        // 1. Push per-post to Gun.js so packets stay small and never drop
         try {
           if (gunRoomNode) {
-            gunRoomNode.get('payload').put(serialized);
+            gunRoomNode.get('meta').put(
+              JSON.stringify({
+                boardTitle: state.boardTitle,
+                boardSubtitle: state.boardSubtitle,
+                theme: state.theme,
+                updatedAt: state.updatedAt,
+                deletedIds: state.deletedIds
+              })
+            );
+            if (changedPost && changedPost.id) {
+              gunRoomNode.get('posts').get(changedPost.id).put(JSON.stringify(changedPost));
+            } else {
+              state.posts.forEach(p => {
+                gunRoomNode.get('posts').get(p.id).put(JSON.stringify(p));
+              });
+            }
           }
         } catch (e) {}
 
+        const serialized = JSON.stringify(state);
+
+        // 2. Push to Firebase / Cloud REST DB if configured
         const endpoint = getRestEndpointUrl();
         if (endpoint) {
           try {
@@ -845,6 +1035,7 @@
           } catch (e) {}
         }
 
+        // 3. Push to Vercel /api/board if hosted on Vercel
         if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('googleusercontent')) {
           try {
             const roomSafe = encodeURIComponent((syncConfig.roomCode || '101').trim().toUpperCase());
@@ -871,7 +1062,7 @@
         } catch (e) {}
       }
 
-      // 3. Helper Functions & Protected Delete Modal (PIN 8888)
+      // 3. Helper Functions, URL/YouTube Parsers & Reaction Burst Animations
       function escapeHtml(str) {
         return String(str || '')
           .replace(/&/g, '&amp;')
@@ -879,6 +1070,86 @@
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#039;');
+      }
+
+      // Convert plain URLs in text into clickable links safely
+      function formatTextWithLinks(text) {
+        const escaped = escapeHtml(text || '');
+        return escaped.replace(
+          /(https?:\/\/[^\s<]+)/g,
+          '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-indigo-600 underline hover:text-indigo-800 break-all" onclick="event.stopPropagation()">$1</a>'
+        );
+      }
+
+      // Extract YouTube Video ID from any YouTube URL (watch?v=, youtu.be/, shorts/, embed/)
+      function extractYoutubeId(urlStr) {
+        if (!urlStr) return '';
+        const str = String(urlStr).trim();
+        const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+        const match = str.match(regExp);
+        return match && match[1] ? match[1] : '';
+      }
+
+      // Find first YouTube link inside free text if user pasted it in the message box
+      function detectYoutubeUrlInText(text) {
+        if (!text) return '';
+        const match = String(text).match(/https?:\/\/(?:www\.)?(?:youtube\.com\/[^\s]+|youtu\.be\/[^\s]+)/i);
+        return match ? match[0] : '';
+      }
+
+      // Find direct image URL inside text if user pasted an image link
+      function detectImageUrlInText(text) {
+        if (!text) return '';
+        const match = String(text).match(/https?:\/\/[^\s]+\.(?:png|jpe?g|gif|webp|svg)(?:\?[^\s]*)?/i);
+        return match ? match[0] : '';
+      }
+
+      // Spawn Floating Animation Burst for Like (👍) & Heart (❤️)
+      function triggerReactionAnimation(btnEl, type) {
+        if (!btnEl) return;
+        btnEl.classList.remove('animate-reaction-pop');
+        void btnEl.offsetWidth;
+        btnEl.classList.add('animate-reaction-pop');
+
+        const rect = btnEl.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        // Ripple ring
+        const ripple = document.createElement('div');
+        ripple.className = 'reaction-ripple';
+        ripple.style.left = `${centerX - 14}px`;
+        ripple.style.top = `${centerY - 14}px`;
+        ripple.style.border = type === 'heart' ? '2.5px solid #f43f5e' : '2.5px solid #3b82f6';
+        document.body.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+
+        // Floating Emoji Particles
+        const emojis = type === 'heart'
+          ? ['❤️', '💖', '💗', '✨', '🌸']
+          : ['👍', '✨', '💙', '🎉', '⭐'];
+
+        for (let i = 0; i < 6; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'reaction-particle';
+          particle.textContent = emojis[i % emojis.length];
+          const offsetX = (Math.random() - 0.5) * 34;
+          const midX = (Math.random() - 0.5) * 56;
+          const endX = (Math.random() - 0.5) * 80;
+          const rot = (Math.random() - 0.5) * 40;
+          const rotEnd = (Math.random() - 0.5) * 70;
+
+          particle.style.left = `${centerX + offsetX - 12}px`;
+          particle.style.top = `${centerY - 14}px`;
+          particle.style.setProperty('--tx-mid', `${midX}px`);
+          particle.style.setProperty('--tx-end', `${endX}px`);
+          particle.style.setProperty('--rot', `${rot}deg`);
+          particle.style.setProperty('--rot-end', `${rotEnd}deg`);
+          particle.style.animationDelay = `${i * 0.04}s`;
+
+          document.body.appendChild(particle);
+          setTimeout(() => particle.remove(), 1050);
+        }
       }
 
       function showToast(msg) {
@@ -906,7 +1177,7 @@
         setTimeout(() => pinInput.focus(), 60);
       }
 
-      function compressImageFile(file, maxWidth = 720, quality = 0.78) {
+      function compressImageFile(file, maxWidth = 640, quality = 0.74) {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = ev => {
@@ -967,7 +1238,7 @@
         });
       }
 
-      // 4. Render Whiteboard & Notes
+      // 4. Render Whiteboard & Notes (Supports Images, YouTube Embeds, External Links, Comments, Animated Reactions)
       function renderBoard() {
         document.getElementById('boardTitleText').textContent = state.boardTitle || `กระดานแสดงความคิดเห็น (ห้อง ${syncConfig.roomCode})`;
         document.getElementById('boardSubtitleText').textContent = state.boardSubtitle || '';
@@ -1004,9 +1275,9 @@
           if (isMobile) {
             card.className = `note-card w-full rounded-3xl border ${colorCls} p-5 mb-4 flex flex-col animate-pop`;
           } else {
-            const x = typeof post.x === 'number' ? post.x : 36 + (idx % 4) * 320;
-            const y = typeof post.y === 'number' ? post.y : 36 + Math.floor(idx / 4) * 300;
-            card.className = `note-card absolute w-[305px] rounded-3xl border ${colorCls} p-5 flex flex-col cursor-grab active:cursor-grabbing`;
+            const x = typeof post.x === 'number' ? post.x : 36 + (idx % 4) * 330;
+            const y = typeof post.y === 'number' ? post.y : 36 + Math.floor(idx / 4) * 320;
+            card.className = `note-card absolute w-[315px] rounded-3xl border ${colorCls} p-5 flex flex-col cursor-grab active:cursor-grabbing`;
             card.style.left = `${x}px`;
             card.style.top = `${y}px`;
             card.style.zIndex = String(10 + idx);
@@ -1014,6 +1285,7 @@
 
           const initial = (post.nickname || 'น').trim().charAt(0).toUpperCase();
           const latestComment = post.comments.length > 0 ? post.comments[post.comments.length - 1] : null;
+          const ytId = extractYoutubeId(post.youtubeUrl || detectYoutubeUrlInText(post.text));
 
           card.innerHTML = `
             <!-- Author Header -->
@@ -1043,18 +1315,34 @@
               </div>
             </div>
 
-            <!-- Clickable Content Area (Opens Comment & Detail Modal) -->
+            <!-- Clickable Content Area -->
             <div class="note-clickable-body cursor-pointer group">
               ${
                 post.image
                   ? `<div class="mb-3 rounded-2xl overflow-hidden border border-black/5 bg-white/60">
-                       <img src="${post.image}" alt="รูปภาพประกอบ" class="note-image w-full max-h-48 object-cover group-hover:scale-[1.01] transition" />
+                       <img src="${escapeHtml(post.image)}" alt="รูปภาพประกอบ" class="note-image w-full max-h-48 object-cover group-hover:scale-[1.01] transition" />
                      </div>`
                   : ''
               }
               ${
+                ytId
+                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-black/10 bg-black aspect-video relative" onclick="event.stopPropagation()">
+                       <iframe class="w-full h-full" src="https://www.youtube.com/embed/${escapeHtml(ytId)}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                     </div>`
+                  : ''
+              }
+              ${
+                post.externalUrl
+                  ? `<a href="${escapeHtml(post.externalUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="mb-3 p-2.5 rounded-2xl bg-white/80 hover:bg-white border border-black/10 flex items-center gap-2 text-xs font-semibold text-indigo-700 transition shadow-sm">
+                       <span class="w-7 h-7 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">🔗</span>
+                       <span class="truncate flex-1">${escapeHtml(post.externalTitle || post.externalUrl)}</span>
+                       <span class="text-[10px] text-slate-400 shrink-0">เปิดลิงก์ ↗</span>
+                     </a>`
+                  : ''
+              }
+              ${
                 post.text
-                  ? `<p class="text-sm text-slate-800 whitespace-pre-line leading-relaxed break-words mb-3">${escapeHtml(post.text)}</p>`
+                  ? `<div class="text-sm text-slate-800 whitespace-pre-line leading-relaxed break-words mb-3">${formatTextWithLinks(post.text)}</div>`
                   : ''
               }
             </div>
@@ -1069,42 +1357,46 @@
                 : ''
             }
 
-            <!-- Footer: Like (👍), Heart (❤️), and Reply (💬) -->
+            <!-- Footer: Animated Like (👍), Animated Heart (❤️), and Reply (💬) -->
             <div class="mt-auto pt-2.5 flex items-center justify-between gap-1.5 border-t border-black/5">
               <div class="flex items-center gap-1.5">
-                <button type="button" class="btn-like-note inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/75 hover:bg-white text-xs font-semibold text-slate-700 shadow-sm active:scale-95 transition" title="กดไลก์">
-                  <span>👍</span>
-                  <span>${post.likes || 0}</span>
+                <button type="button" class="btn-like-note inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/80 hover:bg-white text-xs font-bold text-blue-700 shadow-sm transition" title="กดถูกใจ">
+                  <span class="text-sm">👍</span>
+                  <span class="like-count-span">${post.likes || 0}</span>
                 </button>
-                <button type="button" class="btn-heart-note inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/75 hover:bg-white text-xs font-semibold text-slate-700 shadow-sm active:scale-95 transition" title="กดหัวใจ">
-                  <span>❤️</span>
-                  <span>${post.hearts || 0}</span>
+                <button type="button" class="btn-heart-note inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/80 hover:bg-white text-xs font-bold text-rose-600 shadow-sm transition" title="กดหัวใจ">
+                  <span class="text-sm">❤️</span>
+                  <span class="heart-count-span">${post.hearts || 0}</span>
                 </button>
               </div>
 
-              <button type="button" class="btn-open-comments inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/75 hover:bg-white text-xs font-semibold text-indigo-700 shadow-sm transition">
+              <button type="button" class="btn-open-comments inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/80 hover:bg-white text-xs font-semibold text-indigo-700 shadow-sm transition">
                 <span>💬</span>
                 <span>${post.comments.length > 0 ? `${post.comments.length} ความคิดเห็น` : 'ความคิดเห็น'}</span>
               </button>
             </div>
           `;
 
-          // Like (👍) button
-          card.querySelector('.btn-like-note').addEventListener('click', e => {
+          // Like (👍) button with burst animation
+          const likeBtn = card.querySelector('.btn-like-note');
+          likeBtn.addEventListener('click', e => {
             e.stopPropagation();
             post.likes = (post.likes || 0) + 1;
             post.updatedAtMs = Date.now();
-            persistStatePermanently();
-            renderBoard();
+            likeBtn.querySelector('.like-count-span').textContent = post.likes;
+            triggerReactionAnimation(likeBtn, 'like');
+            persistStatePermanently(post);
           });
 
-          // Heart (❤️) button
-          card.querySelector('.btn-heart-note').addEventListener('click', e => {
+          // Heart (❤️) button with burst animation
+          const heartBtn = card.querySelector('.btn-heart-note');
+          heartBtn.addEventListener('click', e => {
             e.stopPropagation();
             post.hearts = (post.hearts || 0) + 1;
             post.updatedAtMs = Date.now();
-            persistStatePermanently();
-            renderBoard();
+            heartBtn.querySelector('.heart-count-span').textContent = post.hearts;
+            triggerReactionAnimation(heartBtn, 'heart');
+            persistStatePermanently(post);
           });
 
           // Open Comments / Note Detail Modal
@@ -1131,6 +1423,9 @@
                 if (!Array.isArray(state.deletedIds)) state.deletedIds = [];
                 state.deletedIds.push(post.id);
                 state.posts = state.posts.filter(p => p.id !== post.id);
+                try {
+                  if (gunRoomNode) gunRoomNode.get('posts').get(post.id).put('DELETED');
+                } catch (err) {}
                 persistStatePermanently();
                 renderBoard();
                 showToast('ลบกล่องความคิดเห็นออกจากกระดานแล้ว');
@@ -1161,7 +1456,7 @@
         let origTop = 0;
 
         cardEl.addEventListener('pointerdown', e => {
-          if (e.target.closest('button')) return;
+          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('iframe')) return;
           pointerDown = true;
           hasMoved = false;
           startX = e.clientX;
@@ -1191,8 +1486,8 @@
             postObj.x = parseInt(cardEl.style.left, 10) || 24;
             postObj.y = parseInt(cardEl.style.top, 10) || 24;
             postObj.updatedAtMs = Date.now();
-            persistStatePermanently();
-          } else if (!e.target.closest('button')) {
+            persistStatePermanently(postObj);
+          } else if (!e.target.closest('button') && !e.target.closest('a') && !e.target.closest('iframe')) {
             openNoteDetailModal(postObj.id);
           }
         };
@@ -1244,11 +1539,45 @@
           imgWrap.classList.add('hidden');
         }
 
+        // YouTube player inside detail modal
+        const ytWrap = document.getElementById('detailYoutubeWrapper');
+        const ytIframe = document.getElementById('detailYoutubeIframe');
+        const ytId = extractYoutubeId(post.youtubeUrl || detectYoutubeUrlInText(post.text));
+        if (ytId) {
+          const embedSrc = `https://www.youtube.com/embed/${ytId}`;
+          if (ytIframe.src !== embedSrc) ytIframe.src = embedSrc;
+          ytWrap.classList.remove('hidden');
+        } else {
+          ytIframe.src = 'about:blank';
+          ytWrap.classList.add('hidden');
+        }
+
+        // External link card inside detail modal
+        const linkWrap = document.getElementById('detailLinkWrapper');
+        if (post.externalUrl) {
+          linkWrap.classList.remove('hidden');
+          linkWrap.innerHTML = `
+            <a href="${escapeHtml(post.externalUrl)}" target="_blank" rel="noopener noreferrer" class="p-3.5 rounded-2xl bg-indigo-50/80 hover:bg-indigo-100/80 border border-indigo-200 flex items-center justify-between gap-3 text-xs sm:text-sm font-semibold text-indigo-700 transition">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0">🔗</span>
+                <span class="truncate">${escapeHtml(post.externalTitle || post.externalUrl)}</span>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-white text-indigo-600 text-xs shrink-0 shadow-sm">เปิดลิงก์ ↗</span>
+            </a>
+          `;
+        } else {
+          linkWrap.classList.add('hidden');
+          linkWrap.innerHTML = '';
+        }
+
         const textEl = document.getElementById('detailTextContent');
-        textEl.textContent = post.text || '';
-        textEl.className = post.text
-          ? 'text-sm sm:text-base text-slate-800 whitespace-pre-line leading-relaxed select-text'
-          : 'hidden';
+        if (post.text) {
+          textEl.innerHTML = formatTextWithLinks(post.text);
+          textEl.className = 'text-sm sm:text-base text-slate-800 whitespace-pre-line leading-relaxed select-text';
+        } else {
+          textEl.innerHTML = '';
+          textEl.className = 'hidden';
+        }
 
         document.getElementById('detailLikeCount').textContent = post.likes || 0;
         document.getElementById('detailHeartCount').textContent = post.hearts || 0;
@@ -1278,7 +1607,7 @@
                     <span class="font-bold text-xs text-slate-900">${escapeHtml(comment.nickname)}</span>
                     <span class="text-[10px] text-slate-400">${escapeHtml(comment.time || '')}</span>
                   </div>
-                  <p class="text-xs sm:text-sm text-slate-700 mt-0.5 break-words leading-relaxed select-text">${escapeHtml(comment.text)}</p>
+                  <div class="text-xs sm:text-sm text-slate-700 mt-0.5 break-words leading-relaxed select-text">${formatTextWithLinks(comment.text)}</div>
                 </div>
               </div>
               <button type="button" class="btn-delete-comment p-1 rounded-lg text-slate-300 hover:text-rose-500 transition shrink-0" title="ลบความคิดเห็นนี้ (ต้องใช้รหัสผ่าน)">
@@ -1295,7 +1624,8 @@
                   if (!Array.isArray(state.deletedIds)) state.deletedIds = [];
                   state.deletedIds.push(comment.id);
                   post.comments = post.comments.filter(c => c.id !== comment.id);
-                  persistStatePermanently();
+                  post.updatedAtMs = Date.now();
+                  persistStatePermanently(post);
                   renderNoteDetailModal(post.id);
                   renderBoard();
                   showToast('ลบความคิดเห็นเรียบร้อยแล้ว');
@@ -1322,6 +1652,23 @@
 
         document.getElementById('inputNoteText').value = existingPost
           ? existingPost.text || ''
+          : '';
+
+        document.getElementById('inputImageUrl').value =
+          existingPost && existingPost.image && existingPost.image.startsWith('http')
+            ? existingPost.image
+            : '';
+
+        document.getElementById('inputYoutubeUrl').value = existingPost
+          ? existingPost.youtubeUrl || ''
+          : '';
+
+        document.getElementById('inputExternalUrl').value = existingPost
+          ? existingPost.externalUrl || ''
+          : '';
+
+        document.getElementById('inputExternalTitle').value = existingPost
+          ? existingPost.externalTitle || ''
           : '';
 
         selectedColor = existingPost ? existingPost.color || 'yellow' : 'yellow';
@@ -1405,7 +1752,7 @@
         document.getElementById('btnSyncStatusPill').addEventListener('click', async () => {
           await persistStatePermanently();
           await pullFromCloudRest();
-          showToast(`บันทึกและซิงค์ข้อมูลห้อง "${syncConfig.roomCode}" เรียบร้อยแล้ว`);
+          showToast(`บันทึกข้อมูลห้อง "${syncConfig.roomCode}" ถาวรเรียบร้อยแล้ว (${state.posts.length} โพสต์)`);
         });
 
         // Double click anywhere on empty whiteboard canvas to spawn a note at that spot
@@ -1437,35 +1784,57 @@
           if (!file) return;
           try {
             pendingImageDataUrl = await compressImageFile(file);
+            document.getElementById('inputImageUrl').value = '';
             updateImagePreviewUI();
           } catch (err) {
             showToast('ไม่สามารถอ่านไฟล์รูปภาพนี้ได้');
           }
         });
 
+        // Image URL Input
+        document.getElementById('inputImageUrl').addEventListener('input', e => {
+          const urlVal = (e.target.value || '').trim();
+          if (urlVal.startsWith('http')) {
+            pendingImageDataUrl = urlVal;
+            updateImagePreviewUI();
+          } else if (!urlVal && pendingImageDataUrl.startsWith('http')) {
+            pendingImageDataUrl = '';
+            updateImagePreviewUI();
+          }
+        });
+
         document.getElementById('btnRemoveImage').addEventListener('click', () => {
           pendingImageDataUrl = '';
+          document.getElementById('inputImageUrl').value = '';
           updateImagePreviewUI();
         });
 
         // Save Note (Create or Update)
-        document.getElementById('btnSavePost').addEventListener('click', () => {
+        document.getElementById('btnSavePost').addEventListener('click', async () => {
           const nickname = (document.getElementById('inputNickname').value || '').trim();
           const text = (document.getElementById('inputNoteText').value || '').trim();
+          const ytUrlInput = (document.getElementById('inputYoutubeUrl').value || '').trim();
+          const extUrlInput = (document.getElementById('inputExternalUrl').value || '').trim();
+          const extTitleInput = (document.getElementById('inputExternalTitle').value || '').trim();
+
+          // Auto-detect image or YouTube link if pasted directly in text
+          const finalImage = pendingImageDataUrl || detectImageUrlInText(text);
+          const finalYoutubeUrl = ytUrlInput || detectYoutubeUrlInText(text);
 
           if (!nickname) {
             showToast('กรุณาพิมพ์ชื่อเล่นของคุณ');
             document.getElementById('inputNickname').focus();
             return;
           }
-          if (!text && !pendingImageDataUrl) {
-            showToast('กรุณาพิมพ์ข้อความหรือเลือกรูปภาพอย่างน้อย 1 อย่าง');
+          if (!text && !finalImage && !finalYoutubeUrl && !extUrlInput) {
+            showToast('กรุณาพิมพ์ข้อความ หรือแนบรูปภาพ / ลิงก์ YouTube / ลิงก์เว็บไซต์');
             document.getElementById('inputNoteText').focus();
             return;
           }
 
           saveNickname(nickname);
           const nowMs = Date.now();
+          let savedPost = null;
 
           if (editingPostId) {
             const target = state.posts.find(p => p.id === editingPostId);
@@ -1473,21 +1842,28 @@
               target.nickname = nickname;
               target.text = text;
               target.color = selectedColor;
-              target.image = pendingImageDataUrl;
+              target.image = finalImage;
+              target.youtubeUrl = finalYoutubeUrl;
+              target.externalUrl = extUrlInput;
+              target.externalTitle = extTitleInput;
               target.updatedAtMs = nowMs;
+              savedPost = target;
             }
-            showToast(`บันทึกโน้ตในห้อง "${syncConfig.roomCode}" แล้ว`);
+            showToast(`บันทึกการแก้ไขโน้ตในห้อง "${syncConfig.roomCode}" แล้ว`);
           } else {
             const idx = state.posts.length;
-            const cols = Math.max(1, Math.floor((window.innerWidth - 80) / 320));
-            const defaultX = 36 + (idx % cols) * 320;
-            const defaultY = 36 + Math.floor(idx / cols) * 300;
+            const cols = Math.max(1, Math.floor((window.innerWidth - 80) / 330));
+            const defaultX = 36 + (idx % cols) * 330;
+            const defaultY = 36 + Math.floor(idx / cols) * 320;
 
-            state.posts.push({
+            savedPost = {
               id: 'note-' + nowMs + '-' + Math.random().toString(36).slice(2, 6),
               nickname,
               text,
-              image: pendingImageDataUrl,
+              image: finalImage,
+              youtubeUrl: finalYoutubeUrl,
+              externalUrl: extUrlInput,
+              externalTitle: extTitleInput,
               color: selectedColor,
               likes: 0,
               hearts: 0,
@@ -1497,18 +1873,20 @@
               createdAtMs: nowMs,
               updatedAtMs: nowMs,
               time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.'
-            });
-            showToast(`แปะโน้ตลงในห้อง "${syncConfig.roomCode}" แล้ว`);
+            };
+            state.posts.push(savedPost);
+            showToast(`แปะโน้ตลงในห้อง "${syncConfig.roomCode}" และบันทึกถาวรแล้ว`);
           }
 
-          persistStatePermanently();
           renderBoard();
           closePostModal();
+          await persistStatePermanently(savedPost);
         });
 
         // Note Detail Modal interactions (Like, Heart, Add Comment, Lightbox)
         const closeDetailModal = () => {
           activeDetailPostId = null;
+          document.getElementById('detailYoutubeIframe').src = 'about:blank';
           document.getElementById('modalNoteDetail').classList.add('hidden');
         };
         document.getElementById('btnCloseNoteDetail').addEventListener('click', closeDetailModal);
@@ -1524,22 +1902,26 @@
           }
         });
 
-        document.getElementById('btnDetailLike').addEventListener('click', () => {
+        const btnDetailLike = document.getElementById('btnDetailLike');
+        btnDetailLike.addEventListener('click', () => {
           const post = state.posts.find(p => p.id === activeDetailPostId);
           if (!post) return;
           post.likes = (post.likes || 0) + 1;
           post.updatedAtMs = Date.now();
-          persistStatePermanently();
+          triggerReactionAnimation(btnDetailLike, 'like');
+          persistStatePermanently(post);
           renderNoteDetailModal(post.id);
           renderBoard();
         });
 
-        document.getElementById('btnDetailHeart').addEventListener('click', () => {
+        const btnDetailHeart = document.getElementById('btnDetailHeart');
+        btnDetailHeart.addEventListener('click', () => {
           const post = state.posts.find(p => p.id === activeDetailPostId);
           if (!post) return;
           post.hearts = (post.hearts || 0) + 1;
           post.updatedAtMs = Date.now();
-          persistStatePermanently();
+          triggerReactionAnimation(btnDetailHeart, 'heart');
+          persistStatePermanently(post);
           renderNoteDetailModal(post.id);
           renderBoard();
         });
@@ -1574,7 +1956,7 @@
           post.updatedAtMs = Date.now();
 
           document.getElementById('inputCommentText').value = '';
-          persistStatePermanently();
+          persistStatePermanently(post);
           renderNoteDetailModal(post.id);
           renderBoard();
           showToast('เพิ่มความคิดเห็นต่อท้ายเรียบร้อยแล้ว');
@@ -1583,11 +1965,11 @@
         // Auto Arrange Grid
         document.getElementById('btnArrangeGrid').addEventListener('click', () => {
           if (!state.posts.length) return;
-          const cols = Math.max(1, Math.floor((window.innerWidth - 80) / 320));
+          const cols = Math.max(1, Math.floor((window.innerWidth - 80) / 330));
           const nowMs = Date.now();
           state.posts.forEach((p, idx) => {
-            p.x = 36 + (idx % cols) * 320;
-            p.y = 36 + Math.floor(idx / cols) * 310;
+            p.x = 36 + (idx % cols) * 330;
+            p.y = 36 + Math.floor(idx / cols) * 320;
             p.updatedAtMs = nowMs;
           });
           persistStatePermanently();
@@ -1658,11 +2040,17 @@
         document.getElementById('btnClearAllNotes').addEventListener('click', () => {
           document.getElementById('modalBoardSettings').classList.add('hidden');
           requestPinProtectedDelete(
-            'ใส่รหัสผ่านเพื่อล้างโน้ตทั้งหมดบนกระดาน',
+            'ใส่รหัสผ่านเพื่อล้างโน้ตในห้องนี้',
             `กรุณาใส่รหัสผ่านเพื่อยืนยันการลบโน้ตทั้งหมดในห้อง "${syncConfig.roomCode}"`,
             () => {
+              if (!Array.isArray(state.deletedIds)) state.deletedIds = [];
+              state.posts.forEach(p => {
+                state.deletedIds.push(p.id);
+                try {
+                  if (gunRoomNode) gunRoomNode.get('posts').get(p.id).put('DELETED');
+                } catch (err) {}
+              });
               state.posts = [];
-              state.clearedAt = Date.now();
               persistStatePermanently();
               renderBoard();
               showToast(`ล้างโน้ตทั้งหมดในห้อง "${syncConfig.roomCode}" แล้ว`);
