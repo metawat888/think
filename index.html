@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Whiteboard — กระดานแสดงความคิดเห็นออนไลน์ทุกอุปกรณ์</title>
+  <title>Whiteboard — กระดานแสดงความคิดเห็นแยกตามรหัสห้อง</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/gun@0.2020.1240/gun.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -72,7 +72,7 @@
 <body class="min-h-screen flex flex-col select-none">
 
   <!-- Minimal Floating Top Bar -->
-  <header class="sticky top-0 z-30 bg-white/85 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-8 py-3">
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-8 py-3">
     <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-3">
 
       <!-- Editable Board Title & Subtitle -->
@@ -87,15 +87,10 @@
             <h1 id="boardTitleText" class="font-bold text-base sm:text-xl text-slate-900 truncate cursor-pointer hover:text-indigo-600 transition" title="คลิกเพื่อเปลี่ยนชื่อหัวข้อกระดาน">
               กระดานแสดงความคิดเห็นในชั้นเรียน
             </h1>
-            <button id="btnEditBoardTitle" type="button" class="p-1 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition" title="แก้ไขชื่อกระดานและตั้งค่าซิงค์ทุกอุปกรณ์">
+            <button id="btnEditBoardTitle" type="button" class="p-1 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition" title="ตั้งค่าหัวข้อกระดาน">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
-            </button>
-            <!-- Cross-Device Cloud Sync Status Pill -->
-            <button id="btnSyncStatusPill" type="button" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition" title="คลิกเพื่อดูการเชื่อมต่อซิงค์ข้อมูลข้ามอุปกรณ์">
-              <span id="syncDotIndicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span id="syncStatusLabel">ซิงค์ทุกอุปกรณ์</span>
             </button>
           </div>
           <p id="boardSubtitleText" class="text-xs text-slate-500 truncate">
@@ -104,10 +99,32 @@
         </div>
       </div>
 
-      <!-- Right Controls: Layout, Theme, Share Link, and Add Note -->
-      <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Right Controls: Room Code Switcher, Save Button, Theme, Arrange, Add Note -->
+      <div class="flex items-center flex-wrap gap-2 sm:gap-2.5">
+
+        <!-- Quick Room Code Entry Box (เข้าตามรหัสห้อง/กลุ่ม) -->
+        <form id="formQuickRoomSwitch" class="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/90">
+          <button id="btnOpenRoomModal" type="button" class="px-2.5 py-1 rounded-lg bg-white text-indigo-700 font-bold text-xs shadow-sm flex items-center gap-1 hover:bg-indigo-50 transition" title="คลิกเพื่อเลือกหรือสลับกลุ่ม">
+            <span>🔑 ห้อง:</span>
+            <span id="currentRoomBadgeText">101</span>
+          </button>
+          <input id="inputQuickRoomCode" type="text" placeholder="ใส่รหัสห้อง/กลุ่ม..." class="w-24 sm:w-28 px-2.5 py-1 bg-transparent text-xs font-semibold text-slate-800 focus:outline-none" />
+          <button id="btnJoinRoomQuick" type="submit" class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition">
+            เข้าห้อง
+          </button>
+        </form>
+
+        <!-- "บันทึก" Button (Replaced "ซิงค์ทุกอุปกรณ์" -> "บันทึก") -->
+        <button id="btnSyncStatusPill" type="button" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition" title="บันทึกข้อมูลและซิงค์ตามรหัสห้องปัจจุบัน">
+          <span id="syncDotIndicator" class="w-2 h-2 rounded-full bg-emerald-200 animate-pulse"></span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          <span id="syncStatusLabel">บันทึก</span>
+        </button>
+
         <!-- Surface Color Dots -->
-        <div class="hidden sm:flex items-center gap-1.5 bg-slate-100/90 px-2.5 py-1.5 rounded-xl border border-slate-200/70">
+        <div class="hidden lg:flex items-center gap-1.5 bg-slate-100/90 px-2.5 py-1.5 rounded-xl border border-slate-200/70">
           <button type="button" data-theme="default" class="theme-dot w-4 h-4 rounded-full bg-slate-200 border border-slate-400" title="พื้นหลังสีขาวจุด"></button>
           <button type="button" data-theme="warm" class="theme-dot w-4 h-4 rounded-full bg-amber-100 border border-amber-400" title="พื้นหลังสีครีมอุ่น"></button>
           <button type="button" data-theme="mint" class="theme-dot w-4 h-4 rounded-full bg-emerald-100 border border-emerald-400" title="พื้นหลังสีมิ้นท์"></button>
@@ -120,11 +137,11 @@
           <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
           </svg>
-          <span class="hidden md:inline">จัดเรียงโน้ต</span>
+          <span class="hidden xl:inline">จัดเรียงโน้ต</span>
         </button>
 
         <!-- Primary Add Note CTA -->
-        <button id="btnOpenNewPostModal" type="button" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-500/20 flex items-center gap-1.5 transition">
+        <button id="btnOpenNewPostModal" type="button" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-500/20 flex items-center gap-1.5 transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
           </svg>
@@ -137,24 +154,28 @@
   <!-- Single Full-Screen Whiteboard Canvas -->
   <main id="whiteboardSurface" class="whiteboard-canvas flex-1 relative w-full min-h-[calc(100vh-65px)] overflow-auto">
 
-    <!-- Empty State (Shown when there are 0 posts — Zero Fake Data) -->
+    <!-- Empty State (Shown when there are 0 posts in this room — Zero Fake Data) -->
     <div id="emptyBoardState" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center pointer-events-none">
       <div class="bg-white/90 backdrop-blur-md border border-slate-200/90 rounded-3xl p-8 max-w-md shadow-xl pointer-events-auto">
-        <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-4">
-          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold mb-3">
+          <span>🔑 รหัสห้องปัจจุบัน:</span>
+          <span id="emptyStateRoomLabel">101</span>
         </div>
         <h2 class="text-lg font-bold text-slate-900">กระดานไวท์บอร์ดพร้อมใช้งาน</h2>
         <p class="text-xs sm:text-sm text-slate-500 mt-1.5 leading-relaxed">
-          ยังไม่มีโพสต์บนกระดาน กดปุ่มด้านล่างหรือ<strong>ดับเบิลคลิกพื้นที่ว่างบนกระดาน</strong> เพื่อพิมพ์ชื่อเล่น ข้อความ และแนบรูปภาพได้เลย (ซิงค์ข้อมูลอัตโนมัติทุกอุปกรณ์)
+          ยังไม่มีโพสต์ในรหัสห้องนี้ กดปุ่มด้านล่างหรือ<strong>ดับเบิลคลิกพื้นที่ว่างบนกระดาน</strong> เพื่อพิมพ์ชื่อเล่น ข้อความ และแนบรูปภาพได้เลย
         </p>
-        <button id="btnEmptyStateAdd" type="button" class="mt-5 w-full py-3 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          เขียนโพสต์แรกบนกระดาน
-        </button>
+        <div class="mt-5 flex flex-col sm:flex-row gap-2">
+          <button id="btnEmptyStateAdd" type="button" class="flex-1 py-3 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            เขียนโพสต์แรกบนกระดาน
+          </button>
+          <button id="btnEmptyStateSwitchRoom" type="button" class="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition">
+            เปลี่ยนรหัสห้อง/กลุ่ม
+          </button>
+        </div>
       </div>
     </div>
 
@@ -320,20 +341,41 @@
     </div>
   </div>
 
-  <!-- MODAL 3: Edit Board Title, Subtitle & Cross-Device Cloud Sync -->
+  <!-- MODAL 3: Edit Board Title, Room Code Switcher & Cloud Settings -->
   <div id="modalBoardSettings" class="fixed inset-0 z-50 hidden bg-slate-900/45 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-pop max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-base font-bold text-slate-900">ตั้งค่ากระดาน & ซิงค์ทุกอุปกรณ์</h3>
+        <h3 class="text-base font-bold text-slate-900">เข้ารหัสห้อง / ตั้งค่ากระดานกลุ่ม</h3>
         <button id="btnCloseBoardModal" type="button" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
-      <div class="space-y-3.5">
+      <div class="space-y-4">
+        <!-- Room Code Entry & Saved Group Pills -->
+        <div class="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 space-y-3">
+          <div>
+            <label for="inputRoomCode" class="block text-xs font-bold text-indigo-950 mb-1">🔑 รหัสห้อง / รหัสกลุ่ม (ซิงค์แยกตามรหัสห้อง)</label>
+            <div class="flex gap-1.5">
+              <input id="inputRoomCode" type="text" placeholder="เช่น 101, กลุ่ม1, ม.2/1..." class="flex-1 px-3.5 py-2 rounded-xl bg-white border border-indigo-200 text-sm font-bold text-indigo-700 focus:outline-none focus:border-indigo-600" />
+              <button id="btnCopyShareUrl" type="button" class="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shrink-0 transition">
+                คัดลอกลิงก์ห้อง
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Switch Saved Rooms -->
+          <div>
+            <span class="block text-[11px] font-semibold text-slate-500 mb-1.5">สลับห้อง/กลุ่มด่วน:</span>
+            <div id="recentRoomsList" class="flex flex-wrap gap-1.5">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+
         <div>
-          <label for="inputBoardTitle" class="block text-xs font-semibold text-slate-600 mb-1">หัวข้อกระดาน</label>
+          <label for="inputBoardTitle" class="block text-xs font-semibold text-slate-600 mb-1">หัวข้อกระดานของห้องนี้</label>
           <input id="inputBoardTitle" type="text" placeholder="ระบุชื่อหัวข้อกระดาน..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:outline-none focus:border-indigo-500 focus:bg-white" />
         </div>
         <div>
@@ -341,25 +383,9 @@
           <input id="inputBoardSubtitle" type="text" placeholder="คำชี้แจงหรือโจทย์สำหรับให้นักเรียนโพสต์..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white" />
         </div>
 
-        <!-- Cross-Device Sync Settings -->
-        <div class="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-100 space-y-2.5">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-indigo-950">☁️ ซิงค์ข้อมูลข้ามอุปกรณ์อัตโนมัติ</span>
-            <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">ทำงานอัตโนมัติ</span>
-          </div>
-          <div>
-            <label for="inputRoomCode" class="block text-[11px] font-semibold text-slate-600 mb-1">รหัสห้องกระดาน (เปิดอุปกรณ์ไหนที่ใช้รหัสเดียวกันจะเห็นเหมือนกันทั้งหมด)</label>
-            <div class="flex gap-1.5">
-              <input id="inputRoomCode" type="text" placeholder="เช่น CLASSROOM-2026" class="flex-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-indigo-700 focus:outline-none focus:border-indigo-500" />
-              <button id="btnCopyShareUrl" type="button" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shrink-0 transition">
-                คัดลอกลิงก์ห้อง
-              </button>
-            </div>
-          </div>
-          <div>
-            <label for="inputCloudDbUrl" class="block text-[11px] font-semibold text-slate-600 mb-1">Firebase Realtime DB URL (ไม่บังคับ — ระบบมี Cloud Relay ให้ในตัวแล้ว)</label>
-            <input id="inputCloudDbUrl" type="url" placeholder="เช่น https://your-project-default-rtdb.firebaseio.com" class="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-indigo-500" />
-          </div>
+        <div>
+          <label for="inputCloudDbUrl" class="block text-[11px] font-semibold text-slate-500 mb-1">Firebase Realtime DB URL (ไม่บังคับ)</label>
+          <input id="inputCloudDbUrl" type="url" placeholder="https://your-project-default-rtdb.firebaseio.com" class="w-full px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 bg-white" />
         </div>
       </div>
       <div class="mt-5 flex items-center justify-between">
@@ -367,7 +393,7 @@
           ล้างโน้ตทั้งหมดบนกระดาน
         </button>
         <div class="flex gap-2">
-          <button id="btnSaveBoardSettings" type="button" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition">
+          <button id="btnSaveBoardSettings" type="button" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition">
             บันทึกหัวข้อ
           </button>
         </div>
@@ -433,14 +459,13 @@
 
   <script>
     (function () {
-      const LS_STATE_KEY = 'WHITEBOARD_SINGLE_PERMANENT_STATE_V2';
+      const LS_ROOM_PREFIX = 'WHITEBOARD_ROOM_STATE_V3_';
       const LS_NICKNAME_KEY = 'WHITEBOARD_LAST_NICKNAME_V2';
-      const LS_SYNC_CFG_KEY = 'WHITEBOARD_CLOUD_SYNC_CFG_V2';
-      const IDB_NAME = 'ClassWhiteboardPermanentDB';
-      const IDB_STORE = 'boardStore';
+      const LS_SYNC_CFG_KEY = 'WHITEBOARD_CLOUD_SYNC_CFG_V3';
+      const IDB_NAME = 'ClassWhiteboardPermanentDB_V3';
+      const IDB_STORE = 'roomStore';
       const DELETE_PASSCODE = '8888';
 
-      // Default shared room code so every device opening the site automatically connects to the same board
       const urlParams = new URLSearchParams(window.location.search);
       const roomFromUrl = (urlParams.get('room') || '').trim();
       const dbFromUrl = (urlParams.get('db') || '').trim();
@@ -448,20 +473,23 @@
       let syncConfig = loadSyncConfig();
       if (roomFromUrl) syncConfig.roomCode = roomFromUrl;
       if (dbFromUrl) syncConfig.cloudDbUrl = dbFromUrl;
+      addRoomToHistory(syncConfig.roomCode);
       saveSyncConfig();
 
-      // Initial clean state — ZERO fake posts! Everything is created by the user.
-      const DEFAULT_STATE = {
-        boardTitle: 'กระดานแสดงความคิดเห็นในชั้นเรียน',
-        boardSubtitle: 'คลิกที่โน้ตเพื่อแสดงความคิดเห็นต่อ กดไลก์ กดหัวใจ หรือลากจัดวางได้อย่างอิสระ',
-        theme: 'default',
-        updatedAt: 0,
-        clearedAt: 0,
-        deletedIds: [],
-        posts: []
-      };
+      function createDefaultRoomState(roomCode) {
+        return {
+          roomCode: roomCode,
+          boardTitle: `กระดานแสดงความคิดเห็น (ห้อง ${roomCode})`,
+          boardSubtitle: 'คลิกที่โน้ตเพื่อแสดงความคิดเห็นต่อ กดไลก์ กดหัวใจ หรือลากจัดวางได้อย่างอิสระ',
+          theme: 'default',
+          updatedAt: 0,
+          clearedAt: 0,
+          deletedIds: [],
+          posts: []
+        };
+      }
 
-      let state = loadFromLocalStorage();
+      let state = loadRoomFromLocalStorage(syncConfig.roomCode);
       let selectedColor = 'yellow';
       let pendingImageDataUrl = '';
       let editingPostId = null;
@@ -477,13 +505,29 @@
           const raw = localStorage.getItem(LS_SYNC_CFG_KEY);
           if (raw) {
             const parsed = JSON.parse(raw);
-            if (parsed && parsed.roomCode) return parsed;
+            if (parsed && parsed.roomCode) {
+              if (!Array.isArray(parsed.recentRooms)) {
+                parsed.recentRooms = [parsed.roomCode, 'กลุ่ม 1', 'กลุ่ม 2', 'กลุ่ม 3'];
+              }
+              return parsed;
+            }
           }
         } catch (e) {}
         return {
-          roomCode: 'CLASSBOARD-MAIN-2026',
-          cloudDbUrl: ''
+          roomCode: '101',
+          cloudDbUrl: '',
+          recentRooms: ['101', 'กลุ่ม 1', 'กลุ่ม 2', 'กลุ่ม 3']
         };
+      }
+
+      function addRoomToHistory(code) {
+        const clean = (code || '').trim();
+        if (!clean) return;
+        if (!Array.isArray(syncConfig.recentRooms)) syncConfig.recentRooms = [];
+        if (!syncConfig.recentRooms.includes(clean)) {
+          syncConfig.recentRooms.unshift(clean);
+          syncConfig.recentRooms = syncConfig.recentRooms.slice(0, 8);
+        }
       }
 
       function saveSyncConfig() {
@@ -492,10 +536,15 @@
         } catch (e) {}
       }
 
-      // 1. Multi-Layer Permanent Persistence (LocalStorage + IndexedDB + Cross-Device Cloud Sync)
-      function loadFromLocalStorage() {
+      function getRoomStorageKey(roomCode) {
+        return LS_ROOM_PREFIX + String(roomCode || '101').trim().toUpperCase();
+      }
+
+      // 1. Per-Room Multi-Layer Permanent Persistence (LocalStorage + IndexedDB + Per-Room Cloud Sync)
+      function loadRoomFromLocalStorage(roomCode) {
+        const key = getRoomStorageKey(roomCode);
         try {
-          const raw = localStorage.getItem(LS_STATE_KEY);
+          const raw = localStorage.getItem(key);
           if (raw) {
             const parsed = JSON.parse(raw);
             if (parsed && Array.isArray(parsed.posts)) {
@@ -506,7 +555,7 @@
         } catch (err) {
           console.warn('LocalStorage read warning:', err);
         }
-        return JSON.parse(JSON.stringify(DEFAULT_STATE));
+        return createDefaultRoomState(roomCode);
       }
 
       function openIndexedDB() {
@@ -527,14 +576,16 @@
         });
       }
 
-      async function hydrateFromIndexedDB() {
+      async function hydrateRoomFromIndexedDB(roomCode) {
+        const key = getRoomStorageKey(roomCode);
         try {
           const db = await openIndexedDB();
           if (!db) return;
           const tx = db.transaction(IDB_STORE, 'readonly');
           const store = tx.objectStore(IDB_STORE);
-          const getReq = store.get('mainState');
+          const getReq = store.get(key);
           getReq.onsuccess = () => {
+            if (roomCode !== syncConfig.roomCode) return;
             if (getReq.result && Array.isArray(getReq.result.posts)) {
               if (mergeIncomingState(getReq.result)) {
                 renderBoard();
@@ -547,12 +598,31 @@
         }
       }
 
-      // Conflict-free State Merger across devices (preserves posts/comments/likes/hearts from all devices + respects 8888 deletions)
+      // Switch active room code seamlessly
+      function switchRoom(newRoomCode) {
+        const cleanCode = (newRoomCode || '').trim() || '101';
+        syncConfig.roomCode = cleanCode;
+        addRoomToHistory(cleanCode);
+        saveSyncConfig();
+
+        activeDetailPostId = null;
+        document.getElementById('modalNoteDetail').classList.add('hidden');
+
+        // Load isolated state for this specific room code
+        state = loadRoomFromLocalStorage(cleanCode);
+        renderBoard();
+        hydrateRoomFromIndexedDB(cleanCode);
+        subscribeGunRoom();
+        pullFromCloudRest();
+
+        showToast(`เข้าสู่ห้อง "${cleanCode}" เรียบร้อยแล้ว`);
+      }
+
+      // Conflict-free State Merger for the current room
       function mergeIncomingState(remote) {
         if (!remote || typeof remote !== 'object') return false;
         let changed = false;
 
-        // If board was cleared more recently on another device
         if (remote.clearedAt && remote.clearedAt > (state.clearedAt || 0)) {
           state.clearedAt = remote.clearedAt;
           state.posts = [];
@@ -560,7 +630,6 @@
           changed = true;
         }
 
-        // Merge deletedIds tombstones
         const deletedSet = new Set(Array.isArray(state.deletedIds) ? state.deletedIds : []);
         if (Array.isArray(remote.deletedIds)) {
           remote.deletedIds.forEach(id => {
@@ -572,12 +641,10 @@
         }
         state.deletedIds = Array.from(deletedSet);
 
-        // Remove any locally held posts that were deleted with 8888 on another device
         const beforeFilterLen = state.posts.length;
         state.posts = state.posts.filter(p => !deletedSet.has(p.id));
         if (state.posts.length !== beforeFilterLen) changed = true;
 
-        // Board metadata update
         if ((remote.updatedAt || 0) > (state.updatedAt || 0)) {
           if (remote.boardTitle && remote.boardTitle !== state.boardTitle) {
             state.boardTitle = remote.boardTitle;
@@ -594,7 +661,6 @@
           state.updatedAt = remote.updatedAt;
         }
 
-        // Merge posts by ID
         if (Array.isArray(remote.posts)) {
           const localMap = new Map(state.posts.map(p => [p.id, p]));
           remote.posts.forEach(rPost => {
@@ -607,7 +673,6 @@
               state.posts.push(JSON.parse(JSON.stringify(rPost)));
               changed = true;
             } else {
-              // Merge likes & hearts (take max)
               if ((rPost.likes || 0) > (lPost.likes || 0)) {
                 lPost.likes = rPost.likes;
                 changed = true;
@@ -616,7 +681,6 @@
                 lPost.hearts = rPost.hearts;
                 changed = true;
               }
-              // Merge position/content edits if remote post is newer
               if ((rPost.updatedAtMs || 0) > (lPost.updatedAtMs || 0)) {
                 lPost.nickname = rPost.nickname;
                 lPost.text = rPost.text;
@@ -627,7 +691,6 @@
                 lPost.updatedAtMs = rPost.updatedAtMs;
                 changed = true;
               }
-              // Merge comments inside post
               const lComments = Array.isArray(lPost.comments) ? lPost.comments : [];
               const rComments = Array.isArray(rPost.comments) ? rPost.comments : [];
               const cMap = new Map(lComments.map(c => [c.id, c]));
@@ -649,14 +712,15 @@
       }
 
       async function saveLocalOnly() {
+        const key = getRoomStorageKey(syncConfig.roomCode);
         try {
-          localStorage.setItem(LS_STATE_KEY, JSON.stringify(state));
+          localStorage.setItem(key, JSON.stringify(state));
         } catch (err) {}
         try {
           const db = await openIndexedDB();
           if (!db) return;
           const tx = db.transaction(IDB_STORE, 'readwrite');
-          tx.objectStore(IDB_STORE).put(state, 'mainState');
+          tx.objectStore(IDB_STORE).put(state, key);
         } catch (err) {}
       }
 
@@ -666,9 +730,8 @@
         broadcastStateToCloud();
       }
 
-      // 2. Cross-Device Realtime Cloud Sync Engine (Gun Relay + Vercel API + Optional Firebase RTDB)
+      // 2. Per-Room Cloud Sync Engine
       function initCrossDeviceSync() {
-        // Channel A: Gun.js Realtime Decentralized Relay Mesh (Zero-config cross-device sync)
         try {
           if (window.Gun) {
             gunInstance = window.Gun({
@@ -684,9 +747,9 @@
           console.warn('Gun relay init skipped:', e);
         }
 
-        // Channel B: Same-device cross-tab instant sync
         window.addEventListener('storage', e => {
-          if (e.key === LS_STATE_KEY && e.newValue) {
+          const currentKey = getRoomStorageKey(syncConfig.roomCode);
+          if (e.key === currentKey && e.newValue) {
             try {
               const incoming = JSON.parse(e.newValue);
               if (mergeIncomingState(incoming)) {
@@ -697,14 +760,14 @@
           }
         });
 
-        // Channel C: Initial pull + periodic poll for REST Cloud DB / Vercel API
         pullFromCloudRest();
         setInterval(pullFromCloudRest, 4000);
       }
 
       function subscribeGunRoom() {
         if (!gunInstance) return;
-        const roomKey = 'classboard_v2_' + (syncConfig.roomCode || 'CLASSBOARD-MAIN-2026').trim();
+        const activeRoom = (syncConfig.roomCode || '101').trim().toUpperCase();
+        const roomKey = 'classboard_v3_room_' + activeRoom;
         gunRoomNode = gunInstance.get(roomKey);
         gunRoomNode.get('payload').on(data => {
           if (!data || typeof data !== 'string') return;
@@ -720,7 +783,7 @@
       }
 
       function getRestEndpointUrl() {
-        const roomSafe = encodeURIComponent((syncConfig.roomCode || 'CLASSBOARD-MAIN-2026').trim());
+        const roomSafe = encodeURIComponent((syncConfig.roomCode || '101').trim().toUpperCase());
         if (syncConfig.cloudDbUrl) {
           const base = syncConfig.cloudDbUrl.replace(/\/+$/, '');
           if (base.includes('firebaseio.com') || base.includes('firebasedatabase.app')) {
@@ -732,7 +795,6 @@
       }
 
       async function pullFromCloudRest() {
-        // 1. If custom Firebase / Cloud URL is configured
         const endpoint = getRestEndpointUrl();
         if (endpoint) {
           try {
@@ -747,10 +809,9 @@
           } catch (e) {}
         }
 
-        // 2. If deployed on Vercel with /api/board endpoint
         if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('googleusercontent')) {
           try {
-            const roomSafe = encodeURIComponent((syncConfig.roomCode || 'CLASSBOARD-MAIN-2026').trim());
+            const roomSafe = encodeURIComponent((syncConfig.roomCode || '101').trim().toUpperCase());
             const res = await fetch(window.location.origin + '/api/' + 'board?room=' + roomSafe, { method: 'GET' });
             if (res.ok) {
               const data = await res.json();
@@ -767,14 +828,12 @@
         const serialized = JSON.stringify(state);
         lastBroadcastHash = serialized;
 
-        // 1. Push to Gun.js Realtime Relay
         try {
           if (gunRoomNode) {
             gunRoomNode.get('payload').put(serialized);
           }
         } catch (e) {}
 
-        // 2. Push to Firebase / Cloud REST DB if configured
         const endpoint = getRestEndpointUrl();
         if (endpoint) {
           try {
@@ -786,10 +845,9 @@
           } catch (e) {}
         }
 
-        // 3. Push to Vercel /api/board if hosted on Vercel
         if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('googleusercontent')) {
           try {
-            const roomSafe = encodeURIComponent((syncConfig.roomCode || 'CLASSBOARD-MAIN-2026').trim());
+            const roomSafe = encodeURIComponent((syncConfig.roomCode || '101').trim().toUpperCase());
             await fetch(window.location.origin + '/api/' + 'board?room=' + roomSafe, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -887,11 +945,35 @@
         return styles[color] || styles.yellow;
       }
 
+      function renderRecentRoomPills() {
+        const container = document.getElementById('recentRoomsList');
+        if (!container) return;
+        container.innerHTML = '';
+        const rooms = Array.isArray(syncConfig.recentRooms) ? syncConfig.recentRooms : ['101'];
+        rooms.forEach(rCode => {
+          const isCurrent = rCode === syncConfig.roomCode;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = isCurrent
+            ? 'px-3 py-1 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-sm'
+            : 'px-3 py-1 rounded-xl bg-white hover:bg-indigo-50 text-slate-700 border border-slate-200 text-xs font-semibold transition';
+          btn.textContent = `ห้อง ${rCode}`;
+          btn.addEventListener('click', () => {
+            document.getElementById('inputRoomCode').value = rCode;
+            switchRoom(rCode);
+            renderRecentRoomPills();
+          });
+          container.appendChild(btn);
+        });
+      }
+
       // 4. Render Whiteboard & Notes
       function renderBoard() {
-        document.getElementById('boardTitleText').textContent = state.boardTitle || DEFAULT_STATE.boardTitle;
-        document.getElementById('boardSubtitleText').textContent = state.boardSubtitle || DEFAULT_STATE.boardSubtitle;
-        document.getElementById('syncStatusLabel').textContent = `ซิงค์ทุกอุปกรณ์ (${syncConfig.roomCode})`;
+        document.getElementById('boardTitleText').textContent = state.boardTitle || `กระดานแสดงความคิดเห็น (ห้อง ${syncConfig.roomCode})`;
+        document.getElementById('boardSubtitleText').textContent = state.boardSubtitle || '';
+        document.getElementById('currentRoomBadgeText').textContent = syncConfig.roomCode;
+        document.getElementById('emptyStateRoomLabel').textContent = syncConfig.roomCode;
+        document.getElementById('syncStatusLabel').textContent = 'บันทึก';
 
         const surface = document.getElementById('whiteboardSurface');
         surface.className = 'whiteboard-canvas flex-1 relative w-full min-h-[calc(100vh-65px)] overflow-auto';
@@ -1232,7 +1314,7 @@
 
         document.getElementById('modalPostHeading').textContent = existingPost
           ? 'แก้ไขโน้ตความคิดเห็น'
-          : 'แปะโน้ตแสดงความคิดเห็น';
+          : `แปะโน้ตแสดงความคิดเห็น (ห้อง ${syncConfig.roomCode})`;
 
         document.getElementById('inputNickname').value = existingPost
           ? existingPost.nickname
@@ -1306,6 +1388,26 @@
         document.getElementById('btnFloatingAdd').addEventListener('click', () => openPostModal());
         document.getElementById('btnEmptyStateAdd').addEventListener('click', () => openPostModal());
 
+        // Quick Room Code Switch Form on Top Header
+        document.getElementById('formQuickRoomSwitch').addEventListener('submit', e => {
+          e.preventDefault();
+          const inputEl = document.getElementById('inputQuickRoomCode');
+          const newRoom = (inputEl.value || '').trim();
+          if (!newRoom) {
+            openBoardSettings();
+            return;
+          }
+          inputEl.value = '';
+          switchRoom(newRoom);
+        });
+
+        // "บันทึก" Button — saves & syncs immediately for the active room code
+        document.getElementById('btnSyncStatusPill').addEventListener('click', async () => {
+          await persistStatePermanently();
+          await pullFromCloudRest();
+          showToast(`บันทึกและซิงค์ข้อมูลห้อง "${syncConfig.roomCode}" เรียบร้อยแล้ว`);
+        });
+
         // Double click anywhere on empty whiteboard canvas to spawn a note at that spot
         document.getElementById('whiteboardSurface').addEventListener('dblclick', e => {
           if (e.target.closest('article') || e.target.closest('button')) return;
@@ -1374,7 +1476,7 @@
               target.image = pendingImageDataUrl;
               target.updatedAtMs = nowMs;
             }
-            showToast('อัปเดตโน้ตและซิงค์ทุกอุปกรณ์แล้ว');
+            showToast(`บันทึกโน้ตในห้อง "${syncConfig.roomCode}" แล้ว`);
           } else {
             const idx = state.posts.length;
             const cols = Math.max(1, Math.floor((window.innerWidth - 80) / 320));
@@ -1396,7 +1498,7 @@
               updatedAtMs: nowMs,
               time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.'
             });
-            showToast('แปะโน้ตและซิงค์ขึ้นกระดานทุกอุปกรณ์แล้ว');
+            showToast(`แปะโน้ตลงในห้อง "${syncConfig.roomCode}" แล้ว`);
           }
 
           persistStatePermanently();
@@ -1502,64 +1604,68 @@
           });
         });
 
-        // Edit Board Title & Cloud Sync Modal
+        // Edit Board Title & Room Switcher Modal
         const openBoardSettings = () => {
           document.getElementById('inputBoardTitle').value = state.boardTitle || '';
           document.getElementById('inputBoardSubtitle').value = state.boardSubtitle || '';
-          document.getElementById('inputRoomCode').value = syncConfig.roomCode || 'CLASSBOARD-MAIN-2026';
+          document.getElementById('inputRoomCode').value = syncConfig.roomCode || '101';
           document.getElementById('inputCloudDbUrl').value = syncConfig.cloudDbUrl || '';
+          renderRecentRoomPills();
           document.getElementById('modalBoardSettings').classList.remove('hidden');
         };
         document.getElementById('btnEditBoardTitle').addEventListener('click', openBoardSettings);
         document.getElementById('boardTitleText').addEventListener('click', openBoardSettings);
-        document.getElementById('btnSyncStatusPill').addEventListener('click', openBoardSettings);
+        document.getElementById('btnOpenRoomModal').addEventListener('click', openBoardSettings);
+        document.getElementById('btnEmptyStateSwitchRoom').addEventListener('click', openBoardSettings);
         document.getElementById('btnCloseBoardModal').addEventListener('click', () => {
           document.getElementById('modalBoardSettings').classList.add('hidden');
         });
 
         document.getElementById('btnCopyShareUrl').addEventListener('click', () => {
-          const roomVal = (document.getElementById('inputRoomCode').value || 'CLASSBOARD-MAIN-2026').trim();
+          const roomVal = (document.getElementById('inputRoomCode').value || '101').trim();
           const dbVal = (document.getElementById('inputCloudDbUrl').value || '').trim();
-          syncConfig.roomCode = roomVal;
           syncConfig.cloudDbUrl = dbVal;
-          saveSyncConfig();
-          subscribeGunRoom();
+          switchRoom(roomVal);
           const url = new URL(window.location.href);
           url.searchParams.set('room', roomVal);
           if (dbVal) url.searchParams.set('db', dbVal);
-          copyTextSafe(url.toString(), 'คัดลอกลิงก์ห้องเรียนสำหรับส่งให้ทุกอุปกรณ์แล้ว!');
+          copyTextSafe(url.toString(), `คัดลอกลิงก์ห้อง "${roomVal}" สำหรับส่งให้สมาชิกในกลุ่มแล้ว!`);
         });
 
         document.getElementById('btnSaveBoardSettings').addEventListener('click', () => {
           const t = (document.getElementById('inputBoardTitle').value || '').trim();
           const s = (document.getElementById('inputBoardSubtitle').value || '').trim();
-          const rCode = (document.getElementById('inputRoomCode').value || '').trim() || 'CLASSBOARD-MAIN-2026';
+          const rCode = (document.getElementById('inputRoomCode').value || '').trim() || '101';
           const dbUrl = (document.getElementById('inputCloudDbUrl').value || '').trim();
 
-          if (t) state.boardTitle = t;
-          state.boardSubtitle = s;
-          syncConfig.roomCode = rCode;
           syncConfig.cloudDbUrl = dbUrl;
-          saveSyncConfig();
-          subscribeGunRoom();
-          persistStatePermanently();
-          pullFromCloudRest();
-          renderBoard();
+          const roomChanged = rCode !== syncConfig.roomCode;
+
+          if (roomChanged) {
+            switchRoom(rCode);
+          } else {
+            if (t) state.boardTitle = t;
+            state.boardSubtitle = s;
+            saveSyncConfig();
+            persistStatePermanently();
+            pullFromCloudRest();
+            renderBoard();
+            showToast(`บันทึกข้อมูลห้อง "${rCode}" เรียบร้อยแล้ว`);
+          }
           document.getElementById('modalBoardSettings').classList.add('hidden');
-          showToast('บันทึกการตั้งค่าและซิงค์ทุกอุปกรณ์แล้ว');
         });
 
         document.getElementById('btnClearAllNotes').addEventListener('click', () => {
           document.getElementById('modalBoardSettings').classList.add('hidden');
           requestPinProtectedDelete(
-            'ใส่รหัสผ่านเพื่อล้างกระดานทั้งหมด',
-            'กรุณาใส่รหัสผ่านเพื่อยืนยันการลบโน้ตทั้งหมดบนกระดานนี้',
+            'ใส่รหัสผ่านเพื่อล้างโน้ตทั้งหมดบนกระดาน',
+            `กรุณาใส่รหัสผ่านเพื่อยืนยันการลบโน้ตทั้งหมดในห้อง "${syncConfig.roomCode}"`,
             () => {
               state.posts = [];
               state.clearedAt = Date.now();
               persistStatePermanently();
               renderBoard();
-              showToast('ล้างโน้ตทั้งหมดบนกระดานแล้ว');
+              showToast(`ล้างโน้ตทั้งหมดในห้อง "${syncConfig.roomCode}" แล้ว`);
             }
           );
         });
@@ -1602,7 +1708,7 @@
       // Initialize
       bindEvents();
       renderBoard();
-      hydrateFromIndexedDB();
+      hydrateRoomFromIndexedDB(syncConfig.roomCode);
       initCrossDeviceSync();
     })();
   </script>
