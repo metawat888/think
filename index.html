@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Whiteboard — กระดานแสดงความคิดเห็น</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Sarabun', 'Inter', sans-serif;
+    }
+    body {
+      margin: 0;
+      background-color: #f8fafc;
+      color: #0f172a;
+      overflow-x: hidden;
+    }
+    /* Minimalist Whiteboard Dot Grid */
+    .whiteboard-canvas {
+      background-color: #f8fafc;
+      background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+      background-size: 28px 28px;
+      transition: background-color 0.3s ease;
+    }
+    .whiteboard-canvas.theme-warm {
+      background-color: #fffdf7;
+      background-image: radial-gradient(#e2d9c5 1.5px, transparent 1.5px);
+    }
+    .whiteboard-canvas.theme-mint {
+      background-color: #f4fbf7;
+      background-image: radial-gradient(#bce3ce 1.5px, transparent 1.5px);
+    }
+    .whiteboard-canvas.theme-sky {
+      background-color: #f4f9ff;
+      background-image: radial-gradient(#bfd8f5 1.5px, transparent 1.5px);
+    }
+    .whiteboard-canvas.theme-dark {
+      background-color: #0f172a;
+      background-image: radial-gradient(#334155 1.5px, transparent 1.5px);
+    }
+
+    /* Sticky Note Card Styling */
+    .note-card {
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.07), 0 4px 10px -4px rgba(15, 23, 42, 0.04);
+      transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
+    }
+    .note-card:hover {
+      box-shadow: 0 20px 30px -8px rgba(15, 23, 42, 0.12), 0 8px 16px -6px rgba(15, 23, 42, 0.06);
+    }
+    .note-card.dragging {
+      cursor: grabbing !important;
+      transform: scale(1.03) rotate(1deg);
+      box-shadow: 0 28px 45px -10px rgba(15, 23, 42, 0.22);
+      z-index: 999 !important;
+      transition: none;
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.95) translateY(8px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .animate-pop {
+      animation: popIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col select-none">
+
+  <!-- Minimal Floating Top Bar -->
+  <header class="sticky top-0 z-30 bg-white/85 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-8 py-3">
+    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-3">
+
+      <!-- Editable Board Title & Subtitle -->
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <h1 id="boardTitleText" class="font-bold text-base sm:text-xl text-slate-900 truncate cursor-pointer hover:text-indigo-600 transition" title="คลิกเพื่อเปลี่ยนชื่อหัวข้อกระดาน">
+              กระดานแสดงความคิดเห็นในชั้นเรียน
+            </h1>
+            <button id="btnEditBoardTitle" type="button" class="p-1 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition" title="แก้ไขชื่อกระดาน">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
+          </div>
+          <p id="boardSubtitleText" class="text-xs text-slate-500 truncate">
+            คลิกที่โน้ตเพื่อแสดงความคิดเห็นต่อ กดไลก์ กดหัวใจ หรือลากจัดวางได้อย่างอิสระ
+          </p>
+        </div>
+      </div>
+
+      <!-- Right Controls: Layout, Theme, Clear, and Add Note -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Surface Color Dots -->
+        <div class="hidden sm:flex items-center gap-1.5 bg-slate-100/90 px-2.5 py-1.5 rounded-xl border border-slate-200/70">
+          <button type="button" data-theme="default" class="theme-dot w-4 h-4 rounded-full bg-slate-200 border border-slate-400" title="พื้นหลังสีขาวจุด"></button>
+          <button type="button" data-theme="warm" class="theme-dot w-4 h-4 rounded-full bg-amber-100 border border-amber-400" title="พื้นหลังสีครีมอุ่น"></button>
+          <button type="button" data-theme="mint" class="theme-dot w-4 h-4 rounded-full bg-emerald-100 border border-emerald-400" title="พื้นหลังสีมิ้นท์"></button>
+          <button type="button" data-theme="sky" class="theme-dot w-4 h-4 rounded-full bg-sky-100 border border-sky-400" title="พื้นหลังสีฟ้าอ่อน"></button>
+          <button type="button" data-theme="dark" class="theme-dot w-4 h-4 rounded-full bg-slate-800 border border-slate-600" title="พื้นหลังสีเข้ม"></button>
+        </div>
+
+        <!-- Auto Arrange Grid Button -->
+        <button id="btnArrangeGrid" type="button" class="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition" title="จัดเรียงโน้ตให้เป็นระเบียบ">
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+          </svg>
+          <span class="hidden md:inline">จัดเรียงโน้ต</span>
+        </button>
+
+        <!-- Primary Add Note CTA -->
+        <button id="btnOpenNewPostModal" type="button" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-500/20 flex items-center gap-1.5 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>เพิ่มความคิดเห็น</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Single Full-Screen Whiteboard Canvas -->
+  <main id="whiteboardSurface" class="whiteboard-canvas flex-1 relative w-full min-h-[calc(100vh-65px)] overflow-auto">
+
+    <!-- Empty State (Shown when there are 0 posts — Zero Fake Data) -->
+    <div id="emptyBoardState" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center pointer-events-none">
+      <div class="bg-white/90 backdrop-blur-md border border-slate-200/90 rounded-3xl p-8 max-w-md shadow-xl pointer-events-auto">
+        <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+        </div>
+        <h2 class="text-lg font-bold text-slate-900">กระดานไวท์บอร์ดพร้อมใช้งาน</h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1.5 leading-relaxed">
+          ยังไม่มีโพสต์บนกระดาน กดปุ่มด้านล่างหรือ<strong>ดับเบิลคลิกพื้นที่ว่างบนกระดาน</strong> เพื่อพิมพ์ชื่อเล่น ข้อความ และแนบรูปภาพได้เลย
+        </p>
+        <button id="btnEmptyStateAdd" type="button" class="mt-5 w-full py-3 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          เขียนโพสต์แรกบนกระดาน
+        </button>
+      </div>
+    </div>
+
+    <!-- Notes Layer -->
+    <div id="notesLayer" class="relative w-full min-h-[calc(100vh-65px)] p-4 sm:p-8">
+      <!-- Dynamic sticky notes rendered here -->
+    </div>
+
+    <!-- Floating Bottom-Right Quick Add Button -->
+    <button id="btnFloatingAdd" type="button" class="fixed bottom-6 right-6 z-20 w-14 h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-600/30 flex items-center justify-center transition hover:scale-105 active:scale-95" title="เพิ่มความคิดเห็นใหม่">
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+    </button>
+  </main>
+
+  <!-- MODAL 1: Create / Edit Note on Whiteboard -->
+  <div id="modalPost" class="fixed inset-0 z-50 hidden bg-slate-900/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-pop">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="modalPostHeading" class="text-base sm:text-lg font-bold text-slate-900">แปะโน้ตแสดงความคิดเห็น</h3>
+        <button id="btnClosePostModal" type="button" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Nickname -->
+        <div>
+          <label for="inputNickname" class="block text-xs font-semibold text-slate-600 mb-1">ชื่อเล่นของคุณ <span class="text-rose-500">*</span></label>
+          <input id="inputNickname" type="text" placeholder="พิมพ์ชื่อเล่น เช่น น้องมินท์, กัปตัน..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition" />
+        </div>
+
+        <!-- Note Text -->
+        <div>
+          <label for="inputNoteText" class="block text-xs font-semibold text-slate-600 mb-1">ข้อความ / ความคิดเห็น</label>
+          <textarea id="inputNoteText" rows="4" placeholder="เขียนความคิดเห็นหรือไอเดียของคุณที่นี่..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition resize-none"></textarea>
+        </div>
+
+        <!-- Image Upload Section -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">รูปภาพประกอบ (ไม่บังคับ)</label>
+
+          <!-- Upload Dropzone / Button -->
+          <div id="imageUploadBox" class="flex items-center gap-2">
+            <label for="inputImageFile" class="flex-1 py-2.5 px-3.5 rounded-xl border border-dashed border-slate-300 hover:border-indigo-500 bg-slate-50/70 hover:bg-indigo-50/40 text-xs font-semibold text-slate-600 hover:text-indigo-600 flex items-center justify-center gap-2 cursor-pointer transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>เลือกรูปภาพจากเครื่อง</span>
+              <input id="inputImageFile" type="file" accept="image/*" class="hidden" />
+            </label>
+          </div>
+
+          <!-- Image Preview -->
+          <div id="imagePreviewWrapper" class="hidden mt-2.5 relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex items-center justify-between">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <img id="imagePreviewEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="ตัวอย่างรูปภาพ" class="h-16 w-20 object-cover rounded-xl border border-slate-200 bg-white shrink-0" />
+              <span class="text-xs font-medium text-slate-600 truncate">แนบรูปภาพเรียบร้อยแล้ว</span>
+            </div>
+            <button id="btnRemoveImage" type="button" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold shrink-0 transition">
+              ลบรูป
+            </button>
+          </div>
+        </div>
+
+        <!-- Sticky Note Color Picker -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">สีกระดาษโน้ต</label>
+          <div class="flex items-center gap-2.5">
+            <button type="button" data-color="yellow" class="color-swatch w-7 h-7 rounded-full bg-[#fef9c3] border-2 border-indigo-600 shadow-sm" title="เหลืองพาสเทล"></button>
+            <button type="button" data-color="white" class="color-swatch w-7 h-7 rounded-full bg-white border border-slate-300 shadow-sm" title="ขาวมินิมอล"></button>
+            <button type="button" data-color="pink" class="color-swatch w-7 h-7 rounded-full bg-[#fce7f3] border border-pink-300 shadow-sm" title="ชมพูพาสเทล"></button>
+            <button type="button" data-color="blue" class="color-swatch w-7 h-7 rounded-full bg-[#e0f2fe] border border-sky-300 shadow-sm" title="ฟ้าพาสเทล"></button>
+            <button type="button" data-color="green" class="color-swatch w-7 h-7 rounded-full bg-[#dcfce7] border border-emerald-300 shadow-sm" title="เขียวมิ้นท์"></button>
+            <button type="button" data-color="purple" class="color-swatch w-7 h-7 rounded-full bg-[#f3e8ff] border border-purple-300 shadow-sm" title="ม่วงลาเวนเดอร์"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit & Cancel -->
+      <div class="mt-6 flex items-center justify-end gap-2">
+        <button id="btnCancelPost" type="button" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
+          ยกเลิก
+        </button>
+        <button id="btnSavePost" type="button" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold shadow-md shadow-indigo-500/20 transition">
+          โพสต์ลงกระดาน
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Note Detail & Replies (คลิกเข้าไปแสดงความคิดเห็นต่อได้ + กดไลก์/หัวใจ) -->
+  <div id="modalNoteDetail" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden animate-pop">
+
+      <!-- Note Header inside Modal -->
+      <div id="detailCardHeader" class="px-6 pt-5 pb-4 border-b border-black/5 flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div id="detailAuthorInitial" class="w-10 h-10 rounded-full bg-slate-900/10 text-slate-900 font-bold text-sm flex items-center justify-center shrink-0">
+            น
+          </div>
+          <div class="min-w-0">
+            <div id="detailAuthorName" class="font-bold text-base text-slate-900 truncate">ชื่อเล่น</div>
+            <div id="detailPostTime" class="text-xs text-slate-500">เวลาโพสต์</div>
+          </div>
+        </div>
+        <button id="btnCloseNoteDetail" type="button" class="p-1.5 rounded-xl bg-black/5 hover:bg-black/10 text-slate-600 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Scrollable Body: Full Post + Reactions + Comments List -->
+      <div class="p-6 overflow-y-auto flex-1 space-y-5">
+        <!-- Image (if any) -->
+        <div id="detailImageWrapper" class="hidden rounded-2xl overflow-hidden border border-slate-200 bg-slate-50">
+          <img id="detailImageEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="รูปภาพประกอบ" class="w-full max-h-80 object-contain cursor-zoom-in mx-auto" />
+        </div>
+
+        <!-- Text Content -->
+        <p id="detailTextContent" class="text-sm sm:text-base text-slate-800 whitespace-pre-line leading-relaxed select-text"></p>
+
+        <!-- Like & Heart Reaction Buttons Bar -->
+        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+          <div class="flex items-center gap-2">
+            <button id="btnDetailLike" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 text-xs font-bold transition active:scale-95">
+              <span>👍 ถูกใจ</span>
+              <span id="detailLikeCount">0</span>
+            </button>
+            <button id="btnDetailHeart" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/80 text-xs font-bold transition active:scale-95">
+              <span>❤️ หัวใจ</span>
+              <span id="detailHeartCount">0</span>
+            </button>
+          </div>
+          <span id="detailCommentsCounter" class="text-xs font-semibold text-slate-500">0 ความคิดเห็น</span>
+        </div>
+
+        <!-- Comments Thread Section -->
+        <div class="space-y-3 pt-2">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">ความคิดเห็นต่อท้าย</h4>
+          <div id="detailCommentsList" class="space-y-2.5">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Form: Add a Follow-up Comment -->
+      <form id="formAddComment" class="p-4 bg-slate-50 border-t border-slate-200/80 flex flex-col gap-2">
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input id="inputCommentNickname" type="text" placeholder="ชื่อเล่นของคุณ *" class="sm:w-36 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:border-indigo-500 shrink-0" />
+          <div class="flex-1 flex gap-2">
+            <input id="inputCommentText" type="text" placeholder="พิมพ์แสดงความคิดเห็นต่อที่นี่..." class="flex-1 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:border-indigo-500" />
+            <button id="btnSubmitDetailComment" type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shrink-0 shadow-sm transition">
+              ส่ง
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Edit Board Title & Subtitle -->
+  <div id="modalBoardSettings" class="fixed inset-0 z-50 hidden bg-slate-900/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-pop">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-bold text-slate-900">ตั้งค่าหัวข้อกระดาน</h3>
+        <button id="btnCloseBoardModal" type="button" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="space-y-3.5">
+        <div>
+          <label for="inputBoardTitle" class="block text-xs font-semibold text-slate-600 mb-1">หัวข้อกระดาน</label>
+          <input id="inputBoardTitle" type="text" placeholder="ระบุชื่อหัวข้อกระดาน..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold focus:outline-none focus:border-indigo-500 focus:bg-white" />
+        </div>
+        <div>
+          <label for="inputBoardSubtitle" class="block text-xs font-semibold text-slate-600 mb-1">คำอธิบายสั้นๆ</label>
+          <input id="inputBoardSubtitle" type="text" placeholder="คำชี้แจงหรือโจทย์สำหรับให้นักเรียนโพสต์..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white" />
+        </div>
+      </div>
+      <div class="mt-5 flex items-center justify-between">
+        <button id="btnClearAllNotes" type="button" class="text-xs font-semibold text-rose-600 hover:underline">
+          ล้างโน้ตทั้งหมดบนกระดาน
+        </button>
+        <div class="flex gap-2">
+          <button id="btnSaveBoardSettings" type="button" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition">
+            บันทึกหัวข้อ
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: Fullscreen Image Lightbox -->
+  <div id="modalLightbox" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
+      <button id="btnCloseLightbox" type="button" class="absolute -top-10 right-0 px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-semibold transition">
+        ปิดรูปภาพ ✕
+      </button>
+      <img id="lightboxImage" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="ภาพขยาย" class="max-w-full max-h-[82vh] rounded-2xl shadow-2xl object-contain bg-white" />
+    </div>
+  </div>
+
+  <!-- MODAL 5: PIN 8888 Confirmation Modal for Deleting Note Boxes -->
+  <div id="modalDeletePin" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 animate-pop">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h3 id="deletePinModalTitle" class="text-base font-bold text-slate-900">ใส่รหัสผ่านเพื่อลบกล่อง</h3>
+        </div>
+        <button id="btnCloseDeletePin" type="button" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <p id="deletePinModalDesc" class="text-xs text-slate-500 mb-4">
+        กรุณากรอกรหัสผ่านผู้ดูแลเพื่อยืนยันการลบกล่องความคิดเห็นนี้ออกจากกระดาน
+      </p>
+
+      <form id="formDeletePin" class="space-y-3">
+        <div>
+          <input id="inputDeletePin" type="password" inputmode="numeric" maxlength="8" placeholder="ใส่รหัสผ่าน..." class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center tracking-widest text-base font-bold text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white transition" />
+          <p id="deletePinError" class="hidden text-xs font-semibold text-rose-600 text-center mt-1.5">
+            รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง
+          </p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button id="btnCancelDeletePin" type="button" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
+            ยกเลิก
+          </button>
+          <button id="btnConfirmDeletePin" type="submit" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm transition">
+            ยืนยันการลบ
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Subtle Toast Container -->
+  <div id="toastArea" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <script>
+    (function () {
+      const LS_STATE_KEY = 'WHITEBOARD_SINGLE_PERMANENT_STATE_V2';
+      const LS_NICKNAME_KEY = 'WHITEBOARD_LAST_NICKNAME_V2';
+      const IDB_NAME = 'ClassWhiteboardPermanentDB';
+      const IDB_STORE = 'boardStore';
+      const DELETE_PASSCODE = '8888';
+
+      // Initial clean state — ZERO fake posts! Everything is created by the user.
+      const DEFAULT_STATE = {
+        boardTitle: 'กระดานแสดงความคิดเห็นในชั้นเรียน',
+        boardSubtitle: 'คลิกที่โน้ตเพื่อแสดงความคิดเห็นต่อ กดไลก์ กดหัวใจ หรือลากจัดวางได้อย่างอิสระ',
+        theme: 'default',
+        posts: []
+      };
+
+      let state = loadFromLocalStorage();
+      let selectedColor = 'yellow';
+      let pendingImageDataUrl = '';
+      let editingPostId = null;
+      let activeDetailPostId = null;
+      let spawnCoordinates = null;
+      let pendingDeleteAction = null;
+
+      // 1. Dual-Layer Permanent Persistence (LocalStorage + IndexedDB)
+      function loadFromLocalStorage() {
+        try {
+          const raw = localStorage.getItem(LS_STATE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.posts)) {
+              return parsed;
+            }
+          }
+        } catch (err) {
+          console.warn('LocalStorage read warning:', err);
+        }
+        return JSON.parse(JSON.stringify(DEFAULT_STATE));
+      }
+
+      function openIndexedDB() {
+        return new Promise(resolve => {
+          if (!window.indexedDB) {
+            resolve(null);
+            return;
+          }
+          const req = indexedDB.open(IDB_NAME, 1);
+          req.onupgradeneeded = e => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(IDB_STORE)) {
+              db.createObjectStore(IDB_STORE);
+            }
+          };
+          req.onsuccess = e => resolve(e.target.result);
+          req.onerror = () => resolve(null);
+        });
+      }
+
+      async function hydrateFromIndexedDB() {
+        try {
+          const db = await openIndexedDB();
+          if (!db) return;
+          const tx = db.transaction(IDB_STORE, 'readonly');
+          const store = tx.objectStore(IDB_STORE);
+          const getReq = store.get('mainState');
+          getReq.onsuccess = () => {
+            if (getReq.result && Array.isArray(getReq.result.posts)) {
+              if (getReq.result.posts.length >= state.posts.length) {
+                state = getReq.result;
+                renderBoard();
+                if (activeDetailPostId) renderNoteDetailModal(activeDetailPostId);
+              }
+            }
+          };
+        } catch (err) {
+          console.warn('IndexedDB hydration skipped:', err);
+        }
+      }
+
+      async function persistStatePermanently() {
+        try {
+          localStorage.setItem(LS_STATE_KEY, JSON.stringify(state));
+        } catch (err) {
+          console.warn('LocalStorage quota warning:', err);
+        }
+        try {
+          const db = await openIndexedDB();
+          if (!db) return;
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          tx.objectStore(IDB_STORE).put(state, 'mainState');
+        } catch (err) {
+          console.warn('IndexedDB write warning:', err);
+        }
+      }
+
+      function getSavedNickname() {
+        try {
+          return localStorage.getItem(LS_NICKNAME_KEY) || '';
+        } catch (e) {
+          return '';
+        }
+      }
+
+      function saveNickname(name) {
+        try {
+          localStorage.setItem(LS_NICKNAME_KEY, name);
+        } catch (e) {}
+      }
+
+      // 2. Helper Functions & Protected Delete Modal (PIN 8888)
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function showToast(msg) {
+        const area = document.getElementById('toastArea');
+        const el = document.createElement('div');
+        el.className = 'px-4 py-2.5 rounded-2xl bg-slate-900/90 text-white text-xs font-semibold shadow-lg animate-pop';
+        el.textContent = msg;
+        area.appendChild(el);
+        setTimeout(() => {
+          el.style.opacity = '0';
+          el.style.transition = 'opacity 0.25s ease';
+          setTimeout(() => el.remove(), 250);
+        }, 2200);
+      }
+
+      function requestPinProtectedDelete(titleText, descText, onConfirmCallback) {
+        pendingDeleteAction = onConfirmCallback;
+        document.getElementById('deletePinModalTitle').textContent = titleText || 'ใส่รหัสผ่านเพื่อลบกล่อง';
+        document.getElementById('deletePinModalDesc').textContent =
+          descText || 'กรุณากรอกรหัสผ่านเพื่อยืนยันการลบกล่องความคิดเห็นนี้ออกจากกระดาน';
+        const pinInput = document.getElementById('inputDeletePin');
+        pinInput.value = '';
+        document.getElementById('deletePinError').classList.add('hidden');
+        document.getElementById('modalDeletePin').classList.remove('hidden');
+        setTimeout(() => pinInput.focus(), 60);
+      }
+
+      function compressImageFile(file, maxWidth = 900, quality = 0.82) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = ev => {
+            const img = new Image();
+            img.onload = () => {
+              let w = img.width;
+              let h = img.height;
+              if (w > maxWidth) {
+                h = Math.round((h * maxWidth) / w);
+                w = maxWidth;
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = w;
+              canvas.height = h;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, w, h);
+              resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.onerror = reject;
+            img.src = ev.target.result;
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function getCardStyle(color) {
+        const styles = {
+          yellow: 'bg-[#fef9c3] border-[#fde047]/80 text-slate-900',
+          white: 'bg-white border-slate-200/90 text-slate-900',
+          pink: 'bg-[#fce7f3] border-[#f9a8d4]/80 text-slate-900',
+          blue: 'bg-[#e0f2fe] border-[#7dd3fc]/80 text-slate-900',
+          green: 'bg-[#dcfce7] border-[#86efac]/80 text-slate-900',
+          purple: 'bg-[#f3e8ff] border-[#d8b4fe]/80 text-slate-900'
+        };
+        return styles[color] || styles.yellow;
+      }
+
+      // 3. Render Whiteboard & Notes
+      function renderBoard() {
+        document.getElementById('boardTitleText').textContent = state.boardTitle || DEFAULT_STATE.boardTitle;
+        document.getElementById('boardSubtitleText').textContent = state.boardSubtitle || DEFAULT_STATE.boardSubtitle;
+
+        const surface = document.getElementById('whiteboardSurface');
+        surface.className = 'whiteboard-canvas flex-1 relative w-full min-h-[calc(100vh-65px)] overflow-auto';
+        if (state.theme && state.theme !== 'default') {
+          surface.classList.add(`theme-${state.theme}`);
+        }
+
+        const emptyState = document.getElementById('emptyBoardState');
+        const notesLayer = document.getElementById('notesLayer');
+        notesLayer.innerHTML = '';
+
+        if (!state.posts || state.posts.length === 0) {
+          emptyState.classList.remove('hidden');
+          return;
+        }
+        emptyState.classList.add('hidden');
+
+        const isMobile = window.innerWidth < 768;
+
+        state.posts.forEach((post, idx) => {
+          if (!Array.isArray(post.comments)) post.comments = [];
+          if (typeof post.likes !== 'number') post.likes = 0;
+          if (typeof post.hearts !== 'number') post.hearts = 0;
+
+          const card = document.createElement('article');
+          const colorCls = getCardStyle(post.color);
+
+          if (isMobile) {
+            card.className = `note-card w-full rounded-3xl border ${colorCls} p-5 mb-4 flex flex-col animate-pop`;
+          } else {
+            const x = typeof post.x === 'number' ? post.x : 36 + (idx % 4) * 320;
+            const y = typeof post.y === 'number' ? post.y : 36 + Math.floor(idx / 4) * 300;
+            card.className = `note-card absolute w-[305px] rounded-3xl border ${colorCls} p-5 flex flex-col cursor-grab active:cursor-grabbing`;
+            card.style.left = `${x}px`;
+            card.style.top = `${y}px`;
+            card.style.zIndex = String(10 + idx);
+          }
+
+          const initial = (post.nickname || 'น').trim().charAt(0).toUpperCase();
+          const latestComment = post.comments.length > 0 ? post.comments[post.comments.length - 1] : null;
+
+          card.innerHTML = `
+            <!-- Author Header -->
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-full bg-slate-900/10 text-slate-900 font-bold text-xs flex items-center justify-center shrink-0">
+                  ${escapeHtml(initial)}
+                </div>
+                <div class="min-w-0">
+                  <div class="font-bold text-sm text-slate-900 truncate">${escapeHtml(post.nickname)}</div>
+                  <div class="text-[11px] text-slate-500">${escapeHtml(post.time || '')}</div>
+                </div>
+              </div>
+
+              <!-- Edit & Delete Icons -->
+              <div class="flex items-center gap-0.5 shrink-0">
+                <button type="button" class="btn-edit-note p-1.5 rounded-xl hover:bg-black/5 text-slate-500 hover:text-slate-900 transition" title="แก้ไขโน้ต">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </button>
+                <button type="button" class="btn-delete-note p-1.5 rounded-xl hover:bg-rose-500/10 text-slate-400 hover:text-rose-600 transition" title="ลบกล่อง (ต้องใช้รหัสผ่าน)">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Clickable Content Area (Opens Comment & Detail Modal) -->
+            <div class="note-clickable-body cursor-pointer group">
+              ${
+                post.image
+                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-black/5 bg-white/60">
+                       <img src="${post.image}" alt="รูปภาพประกอบ" class="note-image w-full max-h-48 object-cover group-hover:scale-[1.01] transition" />
+                     </div>`
+                  : ''
+              }
+              ${
+                post.text
+                  ? `<p class="text-sm text-slate-800 whitespace-pre-line leading-relaxed break-words mb-3">${escapeHtml(post.text)}</p>`
+                  : ''
+              }
+            </div>
+
+            <!-- Latest Comment Preview (if any) -->
+            ${
+              latestComment
+                ? `<div class="btn-open-comments mb-2.5 px-3 py-2 rounded-2xl bg-white/65 hover:bg-white/90 border border-black/5 text-xs cursor-pointer transition">
+                     <div class="font-bold text-slate-800 truncate">💬 ${escapeHtml(latestComment.nickname)}</div>
+                     <div class="text-slate-600 truncate">${escapeHtml(latestComment.text)}</div>
+                   </div>`
+                : ''
+            }
+
+            <!-- Footer: Like (👍), Heart (❤️), and Reply (💬) -->
+            <div class="mt-auto pt-2.5 flex items-center justify-between gap-1.5 border-t border-black/5">
+              <div class="flex items-center gap-1.5">
+                <button type="button" class="btn-like-note inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/75 hover:bg-white text-xs font-semibold text-slate-700 shadow-sm active:scale-95 transition" title="กดไลก์">
+                  <span>👍</span>
+                  <span>${post.likes || 0}</span>
+                </button>
+                <button type="button" class="btn-heart-note inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/75 hover:bg-white text-xs font-semibold text-slate-700 shadow-sm active:scale-95 transition" title="กดหัวใจ">
+                  <span>❤️</span>
+                  <span>${post.hearts || 0}</span>
+                </button>
+              </div>
+
+              <button type="button" class="btn-open-comments inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/75 hover:bg-white text-xs font-semibold text-indigo-700 shadow-sm transition">
+                <span>💬</span>
+                <span>${post.comments.length > 0 ? `${post.comments.length} ความคิดเห็น` : 'ความคิดเห็น'}</span>
+              </button>
+            </div>
+          `;
+
+          // Like (👍) button
+          card.querySelector('.btn-like-note').addEventListener('click', e => {
+            e.stopPropagation();
+            post.likes = (post.likes || 0) + 1;
+            persistStatePermanently();
+            renderBoard();
+          });
+
+          // Heart (❤️) button
+          card.querySelector('.btn-heart-note').addEventListener('click', e => {
+            e.stopPropagation();
+            post.hearts = (post.hearts || 0) + 1;
+            persistStatePermanently();
+            renderBoard();
+          });
+
+          // Open Comments / Note Detail Modal
+          card.querySelectorAll('.btn-open-comments').forEach(el => {
+            el.addEventListener('click', e => {
+              e.stopPropagation();
+              openNoteDetailModal(post.id);
+            });
+          });
+
+          // Edit button
+          card.querySelector('.btn-edit-note').addEventListener('click', e => {
+            e.stopPropagation();
+            openPostModal(post);
+          });
+
+          // Delete button — Protected by PIN 8888!
+          card.querySelector('.btn-delete-note').addEventListener('click', e => {
+            e.stopPropagation();
+            requestPinProtectedDelete(
+              'ใส่รหัสผ่านเพื่อลบกล่อง',
+              `กรุณาใส่รหัสผ่านเพื่อลบกล่องความคิดเห็นของ "${post.nickname}"`,
+              () => {
+                state.posts = state.posts.filter(p => p.id !== post.id);
+                persistStatePermanently();
+                renderBoard();
+                showToast('ลบกล่องความคิดเห็นออกจากกระดานแล้ว');
+              }
+            );
+          });
+
+          // Drag vs Click detection so clicking a card opens its comment modal while dragging moves it
+          if (!isMobile) {
+            makeCardDraggableOrClickable(card, post);
+          } else {
+            card.querySelector('.note-clickable-body').addEventListener('click', () => {
+              openNoteDetailModal(post.id);
+            });
+          }
+
+          notesLayer.appendChild(card);
+        });
+      }
+
+      // Smart Drag vs Click on Whiteboard Cards
+      function makeCardDraggableOrClickable(cardEl, postObj) {
+        let pointerDown = false;
+        let hasMoved = false;
+        let startX = 0;
+        let startY = 0;
+        let origLeft = 0;
+        let origTop = 0;
+
+        cardEl.addEventListener('pointerdown', e => {
+          if (e.target.closest('button')) return;
+          pointerDown = true;
+          hasMoved = false;
+          startX = e.clientX;
+          startY = e.clientY;
+          origLeft = parseInt(cardEl.style.left, 10) || 0;
+          origTop = parseInt(cardEl.style.top, 10) || 0;
+          cardEl.setPointerCapture(e.pointerId);
+        });
+
+        cardEl.addEventListener('pointermove', e => {
+          if (!pointerDown) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            hasMoved = true;
+            cardEl.classList.add('dragging');
+            cardEl.style.left = `${Math.max(16, origLeft + dx)}px`;
+            cardEl.style.top = `${Math.max(16, origTop + dy)}px`;
+          }
+        });
+
+        const finishPointer = e => {
+          if (!pointerDown) return;
+          pointerDown = false;
+          cardEl.classList.remove('dragging');
+          if (hasMoved) {
+            postObj.x = parseInt(cardEl.style.left, 10) || 24;
+            postObj.y = parseInt(cardEl.style.top, 10) || 24;
+            persistStatePermanently();
+          } else if (!e.target.closest('button')) {
+            openNoteDetailModal(postObj.id);
+          }
+        };
+
+        cardEl.addEventListener('pointerup', finishPointer);
+        cardEl.addEventListener('pointercancel', () => {
+          pointerDown = false;
+          cardEl.classList.remove('dragging');
+        });
+      }
+
+      // 4. Note Detail & Follow-up Comments Modal
+      function openNoteDetailModal(postId) {
+        activeDetailPostId = postId;
+        renderNoteDetailModal(postId);
+        const nickInput = document.getElementById('inputCommentNickname');
+        if (!nickInput.value) {
+          nickInput.value = getSavedNickname();
+        }
+        document.getElementById('modalNoteDetail').classList.remove('hidden');
+        setTimeout(() => {
+          if (!nickInput.value) nickInput.focus();
+          else document.getElementById('inputCommentText').focus();
+        }, 60);
+      }
+
+      function renderNoteDetailModal(postId) {
+        const post = state.posts.find(p => p.id === postId);
+        if (!post) {
+          document.getElementById('modalNoteDetail').classList.add('hidden');
+          return;
+        }
+        if (!Array.isArray(post.comments)) post.comments = [];
+
+        const headerEl = document.getElementById('detailCardHeader');
+        headerEl.className = `px-6 pt-5 pb-4 border-b border-black/5 flex items-start justify-between gap-3 ${getCardStyle(post.color)}`;
+
+        const initial = (post.nickname || 'น').trim().charAt(0).toUpperCase();
+        document.getElementById('detailAuthorInitial').textContent = initial;
+        document.getElementById('detailAuthorName').textContent = post.nickname;
+        document.getElementById('detailPostTime').textContent = post.time || '';
+
+        const imgWrap = document.getElementById('detailImageWrapper');
+        const imgEl = document.getElementById('detailImageEl');
+        if (post.image) {
+          imgEl.src = post.image;
+          imgWrap.classList.remove('hidden');
+        } else {
+          imgWrap.classList.add('hidden');
+        }
+
+        const textEl = document.getElementById('detailTextContent');
+        textEl.textContent = post.text || '';
+        textEl.className = post.text
+          ? 'text-sm sm:text-base text-slate-800 whitespace-pre-line leading-relaxed select-text'
+          : 'hidden';
+
+        document.getElementById('detailLikeCount').textContent = post.likes || 0;
+        document.getElementById('detailHeartCount').textContent = post.hearts || 0;
+        document.getElementById('detailCommentsCounter').textContent = `${post.comments.length} ความคิดเห็น`;
+
+        const listEl = document.getElementById('detailCommentsList');
+        listEl.innerHTML = '';
+
+        if (post.comments.length === 0) {
+          listEl.innerHTML = `
+            <div class="py-6 text-center text-xs text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+              ยังไม่มีความคิดเห็นต่อท้าย ร่วมแสดงความคิดเห็นเป็นคนแรกได้เลย
+            </div>
+          `;
+        } else {
+          post.comments.forEach(comment => {
+            const item = document.createElement('div');
+            item.className = 'p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70 flex items-start justify-between gap-2.5';
+            const cInit = (comment.nickname || 'น').trim().charAt(0).toUpperCase();
+            item.innerHTML = `
+              <div class="flex items-start gap-2.5 min-w-0 flex-1">
+                <div class="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                  ${escapeHtml(cInit)}
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-xs text-slate-900">${escapeHtml(comment.nickname)}</span>
+                    <span class="text-[10px] text-slate-400">${escapeHtml(comment.time || '')}</span>
+                  </div>
+                  <p class="text-xs sm:text-sm text-slate-700 mt-0.5 break-words leading-relaxed select-text">${escapeHtml(comment.text)}</p>
+                </div>
+              </div>
+              <button type="button" class="btn-delete-comment p-1 rounded-lg text-slate-300 hover:text-rose-500 transition shrink-0" title="ลบความคิดเห็นนี้ (ต้องใช้รหัสผ่าน)">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            `;
+            item.querySelector('.btn-delete-comment').addEventListener('click', () => {
+              requestPinProtectedDelete(
+                'ใส่รหัสผ่านเพื่อลบความคิดเห็น',
+                `กรุณาใส่รหัสผ่านเพื่อลบความคิดเห็นของ "${comment.nickname}"`,
+                () => {
+                  post.comments = post.comments.filter(c => c.id !== comment.id);
+                  persistStatePermanently();
+                  renderNoteDetailModal(post.id);
+                  renderBoard();
+                  showToast('ลบความคิดเห็นเรียบร้อยแล้ว');
+                }
+              );
+            });
+            listEl.appendChild(item);
+          });
+        }
+      }
+
+      // 5. Open Modal for Creating or Editing a Note
+      function openPostModal(existingPost = null, coords = null) {
+        editingPostId = existingPost ? existingPost.id : null;
+        spawnCoordinates = coords;
+
+        document.getElementById('modalPostHeading').textContent = existingPost
+          ? 'แก้ไขโน้ตความคิดเห็น'
+          : 'แปะโน้ตแสดงความคิดเห็น';
+
+        document.getElementById('inputNickname').value = existingPost
+          ? existingPost.nickname
+          : getSavedNickname();
+
+        document.getElementById('inputNoteText').value = existingPost
+          ? existingPost.text || ''
+          : '';
+
+        selectedColor = existingPost ? existingPost.color || 'yellow' : 'yellow';
+        updateColorSwatchUI();
+
+        pendingImageDataUrl = existingPost ? existingPost.image || '' : '';
+        updateImagePreviewUI();
+
+        document.getElementById('modalPost').classList.remove('hidden');
+        setTimeout(() => {
+          const nickEl = document.getElementById('inputNickname');
+          const textEl = document.getElementById('inputNoteText');
+          if (!nickEl.value) nickEl.focus();
+          else textEl.focus();
+        }, 60);
+      }
+
+      function updateColorSwatchUI() {
+        document.querySelectorAll('.color-swatch').forEach(btn => {
+          const c = btn.getAttribute('data-color');
+          if (c === selectedColor) {
+            btn.classList.add('border-2', 'border-indigo-600', 'scale-110');
+          } else {
+            btn.classList.remove('border-2', 'border-indigo-600', 'scale-110');
+          }
+        });
+      }
+
+      function updateImagePreviewUI() {
+        const wrapper = document.getElementById('imagePreviewWrapper');
+        const img = document.getElementById('imagePreviewEl');
+        const fileInput = document.getElementById('inputImageFile');
+        if (pendingImageDataUrl) {
+          img.src = pendingImageDataUrl;
+          wrapper.classList.remove('hidden');
+        } else {
+          wrapper.classList.add('hidden');
+          if (fileInput) fileInput.value = '';
+        }
+      }
+
+      // 6. Bind All Interactive Controls
+      function bindEvents() {
+        document.getElementById('btnOpenNewPostModal').addEventListener('click', () => openPostModal());
+        document.getElementById('btnFloatingAdd').addEventListener('click', () => openPostModal());
+        document.getElementById('btnEmptyStateAdd').addEventListener('click', () => openPostModal());
+
+        // Double click anywhere on empty whiteboard canvas to spawn a note at that spot
+        document.getElementById('whiteboardSurface').addEventListener('dblclick', e => {
+          if (e.target.closest('article') || e.target.closest('button')) return;
+          const rect = document.getElementById('notesLayer').getBoundingClientRect();
+          const clickX = Math.max(20, Math.round(e.clientX - rect.left - 140));
+          const clickY = Math.max(20, Math.round(e.clientY - rect.top - 60));
+          openPostModal(null, { x: clickX, y: clickY });
+        });
+
+        const closePostModal = () => {
+          document.getElementById('modalPost').classList.add('hidden');
+        };
+        document.getElementById('btnClosePostModal').addEventListener('click', closePostModal);
+        document.getElementById('btnCancelPost').addEventListener('click', closePostModal);
+
+        // Color swatches
+        document.querySelectorAll('.color-swatch').forEach(btn => {
+          btn.addEventListener('click', () => {
+            selectedColor = btn.getAttribute('data-color');
+            updateColorSwatchUI();
+          });
+        });
+
+        // Image File Upload
+        document.getElementById('inputImageFile').addEventListener('change', async e => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          try {
+            pendingImageDataUrl = await compressImageFile(file);
+            updateImagePreviewUI();
+          } catch (err) {
+            showToast('ไม่สามารถอ่านไฟล์รูปภาพนี้ได้');
+          }
+        });
+
+        document.getElementById('btnRemoveImage').addEventListener('click', () => {
+          pendingImageDataUrl = '';
+          updateImagePreviewUI();
+        });
+
+        // Save Note (Create or Update)
+        document.getElementById('btnSavePost').addEventListener('click', () => {
+          const nickname = (document.getElementById('inputNickname').value || '').trim();
+          const text = (document.getElementById('inputNoteText').value || '').trim();
+
+          if (!nickname) {
+            showToast('กรุณาพิมพ์ชื่อเล่นของคุณ');
+            document.getElementById('inputNickname').focus();
+            return;
+          }
+          if (!text && !pendingImageDataUrl) {
+            showToast('กรุณาพิมพ์ข้อความหรือเลือกรูปภาพอย่างน้อย 1 อย่าง');
+            document.getElementById('inputNoteText').focus();
+            return;
+          }
+
+          saveNickname(nickname);
+
+          if (editingPostId) {
+            const target = state.posts.find(p => p.id === editingPostId);
+            if (target) {
+              target.nickname = nickname;
+              target.text = text;
+              target.color = selectedColor;
+              target.image = pendingImageDataUrl;
+            }
+            showToast('อัปเดตโน้ตเรียบร้อยแล้ว');
+          } else {
+            const idx = state.posts.length;
+            const cols = Math.max(1, Math.floor((window.innerWidth - 80) / 320));
+            const defaultX = 36 + (idx % cols) * 320;
+            const defaultY = 36 + Math.floor(idx / cols) * 300;
+
+            state.posts.push({
+              id: 'note-' + Date.now(),
+              nickname,
+              text,
+              image: pendingImageDataUrl,
+              color: selectedColor,
+              likes: 0,
+              hearts: 0,
+              comments: [],
+              x: spawnCoordinates ? spawnCoordinates.x : defaultX,
+              y: spawnCoordinates ? spawnCoordinates.y : defaultY,
+              time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.'
+            });
+            showToast('แปะโน้ตลงบนกระดานแล้ว');
+          }
+
+          persistStatePermanently();
+          renderBoard();
+          closePostModal();
+        });
+
+        // Note Detail Modal interactions (Like, Heart, Add Comment, Lightbox)
+        const closeDetailModal = () => {
+          activeDetailPostId = null;
+          document.getElementById('modalNoteDetail').classList.add('hidden');
+        };
+        document.getElementById('btnCloseNoteDetail').addEventListener('click', closeDetailModal);
+        document.getElementById('modalNoteDetail').addEventListener('click', e => {
+          if (e.target.id === 'modalNoteDetail') closeDetailModal();
+        });
+
+        document.getElementById('detailImageEl').addEventListener('click', () => {
+          const src = document.getElementById('detailImageEl').src;
+          if (src) {
+            document.getElementById('lightboxImage').src = src;
+            document.getElementById('modalLightbox').classList.remove('hidden');
+          }
+        });
+
+        document.getElementById('btnDetailLike').addEventListener('click', () => {
+          const post = state.posts.find(p => p.id === activeDetailPostId);
+          if (!post) return;
+          post.likes = (post.likes || 0) + 1;
+          persistStatePermanently();
+          renderNoteDetailModal(post.id);
+          renderBoard();
+        });
+
+        document.getElementById('btnDetailHeart').addEventListener('click', () => {
+          const post = state.posts.find(p => p.id === activeDetailPostId);
+          if (!post) return;
+          post.hearts = (post.hearts || 0) + 1;
+          persistStatePermanently();
+          renderNoteDetailModal(post.id);
+          renderBoard();
+        });
+
+        document.getElementById('formAddComment').addEventListener('submit', e => {
+          e.preventDefault();
+          const post = state.posts.find(p => p.id === activeDetailPostId);
+          if (!post) return;
+
+          const nick = (document.getElementById('inputCommentNickname').value || '').trim();
+          const text = (document.getElementById('inputCommentText').value || '').trim();
+
+          if (!nick) {
+            showToast('กรุณาพิมพ์ชื่อเล่นก่อนแสดงความคิดเห็น');
+            document.getElementById('inputCommentNickname').focus();
+            return;
+          }
+          if (!text) {
+            showToast('กรุณาพิมพ์ข้อความความคิดเห็น');
+            document.getElementById('inputCommentText').focus();
+            return;
+          }
+
+          saveNickname(nick);
+          if (!Array.isArray(post.comments)) post.comments = [];
+          post.comments.push({
+            id: 'c-' + Date.now(),
+            nickname: nick,
+            text,
+            time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.'
+          });
+
+          document.getElementById('inputCommentText').value = '';
+          persistStatePermanently();
+          renderNoteDetailModal(post.id);
+          renderBoard();
+          showToast('เพิ่มความคิดเห็นต่อท้ายเรียบร้อยแล้ว');
+        });
+
+        // Auto Arrange Grid
+        document.getElementById('btnArrangeGrid').addEventListener('click', () => {
+          if (!state.posts.length) return;
+          const cols = Math.max(1, Math.floor((window.innerWidth - 80) / 320));
+          state.posts.forEach((p, idx) => {
+            p.x = 36 + (idx % cols) * 320;
+            p.y = 36 + Math.floor(idx / cols) * 310;
+          });
+          persistStatePermanently();
+          renderBoard();
+          showToast('จัดเรียงโน้ตเป็นระเบียบแล้ว');
+        });
+
+        // Theme dots
+        document.querySelectorAll('.theme-dot').forEach(btn => {
+          btn.addEventListener('click', () => {
+            state.theme = btn.getAttribute('data-theme');
+            persistStatePermanently();
+            renderBoard();
+          });
+        });
+
+        // Edit Board Title Modal
+        const openBoardSettings = () => {
+          document.getElementById('inputBoardTitle').value = state.boardTitle || '';
+          document.getElementById('inputBoardSubtitle').value = state.boardSubtitle || '';
+          document.getElementById('modalBoardSettings').classList.remove('hidden');
+        };
+        document.getElementById('btnEditBoardTitle').addEventListener('click', openBoardSettings);
+        document.getElementById('boardTitleText').addEventListener('click', openBoardSettings);
+        document.getElementById('btnCloseBoardModal').addEventListener('click', () => {
+          document.getElementById('modalBoardSettings').classList.add('hidden');
+        });
+
+        document.getElementById('btnSaveBoardSettings').addEventListener('click', () => {
+          const t = (document.getElementById('inputBoardTitle').value || '').trim();
+          const s = (document.getElementById('inputBoardSubtitle').value || '').trim();
+          if (t) state.boardTitle = t;
+          state.boardSubtitle = s;
+          persistStatePermanently();
+          renderBoard();
+          document.getElementById('modalBoardSettings').classList.add('hidden');
+          showToast('บันทึกหัวข้อกระดานแล้ว');
+        });
+
+        document.getElementById('btnClearAllNotes').addEventListener('click', () => {
+          document.getElementById('modalBoardSettings').classList.add('hidden');
+          requestPinProtectedDelete(
+            'ใส่รหัสผ่านเพื่อล้างกระดานทั้งหมด',
+            'กรุณาใส่รหัสผ่านเพื่อยืนยันการลบโน้ตทั้งหมดบนกระดานนี้',
+            () => {
+              state.posts = [];
+              persistStatePermanently();
+              renderBoard();
+              showToast('ล้างโน้ตทั้งหมดบนกระดานแล้ว');
+            }
+          );
+        });
+
+        // PIN 8888 Modal handlers
+        const closeDeletePinModal = () => {
+          pendingDeleteAction = null;
+          document.getElementById('modalDeletePin').classList.add('hidden');
+        };
+        document.getElementById('btnCloseDeletePin').addEventListener('click', closeDeletePinModal);
+        document.getElementById('btnCancelDeletePin').addEventListener('click', closeDeletePinModal);
+        document.getElementById('inputDeletePin').addEventListener('input', () => {
+          document.getElementById('deletePinError').classList.add('hidden');
+        });
+
+        document.getElementById('formDeletePin').addEventListener('submit', e => {
+          e.preventDefault();
+          const enteredPin = (document.getElementById('inputDeletePin').value || '').trim();
+          if (enteredPin === DELETE_PASSCODE) {
+            const action = pendingDeleteAction;
+            closeDeletePinModal();
+            if (typeof action === 'function') action();
+          } else {
+            document.getElementById('deletePinError').classList.remove('hidden');
+            document.getElementById('inputDeletePin').select();
+          }
+        });
+
+        // Lightbox close
+        document.getElementById('btnCloseLightbox').addEventListener('click', () => {
+          document.getElementById('modalLightbox').classList.add('hidden');
+        });
+        document.getElementById('modalLightbox').addEventListener('click', e => {
+          if (e.target.id === 'modalLightbox') {
+            document.getElementById('modalLightbox').classList.add('hidden');
+          }
+        });
+      }
+
+      // Initialize
+      bindEvents();
+      renderBoard();
+      hydrateFromIndexedDB();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "name": "student-whiteboard-dashboard",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
