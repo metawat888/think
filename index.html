@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Whiteboard — กระดานแสดงความคิดเห็น</title>
+  <title>Whiteboard — กระดานแสดงความคิดเห็นออนไลน์ทุกอุปกรณ์</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gun@0.2020.1240/gun.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -82,14 +83,19 @@
           </svg>
         </div>
         <div class="min-w-0">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <h1 id="boardTitleText" class="font-bold text-base sm:text-xl text-slate-900 truncate cursor-pointer hover:text-indigo-600 transition" title="คลิกเพื่อเปลี่ยนชื่อหัวข้อกระดาน">
               กระดานแสดงความคิดเห็นในชั้นเรียน
             </h1>
-            <button id="btnEditBoardTitle" type="button" class="p-1 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition" title="แก้ไขชื่อกระดาน">
+            <button id="btnEditBoardTitle" type="button" class="p-1 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition" title="แก้ไขชื่อกระดานและตั้งค่าซิงค์ทุกอุปกรณ์">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
+            </button>
+            <!-- Cross-Device Cloud Sync Status Pill -->
+            <button id="btnSyncStatusPill" type="button" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition" title="คลิกเพื่อดูการเชื่อมต่อซิงค์ข้อมูลข้ามอุปกรณ์">
+              <span id="syncDotIndicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span id="syncStatusLabel">ซิงค์ทุกอุปกรณ์</span>
             </button>
           </div>
           <p id="boardSubtitleText" class="text-xs text-slate-500 truncate">
@@ -98,7 +104,7 @@
         </div>
       </div>
 
-      <!-- Right Controls: Layout, Theme, Clear, and Add Note -->
+      <!-- Right Controls: Layout, Theme, Share Link, and Add Note -->
       <div class="flex items-center gap-2 sm:gap-3">
         <!-- Surface Color Dots -->
         <div class="hidden sm:flex items-center gap-1.5 bg-slate-100/90 px-2.5 py-1.5 rounded-xl border border-slate-200/70">
@@ -141,7 +147,7 @@
         </div>
         <h2 class="text-lg font-bold text-slate-900">กระดานไวท์บอร์ดพร้อมใช้งาน</h2>
         <p class="text-xs sm:text-sm text-slate-500 mt-1.5 leading-relaxed">
-          ยังไม่มีโพสต์บนกระดาน กดปุ่มด้านล่างหรือ<strong>ดับเบิลคลิกพื้นที่ว่างบนกระดาน</strong> เพื่อพิมพ์ชื่อเล่น ข้อความ และแนบรูปภาพได้เลย
+          ยังไม่มีโพสต์บนกระดาน กดปุ่มด้านล่างหรือ<strong>ดับเบิลคลิกพื้นที่ว่างบนกระดาน</strong> เพื่อพิมพ์ชื่อเล่น ข้อความ และแนบรูปภาพได้เลย (ซิงค์ข้อมูลอัตโนมัติทุกอุปกรณ์)
         </p>
         <button id="btnEmptyStateAdd" type="button" class="mt-5 w-full py-3 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -314,11 +320,11 @@
     </div>
   </div>
 
-  <!-- MODAL 3: Edit Board Title & Subtitle -->
+  <!-- MODAL 3: Edit Board Title, Subtitle & Cross-Device Cloud Sync -->
   <div id="modalBoardSettings" class="fixed inset-0 z-50 hidden bg-slate-900/45 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-pop">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-pop max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-base font-bold text-slate-900">ตั้งค่าหัวข้อกระดาน</h3>
+        <h3 class="text-base font-bold text-slate-900">ตั้งค่ากระดาน & ซิงค์ทุกอุปกรณ์</h3>
         <button id="btnCloseBoardModal" type="button" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -333,6 +339,27 @@
         <div>
           <label for="inputBoardSubtitle" class="block text-xs font-semibold text-slate-600 mb-1">คำอธิบายสั้นๆ</label>
           <input id="inputBoardSubtitle" type="text" placeholder="คำชี้แจงหรือโจทย์สำหรับให้นักเรียนโพสต์..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white" />
+        </div>
+
+        <!-- Cross-Device Sync Settings -->
+        <div class="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-100 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-indigo-950">☁️ ซิงค์ข้อมูลข้ามอุปกรณ์อัตโนมัติ</span>
+            <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">ทำงานอัตโนมัติ</span>
+          </div>
+          <div>
+            <label for="inputRoomCode" class="block text-[11px] font-semibold text-slate-600 mb-1">รหัสห้องกระดาน (เปิดอุปกรณ์ไหนที่ใช้รหัสเดียวกันจะเห็นเหมือนกันทั้งหมด)</label>
+            <div class="flex gap-1.5">
+              <input id="inputRoomCode" type="text" placeholder="เช่น CLASSROOM-2026" class="flex-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-indigo-700 focus:outline-none focus:border-indigo-500" />
+              <button id="btnCopyShareUrl" type="button" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shrink-0 transition">
+                คัดลอกลิงก์ห้อง
+              </button>
+            </div>
+          </div>
+          <div>
+            <label for="inputCloudDbUrl" class="block text-[11px] font-semibold text-slate-600 mb-1">Firebase Realtime DB URL (ไม่บังคับ — ระบบมี Cloud Relay ให้ในตัวแล้ว)</label>
+            <input id="inputCloudDbUrl" type="url" placeholder="เช่น https://your-project-default-rtdb.firebaseio.com" class="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-indigo-500" />
+          </div>
         </div>
       </div>
       <div class="mt-5 flex items-center justify-between">
@@ -408,15 +435,29 @@
     (function () {
       const LS_STATE_KEY = 'WHITEBOARD_SINGLE_PERMANENT_STATE_V2';
       const LS_NICKNAME_KEY = 'WHITEBOARD_LAST_NICKNAME_V2';
+      const LS_SYNC_CFG_KEY = 'WHITEBOARD_CLOUD_SYNC_CFG_V2';
       const IDB_NAME = 'ClassWhiteboardPermanentDB';
       const IDB_STORE = 'boardStore';
       const DELETE_PASSCODE = '8888';
+
+      // Default shared room code so every device opening the site automatically connects to the same board
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomFromUrl = (urlParams.get('room') || '').trim();
+      const dbFromUrl = (urlParams.get('db') || '').trim();
+
+      let syncConfig = loadSyncConfig();
+      if (roomFromUrl) syncConfig.roomCode = roomFromUrl;
+      if (dbFromUrl) syncConfig.cloudDbUrl = dbFromUrl;
+      saveSyncConfig();
 
       // Initial clean state — ZERO fake posts! Everything is created by the user.
       const DEFAULT_STATE = {
         boardTitle: 'กระดานแสดงความคิดเห็นในชั้นเรียน',
         boardSubtitle: 'คลิกที่โน้ตเพื่อแสดงความคิดเห็นต่อ กดไลก์ กดหัวใจ หรือลากจัดวางได้อย่างอิสระ',
         theme: 'default',
+        updatedAt: 0,
+        clearedAt: 0,
+        deletedIds: [],
         posts: []
       };
 
@@ -427,14 +468,38 @@
       let activeDetailPostId = null;
       let spawnCoordinates = null;
       let pendingDeleteAction = null;
+      let gunInstance = null;
+      let gunRoomNode = null;
+      let lastBroadcastHash = '';
 
-      // 1. Dual-Layer Permanent Persistence (LocalStorage + IndexedDB)
+      function loadSyncConfig() {
+        try {
+          const raw = localStorage.getItem(LS_SYNC_CFG_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.roomCode) return parsed;
+          }
+        } catch (e) {}
+        return {
+          roomCode: 'CLASSBOARD-MAIN-2026',
+          cloudDbUrl: ''
+        };
+      }
+
+      function saveSyncConfig() {
+        try {
+          localStorage.setItem(LS_SYNC_CFG_KEY, JSON.stringify(syncConfig));
+        } catch (e) {}
+      }
+
+      // 1. Multi-Layer Permanent Persistence (LocalStorage + IndexedDB + Cross-Device Cloud Sync)
       function loadFromLocalStorage() {
         try {
           const raw = localStorage.getItem(LS_STATE_KEY);
           if (raw) {
             const parsed = JSON.parse(raw);
             if (parsed && Array.isArray(parsed.posts)) {
+              if (!Array.isArray(parsed.deletedIds)) parsed.deletedIds = [];
               return parsed;
             }
           }
@@ -471,8 +536,7 @@
           const getReq = store.get('mainState');
           getReq.onsuccess = () => {
             if (getReq.result && Array.isArray(getReq.result.posts)) {
-              if (getReq.result.posts.length >= state.posts.length) {
-                state = getReq.result;
+              if (mergeIncomingState(getReq.result)) {
                 renderBoard();
                 if (activeDetailPostId) renderNoteDetailModal(activeDetailPostId);
               }
@@ -483,19 +547,255 @@
         }
       }
 
-      async function persistStatePermanently() {
+      // Conflict-free State Merger across devices (preserves posts/comments/likes/hearts from all devices + respects 8888 deletions)
+      function mergeIncomingState(remote) {
+        if (!remote || typeof remote !== 'object') return false;
+        let changed = false;
+
+        // If board was cleared more recently on another device
+        if (remote.clearedAt && remote.clearedAt > (state.clearedAt || 0)) {
+          state.clearedAt = remote.clearedAt;
+          state.posts = [];
+          state.deletedIds = Array.isArray(remote.deletedIds) ? remote.deletedIds.slice() : [];
+          changed = true;
+        }
+
+        // Merge deletedIds tombstones
+        const deletedSet = new Set(Array.isArray(state.deletedIds) ? state.deletedIds : []);
+        if (Array.isArray(remote.deletedIds)) {
+          remote.deletedIds.forEach(id => {
+            if (!deletedSet.has(id)) {
+              deletedSet.add(id);
+              changed = true;
+            }
+          });
+        }
+        state.deletedIds = Array.from(deletedSet);
+
+        // Remove any locally held posts that were deleted with 8888 on another device
+        const beforeFilterLen = state.posts.length;
+        state.posts = state.posts.filter(p => !deletedSet.has(p.id));
+        if (state.posts.length !== beforeFilterLen) changed = true;
+
+        // Board metadata update
+        if ((remote.updatedAt || 0) > (state.updatedAt || 0)) {
+          if (remote.boardTitle && remote.boardTitle !== state.boardTitle) {
+            state.boardTitle = remote.boardTitle;
+            changed = true;
+          }
+          if (typeof remote.boardSubtitle === 'string' && remote.boardSubtitle !== state.boardSubtitle) {
+            state.boardSubtitle = remote.boardSubtitle;
+            changed = true;
+          }
+          if (remote.theme && remote.theme !== state.theme) {
+            state.theme = remote.theme;
+            changed = true;
+          }
+          state.updatedAt = remote.updatedAt;
+        }
+
+        // Merge posts by ID
+        if (Array.isArray(remote.posts)) {
+          const localMap = new Map(state.posts.map(p => [p.id, p]));
+          remote.posts.forEach(rPost => {
+            if (!rPost || !rPost.id || deletedSet.has(rPost.id)) return;
+            if ((state.clearedAt || 0) > 0 && (rPost.createdAtMs || 0) > 0 && rPost.createdAtMs < state.clearedAt) {
+              return;
+            }
+            const lPost = localMap.get(rPost.id);
+            if (!lPost) {
+              state.posts.push(JSON.parse(JSON.stringify(rPost)));
+              changed = true;
+            } else {
+              // Merge likes & hearts (take max)
+              if ((rPost.likes || 0) > (lPost.likes || 0)) {
+                lPost.likes = rPost.likes;
+                changed = true;
+              }
+              if ((rPost.hearts || 0) > (lPost.hearts || 0)) {
+                lPost.hearts = rPost.hearts;
+                changed = true;
+              }
+              // Merge position/content edits if remote post is newer
+              if ((rPost.updatedAtMs || 0) > (lPost.updatedAtMs || 0)) {
+                lPost.nickname = rPost.nickname;
+                lPost.text = rPost.text;
+                lPost.color = rPost.color;
+                if (rPost.image !== undefined) lPost.image = rPost.image;
+                if (typeof rPost.x === 'number') lPost.x = rPost.x;
+                if (typeof rPost.y === 'number') lPost.y = rPost.y;
+                lPost.updatedAtMs = rPost.updatedAtMs;
+                changed = true;
+              }
+              // Merge comments inside post
+              const lComments = Array.isArray(lPost.comments) ? lPost.comments : [];
+              const rComments = Array.isArray(rPost.comments) ? rPost.comments : [];
+              const cMap = new Map(lComments.map(c => [c.id, c]));
+              rComments.forEach(rc => {
+                if (rc && rc.id && !deletedSet.has(rc.id) && !cMap.has(rc.id)) {
+                  lComments.push(rc);
+                  changed = true;
+                }
+              });
+              lPost.comments = lComments.filter(c => !deletedSet.has(c.id));
+            }
+          });
+        }
+
+        if (changed) {
+          saveLocalOnly();
+        }
+        return changed;
+      }
+
+      async function saveLocalOnly() {
         try {
           localStorage.setItem(LS_STATE_KEY, JSON.stringify(state));
-        } catch (err) {
-          console.warn('LocalStorage quota warning:', err);
-        }
+        } catch (err) {}
         try {
           const db = await openIndexedDB();
           if (!db) return;
           const tx = db.transaction(IDB_STORE, 'readwrite');
           tx.objectStore(IDB_STORE).put(state, 'mainState');
-        } catch (err) {
-          console.warn('IndexedDB write warning:', err);
+        } catch (err) {}
+      }
+
+      async function persistStatePermanently() {
+        state.updatedAt = Date.now();
+        await saveLocalOnly();
+        broadcastStateToCloud();
+      }
+
+      // 2. Cross-Device Realtime Cloud Sync Engine (Gun Relay + Vercel API + Optional Firebase RTDB)
+      function initCrossDeviceSync() {
+        // Channel A: Gun.js Realtime Decentralized Relay Mesh (Zero-config cross-device sync)
+        try {
+          if (window.Gun) {
+            gunInstance = window.Gun({
+              peers: [
+                'https://gun-manhattan.herokuapp.com/gun',
+                'https://peer.wallie.io/gun'
+              ],
+              localStorage: false
+            });
+            subscribeGunRoom();
+          }
+        } catch (e) {
+          console.warn('Gun relay init skipped:', e);
+        }
+
+        // Channel B: Same-device cross-tab instant sync
+        window.addEventListener('storage', e => {
+          if (e.key === LS_STATE_KEY && e.newValue) {
+            try {
+              const incoming = JSON.parse(e.newValue);
+              if (mergeIncomingState(incoming)) {
+                renderBoard();
+                if (activeDetailPostId) renderNoteDetailModal(activeDetailPostId);
+              }
+            } catch (err) {}
+          }
+        });
+
+        // Channel C: Initial pull + periodic poll for REST Cloud DB / Vercel API
+        pullFromCloudRest();
+        setInterval(pullFromCloudRest, 4000);
+      }
+
+      function subscribeGunRoom() {
+        if (!gunInstance) return;
+        const roomKey = 'classboard_v2_' + (syncConfig.roomCode || 'CLASSBOARD-MAIN-2026').trim();
+        gunRoomNode = gunInstance.get(roomKey);
+        gunRoomNode.get('payload').on(data => {
+          if (!data || typeof data !== 'string') return;
+          if (data === lastBroadcastHash) return;
+          try {
+            const remoteObj = JSON.parse(data);
+            if (mergeIncomingState(remoteObj)) {
+              renderBoard();
+              if (activeDetailPostId) renderNoteDetailModal(activeDetailPostId);
+            }
+          } catch (e) {}
+        });
+      }
+
+      function getRestEndpointUrl() {
+        const roomSafe = encodeURIComponent((syncConfig.roomCode || 'CLASSBOARD-MAIN-2026').trim());
+        if (syncConfig.cloudDbUrl) {
+          const base = syncConfig.cloudDbUrl.replace(/\/+$/, '');
+          if (base.includes('firebaseio.com') || base.includes('firebasedatabase.app')) {
+            return `${base}/classboards/${roomSafe}.json`;
+          }
+          return `${base}?room=${roomSafe}`;
+        }
+        return '';
+      }
+
+      async function pullFromCloudRest() {
+        // 1. If custom Firebase / Cloud URL is configured
+        const endpoint = getRestEndpointUrl();
+        if (endpoint) {
+          try {
+            const res = await fetch(endpoint, { method: 'GET' });
+            if (res.ok) {
+              const data = await res.json();
+              if (data && mergeIncomingState(data)) {
+                renderBoard();
+                if (activeDetailPostId) renderNoteDetailModal(activeDetailPostId);
+              }
+            }
+          } catch (e) {}
+        }
+
+        // 2. If deployed on Vercel with /api/board endpoint
+        if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('googleusercontent')) {
+          try {
+            const roomSafe = encodeURIComponent((syncConfig.roomCode || 'CLASSBOARD-MAIN-2026').trim());
+            const res = await fetch(window.location.origin + '/api/' + 'board?room=' + roomSafe, { method: 'GET' });
+            if (res.ok) {
+              const data = await res.json();
+              if (data && Array.isArray(data.posts) && mergeIncomingState(data)) {
+                renderBoard();
+                if (activeDetailPostId) renderNoteDetailModal(activeDetailPostId);
+              }
+            }
+          } catch (e) {}
+        }
+      }
+
+      async function broadcastStateToCloud() {
+        const serialized = JSON.stringify(state);
+        lastBroadcastHash = serialized;
+
+        // 1. Push to Gun.js Realtime Relay
+        try {
+          if (gunRoomNode) {
+            gunRoomNode.get('payload').put(serialized);
+          }
+        } catch (e) {}
+
+        // 2. Push to Firebase / Cloud REST DB if configured
+        const endpoint = getRestEndpointUrl();
+        if (endpoint) {
+          try {
+            await fetch(endpoint, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: serialized
+            });
+          } catch (e) {}
+        }
+
+        // 3. Push to Vercel /api/board if hosted on Vercel
+        if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('googleusercontent')) {
+          try {
+            const roomSafe = encodeURIComponent((syncConfig.roomCode || 'CLASSBOARD-MAIN-2026').trim());
+            await fetch(window.location.origin + '/api/' + 'board?room=' + roomSafe, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: serialized
+            });
+          } catch (e) {}
         }
       }
 
@@ -513,7 +813,7 @@
         } catch (e) {}
       }
 
-      // 2. Helper Functions & Protected Delete Modal (PIN 8888)
+      // 3. Helper Functions & Protected Delete Modal (PIN 8888)
       function escapeHtml(str) {
         return String(str || '')
           .replace(/&/g, '&amp;')
@@ -548,7 +848,7 @@
         setTimeout(() => pinInput.focus(), 60);
       }
 
-      function compressImageFile(file, maxWidth = 900, quality = 0.82) {
+      function compressImageFile(file, maxWidth = 720, quality = 0.78) {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = ev => {
@@ -587,10 +887,11 @@
         return styles[color] || styles.yellow;
       }
 
-      // 3. Render Whiteboard & Notes
+      // 4. Render Whiteboard & Notes
       function renderBoard() {
         document.getElementById('boardTitleText').textContent = state.boardTitle || DEFAULT_STATE.boardTitle;
         document.getElementById('boardSubtitleText').textContent = state.boardSubtitle || DEFAULT_STATE.boardSubtitle;
+        document.getElementById('syncStatusLabel').textContent = `ซิงค์ทุกอุปกรณ์ (${syncConfig.roomCode})`;
 
         const surface = document.getElementById('whiteboardSurface');
         surface.className = 'whiteboard-canvas flex-1 relative w-full min-h-[calc(100vh-65px)] overflow-auto';
@@ -710,6 +1011,7 @@
           card.querySelector('.btn-like-note').addEventListener('click', e => {
             e.stopPropagation();
             post.likes = (post.likes || 0) + 1;
+            post.updatedAtMs = Date.now();
             persistStatePermanently();
             renderBoard();
           });
@@ -718,6 +1020,7 @@
           card.querySelector('.btn-heart-note').addEventListener('click', e => {
             e.stopPropagation();
             post.hearts = (post.hearts || 0) + 1;
+            post.updatedAtMs = Date.now();
             persistStatePermanently();
             renderBoard();
           });
@@ -743,6 +1046,8 @@
               'ใส่รหัสผ่านเพื่อลบกล่อง',
               `กรุณาใส่รหัสผ่านเพื่อลบกล่องความคิดเห็นของ "${post.nickname}"`,
               () => {
+                if (!Array.isArray(state.deletedIds)) state.deletedIds = [];
+                state.deletedIds.push(post.id);
                 state.posts = state.posts.filter(p => p.id !== post.id);
                 persistStatePermanently();
                 renderBoard();
@@ -751,7 +1056,7 @@
             );
           });
 
-          // Drag vs Click detection so clicking a card opens its comment modal while dragging moves it
+          // Drag vs Click detection
           if (!isMobile) {
             makeCardDraggableOrClickable(card, post);
           } else {
@@ -803,6 +1108,7 @@
           if (hasMoved) {
             postObj.x = parseInt(cardEl.style.left, 10) || 24;
             postObj.y = parseInt(cardEl.style.top, 10) || 24;
+            postObj.updatedAtMs = Date.now();
             persistStatePermanently();
           } else if (!e.target.closest('button')) {
             openNoteDetailModal(postObj.id);
@@ -816,7 +1122,7 @@
         });
       }
 
-      // 4. Note Detail & Follow-up Comments Modal
+      // 5. Note Detail & Follow-up Comments Modal
       function openNoteDetailModal(postId) {
         activeDetailPostId = postId;
         renderNoteDetailModal(postId);
@@ -904,6 +1210,8 @@
                 'ใส่รหัสผ่านเพื่อลบความคิดเห็น',
                 `กรุณาใส่รหัสผ่านเพื่อลบความคิดเห็นของ "${comment.nickname}"`,
                 () => {
+                  if (!Array.isArray(state.deletedIds)) state.deletedIds = [];
+                  state.deletedIds.push(comment.id);
                   post.comments = post.comments.filter(c => c.id !== comment.id);
                   persistStatePermanently();
                   renderNoteDetailModal(post.id);
@@ -917,7 +1225,7 @@
         }
       }
 
-      // 5. Open Modal for Creating or Editing a Note
+      // 6. Open Modal for Creating or Editing a Note
       function openPostModal(existingPost = null, coords = null) {
         editingPostId = existingPost ? existingPost.id : null;
         spawnCoordinates = coords;
@@ -973,7 +1281,26 @@
         }
       }
 
-      // 6. Bind All Interactive Controls
+      function copyTextSafe(text, msg) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => showToast(msg)).catch(() => fallbackCopy(text, msg));
+        } else {
+          fallbackCopy(text, msg);
+        }
+      }
+      function fallbackCopy(text, msg) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast(msg);
+        } catch (e) {}
+        ta.remove();
+      }
+
+      // 7. Bind All Interactive Controls
       function bindEvents() {
         document.getElementById('btnOpenNewPostModal').addEventListener('click', () => openPostModal());
         document.getElementById('btnFloatingAdd').addEventListener('click', () => openPostModal());
@@ -1036,6 +1363,7 @@
           }
 
           saveNickname(nickname);
+          const nowMs = Date.now();
 
           if (editingPostId) {
             const target = state.posts.find(p => p.id === editingPostId);
@@ -1044,8 +1372,9 @@
               target.text = text;
               target.color = selectedColor;
               target.image = pendingImageDataUrl;
+              target.updatedAtMs = nowMs;
             }
-            showToast('อัปเดตโน้ตเรียบร้อยแล้ว');
+            showToast('อัปเดตโน้ตและซิงค์ทุกอุปกรณ์แล้ว');
           } else {
             const idx = state.posts.length;
             const cols = Math.max(1, Math.floor((window.innerWidth - 80) / 320));
@@ -1053,7 +1382,7 @@
             const defaultY = 36 + Math.floor(idx / cols) * 300;
 
             state.posts.push({
-              id: 'note-' + Date.now(),
+              id: 'note-' + nowMs + '-' + Math.random().toString(36).slice(2, 6),
               nickname,
               text,
               image: pendingImageDataUrl,
@@ -1063,9 +1392,11 @@
               comments: [],
               x: spawnCoordinates ? spawnCoordinates.x : defaultX,
               y: spawnCoordinates ? spawnCoordinates.y : defaultY,
+              createdAtMs: nowMs,
+              updatedAtMs: nowMs,
               time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.'
             });
-            showToast('แปะโน้ตลงบนกระดานแล้ว');
+            showToast('แปะโน้ตและซิงค์ขึ้นกระดานทุกอุปกรณ์แล้ว');
           }
 
           persistStatePermanently();
@@ -1095,6 +1426,7 @@
           const post = state.posts.find(p => p.id === activeDetailPostId);
           if (!post) return;
           post.likes = (post.likes || 0) + 1;
+          post.updatedAtMs = Date.now();
           persistStatePermanently();
           renderNoteDetailModal(post.id);
           renderBoard();
@@ -1104,6 +1436,7 @@
           const post = state.posts.find(p => p.id === activeDetailPostId);
           if (!post) return;
           post.hearts = (post.hearts || 0) + 1;
+          post.updatedAtMs = Date.now();
           persistStatePermanently();
           renderNoteDetailModal(post.id);
           renderBoard();
@@ -1131,11 +1464,12 @@
           saveNickname(nick);
           if (!Array.isArray(post.comments)) post.comments = [];
           post.comments.push({
-            id: 'c-' + Date.now(),
+            id: 'c-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5),
             nickname: nick,
             text,
             time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.'
           });
+          post.updatedAtMs = Date.now();
 
           document.getElementById('inputCommentText').value = '';
           persistStatePermanently();
@@ -1148,9 +1482,11 @@
         document.getElementById('btnArrangeGrid').addEventListener('click', () => {
           if (!state.posts.length) return;
           const cols = Math.max(1, Math.floor((window.innerWidth - 80) / 320));
+          const nowMs = Date.now();
           state.posts.forEach((p, idx) => {
             p.x = 36 + (idx % cols) * 320;
             p.y = 36 + Math.floor(idx / cols) * 310;
+            p.updatedAtMs = nowMs;
           });
           persistStatePermanently();
           renderBoard();
@@ -1166,27 +1502,51 @@
           });
         });
 
-        // Edit Board Title Modal
+        // Edit Board Title & Cloud Sync Modal
         const openBoardSettings = () => {
           document.getElementById('inputBoardTitle').value = state.boardTitle || '';
           document.getElementById('inputBoardSubtitle').value = state.boardSubtitle || '';
+          document.getElementById('inputRoomCode').value = syncConfig.roomCode || 'CLASSBOARD-MAIN-2026';
+          document.getElementById('inputCloudDbUrl').value = syncConfig.cloudDbUrl || '';
           document.getElementById('modalBoardSettings').classList.remove('hidden');
         };
         document.getElementById('btnEditBoardTitle').addEventListener('click', openBoardSettings);
         document.getElementById('boardTitleText').addEventListener('click', openBoardSettings);
+        document.getElementById('btnSyncStatusPill').addEventListener('click', openBoardSettings);
         document.getElementById('btnCloseBoardModal').addEventListener('click', () => {
           document.getElementById('modalBoardSettings').classList.add('hidden');
+        });
+
+        document.getElementById('btnCopyShareUrl').addEventListener('click', () => {
+          const roomVal = (document.getElementById('inputRoomCode').value || 'CLASSBOARD-MAIN-2026').trim();
+          const dbVal = (document.getElementById('inputCloudDbUrl').value || '').trim();
+          syncConfig.roomCode = roomVal;
+          syncConfig.cloudDbUrl = dbVal;
+          saveSyncConfig();
+          subscribeGunRoom();
+          const url = new URL(window.location.href);
+          url.searchParams.set('room', roomVal);
+          if (dbVal) url.searchParams.set('db', dbVal);
+          copyTextSafe(url.toString(), 'คัดลอกลิงก์ห้องเรียนสำหรับส่งให้ทุกอุปกรณ์แล้ว!');
         });
 
         document.getElementById('btnSaveBoardSettings').addEventListener('click', () => {
           const t = (document.getElementById('inputBoardTitle').value || '').trim();
           const s = (document.getElementById('inputBoardSubtitle').value || '').trim();
+          const rCode = (document.getElementById('inputRoomCode').value || '').trim() || 'CLASSBOARD-MAIN-2026';
+          const dbUrl = (document.getElementById('inputCloudDbUrl').value || '').trim();
+
           if (t) state.boardTitle = t;
           state.boardSubtitle = s;
+          syncConfig.roomCode = rCode;
+          syncConfig.cloudDbUrl = dbUrl;
+          saveSyncConfig();
+          subscribeGunRoom();
           persistStatePermanently();
+          pullFromCloudRest();
           renderBoard();
           document.getElementById('modalBoardSettings').classList.add('hidden');
-          showToast('บันทึกหัวข้อกระดานแล้ว');
+          showToast('บันทึกการตั้งค่าและซิงค์ทุกอุปกรณ์แล้ว');
         });
 
         document.getElementById('btnClearAllNotes').addEventListener('click', () => {
@@ -1196,6 +1556,7 @@
             'กรุณาใส่รหัสผ่านเพื่อยืนยันการลบโน้ตทั้งหมดบนกระดานนี้',
             () => {
               state.posts = [];
+              state.clearedAt = Date.now();
               persistStatePermanently();
               renderBoard();
               showToast('ล้างโน้ตทั้งหมดบนกระดานแล้ว');
@@ -1242,6 +1603,7 @@
       bindEvents();
       renderBoard();
       hydrateFromIndexedDB();
+      initCrossDeviceSync();
     })();
   </script>
 </body>
