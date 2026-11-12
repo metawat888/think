@@ -86,17 +86,17 @@
     }
 
     .note-card {
-      box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.14), 0 4px 10px -3px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.16), 0 4px 10px -3px rgba(15, 23, 42, 0.08);
       transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
     }
     .note-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 20px 36px -8px rgba(15, 23, 42, 0.22), 0 8px 16px -4px rgba(15, 23, 42, 0.1);
+      box-shadow: 0 20px 36px -8px rgba(15, 23, 42, 0.24), 0 8px 16px -4px rgba(15, 23, 42, 0.12);
     }
 
     .notes-grid-mode {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
       gap: 1.25rem;
       align-items: start;
     }
@@ -140,6 +140,24 @@
       pointer-events: none;
       z-index: 9998;
       animation: ringRipple 0.5s ease-out forwards;
+    }
+
+    /* Auto-Run Bot Visual Scan Bar inside Website Runner Box */
+    @keyframes autoScanLine {
+      0% { top: 0%; opacity: 0.85; }
+      50% { top: 92%; opacity: 0.95; }
+      100% { top: 0%; opacity: 0.85; }
+    }
+    .auto-run-scanline {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #10b981, #0ea5e9, #f97316, transparent);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
+      pointer-events: none;
+      z-index: 15;
+      animation: autoScanLine 5s ease-in-out infinite;
     }
   </style>
 </head>
@@ -190,6 +208,27 @@
               <option value="ครู/บุคลากร">ครู/บุคลากร</option>
               <option value="บุคคลทั่วไป">บุคคลทั่วไป</option>
             </select>
+          </div>
+        </div>
+
+        <!-- Collapsible Turso LibSQL Database Config -->
+        <div class="pt-1">
+          <button id="btnToggleTursoConfig" type="button" class="w-full py-1.5 px-3 rounded-xl bg-slate-900/70 hover:bg-slate-800/80 border border-slate-700/70 text-[11px] font-semibold text-emerald-300 flex items-center justify-between transition">
+            <span class="flex items-center gap-1.5 truncate">
+              <span id="tursoStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="truncate">Turso DB: ailsed-metawat888.aws-ap-southeast-1.turso.io</span>
+            </span>
+            <span class="text-slate-400 text-[10px] shrink-0">ตั้งค่า Token ▾</span>
+          </button>
+          <div id="tursoConfigPanel" class="hidden mt-2 p-3 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-2">
+            <div>
+              <label for="inputTursoUrl" class="block text-[10px] font-bold text-slate-400 mb-1">Turso LibSQL URL</label>
+              <input id="inputTursoUrl" type="text" value="libsql://ailsed-metawat888.aws-ap-southeast-1.turso.io" class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-[11px] font-mono text-emerald-300 focus:outline-none focus:border-emerald-400" />
+            </div>
+            <div>
+              <label for="inputTursoToken" class="block text-[10px] font-bold text-slate-400 mb-1">Turso Auth Token (ถ้าตั้งใน Vercel แล้วเว้นว่างได้)</label>
+              <input id="inputTursoToken" type="password" placeholder="วาง Turso JWT Auth Token (eyJ...)" class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-[11px] font-mono text-white placeholder-slate-600 focus:outline-none focus:border-sky-400" />
+            </div>
           </div>
         </div>
 
@@ -263,11 +302,11 @@
     <div id="notesLayer" class="relative w-full max-w-[1600px] mx-auto min-h-[calc(100vh-58px)] p-4 sm:p-7 notes-grid-mode"></div>
   </main>
 
-  <!-- MODAL 1: CREATE / EDIT FEEDBACK & SATISFACTION -->
+  <!-- MODAL 1: CREATE / EDIT FEEDBACK, IMAGE, YOUTUBE & AUTO-RUN WEBSITE BOX -->
   <div id="modalPost" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 text-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-700 animate-pop max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-4">
-        <h3 id="modalPostHeading" class="text-base font-bold text-white">แสดงความคิดเห็น & ประเมินความพึงพอใจ</h3>
+        <h3 id="modalPostHeading" class="text-base font-bold text-white">แสดงความคิดเห็น & สร้างกล่องทำงานอัตโนมัติ</h3>
         <button id="btnClosePostModal" type="button" class="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition">✕</button>
       </div>
 
@@ -305,23 +344,26 @@
 
         <div>
           <label for="inputNoteText" class="block text-xs font-semibold text-slate-300 mb-1">ความคิดเห็น / คำแนะนำเพื่อการพัฒนา</label>
-          <textarea id="inputNoteText" rows="3" placeholder="พิมพ์ความคิดเห็น หรือข้อเสนอแนะ..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 transition resize-none"></textarea>
+          <textarea id="inputNoteText" rows="3" placeholder="พิมพ์ความคิดเห็น ข้อเสนอแนะ หรือวางลิงก์ YouTube / รูปภาพ..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 transition resize-none"></textarea>
         </div>
 
-        <!-- Media Attachments -->
+        <!-- Media Attachments: Image & YouTube (Guaranteed Permanent in Turso & IndexedDB) -->
         <div class="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-2.5">
+          <div class="text-xs font-bold text-emerald-300 flex items-center justify-between">
+            <span>🖼️ รูปภาพ & ▶️ วิดีโอ YouTube (บันทึกถาวรไม่หาย)</span>
+          </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <label for="inputImageFile" class="py-2 px-3 rounded-xl border border-dashed border-emerald-500/60 hover:border-emerald-400 bg-slate-900 text-xs font-semibold text-emerald-300 flex items-center justify-center gap-1.5 cursor-pointer transition">
               <span>🖼️ อัปโหลดรูปภาพ</span>
               <input id="inputImageFile" type="file" accept="image/*" class="hidden" />
             </label>
-            <input id="inputImageUrl" type="url" placeholder="หรือวางลิงก์รูปภาพ (https://...)" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400" />
+            <input id="inputImageUrl" type="text" placeholder="หรือวางลิงก์รูปภาพ (https://...)" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400" />
           </div>
 
           <div id="imagePreviewWrapper" class="hidden rounded-xl border border-slate-700 bg-slate-900 p-2 flex items-center justify-between">
             <div class="flex items-center gap-2 min-w-0">
               <img id="imagePreviewEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="ตัวอย่างรูปภาพ" class="h-11 w-14 object-cover rounded-lg border border-slate-700 bg-white shrink-0" />
-              <span class="text-xs font-medium text-emerald-400 truncate">แนบรูปภาพแล้ว</span>
+              <span class="text-xs font-medium text-emerald-400 truncate">พร้อมบันทึกรูปภาพลง Turso DB</span>
             </div>
             <button id="btnRemoveImage" type="button" class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-semibold shrink-0 transition">
               ลบรูป
@@ -329,8 +371,36 @@
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input id="inputYoutubeUrl" type="url" placeholder="▶️ ลิงก์ YouTube (ถ้ามี)" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-400" />
-            <input id="inputExternalUrl" type="url" placeholder="🔗 ลิงก์เว็บไซต์ / เอกสาร (ถ้ามี)" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400" />
+            <input id="inputYoutubeUrl" type="text" placeholder="▶️ วางลิงก์ YouTube (watch / youtu.be / shorts)" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-400" />
+            <input id="inputExternalUrl" type="text" placeholder="🔗 ลิงก์เอกสาร / ไฟล์แนบ (ถ้ามี)" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400" />
+          </div>
+        </div>
+
+        <!-- NEW: Interactive Website Runner & Auto-Command Box -->
+        <div class="p-3.5 rounded-2xl bg-sky-950/30 border border-sky-500/30 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-sky-300">🌐 กล่องรันเว็บไซต์ & สั่งทำงานตามคำสั่ง Auto</span>
+            <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">Auto-Run Engine</span>
+          </div>
+          <div>
+            <input id="inputWebRunUrl" type="text" placeholder="วางลิงก์เว็บไซต์ที่ต้องการรันในกล่อง เช่น https://ailabv2.vercel.app" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400" />
+          </div>
+          <div>
+            <input id="inputWebAutoCmd" type="text" placeholder="คำสั่ง Auto เช่น เลื่อนหน้าจออัตโนมัติ, รีเฟรชทุก 30 วินาที, คลิกปุ่มเริ่มใช้งาน..." class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-emerald-300 placeholder-slate-500 focus:outline-none focus:border-emerald-400" />
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" data-autocmd="เลื่อนสำรวจหน้าเว็บอัตโนมัติ (Auto Scroll)" class="btn-preset-autocmd px-2 py-1 rounded-lg bg-slate-900 hover:bg-sky-500/20 border border-slate-700 text-[10px] font-semibold text-sky-300 transition">
+              ⚡ Auto Scroll
+            </button>
+            <button type="button" data-autocmd="รีเฟรชอัตโนมัติทุก 30 วินาที (Auto Refresh 30s)" class="btn-preset-autocmd px-2 py-1 rounded-lg bg-slate-900 hover:bg-emerald-500/20 border border-slate-700 text-[10px] font-semibold text-emerald-300 transition">
+              🔄 Auto Refresh 30s
+            </button>
+            <button type="button" data-autocmd="คลิกปุ่มเริ่มต้นและรันระบบอัตโนมัติ (Auto Click & Start)" class="btn-preset-autocmd px-2 py-1 rounded-lg bg-slate-900 hover:bg-orange-500/20 border border-slate-700 text-[10px] font-semibold text-orange-300 transition">
+              🖱️ Auto Click & Start
+            </button>
+            <button type="button" data-autocmd="โหมดแก้จอขาว + รันอัตโนมัติ (Proxy Render + Auto Run)" class="btn-preset-autocmd px-2 py-1 rounded-lg bg-slate-900 hover:bg-purple-500/20 border border-slate-700 text-[10px] font-semibold text-purple-300 transition">
+              🛡️ แก้จอขาว + Auto
+            </button>
           </div>
         </div>
 
@@ -369,9 +439,9 @@
     </div>
   </div>
 
-  <!-- MODAL 2: NOTE DETAIL & COMMENTS -->
+  <!-- MODAL 2: NOTE DETAIL, COMMENTS & WEBSITE RUNNER CONTROLLER -->
   <div id="modalNoteDetail" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden animate-pop">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden animate-pop">
       <div id="detailCardHeader" class="px-6 pt-5 pb-4 border-b border-black/5 flex items-start justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
           <div id="detailAuthorInitial" class="w-10 h-10 rounded-2xl bg-slate-900/10 text-slate-900 font-bold text-sm flex items-center justify-center shrink-0">น</div>
@@ -392,8 +462,50 @@
           <img id="detailImageEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="รูปภาพประกอบ" class="w-full max-h-80 object-contain cursor-zoom-in mx-auto" />
         </div>
 
-        <div id="detailYoutubeWrapper" class="hidden rounded-2xl overflow-hidden border border-slate-200 bg-black aspect-video">
-          <iframe id="detailYoutubeIframe" class="w-full h-full" src="about:blank" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+        <div id="detailYoutubeWrapper" class="hidden rounded-2xl overflow-hidden border border-slate-200 bg-black">
+          <div class="aspect-video w-full">
+            <iframe id="detailYoutubeIframe" class="w-full h-full" src="about:blank" title="YouTube video player" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          </div>
+          <div class="px-3 py-2 bg-slate-900 text-white flex items-center justify-between text-xs">
+            <span class="truncate text-slate-300">▶️ วิดีโอ YouTube</span>
+            <a id="detailYoutubeDirectLink" href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="text-orange-400 hover:underline font-semibold">เปิดดูบน YouTube ↗</a>
+          </div>
+        </div>
+
+        <!-- Website Auto-Runner inside Detail Modal -->
+        <div id="detailWebRunnerWrapper" class="hidden rounded-2xl overflow-hidden border-2 border-sky-500/40 bg-slate-950 text-white">
+          <div class="px-3.5 py-2 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+              <span id="detailWebUrlLabel" class="text-xs font-mono text-sky-300 truncate">https://...</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button id="btnDetailProxyWeb" type="button" class="px-2.5 py-1 rounded-lg bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/40 text-purple-200 text-[11px] font-bold transition">
+                🛡️ โหมดแก้จอขาว
+              </button>
+              <button id="btnDetailReloadWeb" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold transition">
+                🔄 รีโหลด
+              </button>
+              <a id="detailWebExternalLink" href="https://example.com" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-[11px] font-bold transition">
+                เปิดแท็บใหม่ ↗
+              </a>
+            </div>
+          </div>
+          <div class="relative w-full h-80 bg-white">
+            <div id="detailWebScanLine" class="auto-run-scanline"></div>
+            <iframe id="detailWebIframe" class="w-full h-full border-0" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+          <div class="p-3 bg-slate-900 border-t border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span id="detailWebAutoStatusText" class="text-emerald-400 font-semibold">🤖 สถานะ Auto-Run: พร้อมทำงานตามคำสั่ง</span>
+            </div>
+            <form id="formDetailSendAutoCmd" class="flex gap-2">
+              <input id="inputDetailAutoCmd" type="text" placeholder="พิมพ์คำสั่งส่งให้กล่องเว็บไซต์ทำงาน Auto..." class="flex-1 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400" />
+              <button type="submit" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shrink-0 transition">
+                ⚡ ส่งคำสั่ง Auto
+              </button>
+            </form>
+          </div>
         </div>
 
         <div id="detailLinkWrapper" class="hidden"></div>
@@ -441,7 +553,7 @@
     </div>
   </div>
 
-  <!-- MODAL 4: PASSWORD DELETE PROTECTION (Never reveals password) -->
+  <!-- MODAL 4: PASSWORD DELETE PROTECTION -->
   <div id="modalDeletePin" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 text-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-700 animate-pop">
       <div class="flex items-center justify-between mb-3">
@@ -475,6 +587,8 @@
 
   <script>
     (function () {
+      const DEFAULT_TURSO_URL = 'libsql://ailsed-metawat888.aws-ap-southeast-1.turso.io';
+      const LS_TURSO_CFG_KEY = 'THINK_TURSO_DB_CONFIG_V1';
       const LS_ROOM_PREFIX = 'WHITEBOARD_ROOM_STATE_V3_';
       const LS_NICKNAME_KEY = 'WHITEBOARD_LAST_NICKNAME_V2';
       const LS_ROLE_KEY = 'THINK_REVIEWER_ROLE_V1';
@@ -491,6 +605,13 @@
 
       const urlParams = new URLSearchParams(window.location.search);
       const roomFromUrl = (urlParams.get('room') || '').trim();
+      const tokenFromUrl = (urlParams.get('tursoToken') || '').trim();
+
+      let tursoConfig = loadTursoConfig();
+      if (tokenFromUrl) {
+        tursoConfig.authToken = tokenFromUrl;
+        saveTursoConfig();
+      }
 
       let syncConfig = loadSyncConfig();
       if (roomFromUrl) syncConfig.roomCode = roomFromUrl;
@@ -498,6 +619,146 @@
       saveSyncConfig();
 
       const mediaCache = new Map();
+      const autoRunnerTimers = new Map();
+      let isHydratingRoom = false;
+
+      function loadTursoConfig() {
+        try {
+          const raw = localStorage.getItem(LS_TURSO_CFG_KEY);
+          if (raw) {
+            const p = JSON.parse(raw);
+            return {
+              dbUrl: (p && p.dbUrl) || DEFAULT_TURSO_URL,
+              authToken: (p && p.authToken) || ''
+            };
+          }
+        } catch (e) {}
+        return { dbUrl: DEFAULT_TURSO_URL, authToken: '' };
+      }
+
+      function saveTursoConfig() {
+        try {
+          localStorage.setItem(LS_TURSO_CFG_KEY, JSON.stringify(tursoConfig));
+        } catch (e) {}
+      }
+
+      // Convert libsql://ailsed-metawat888.aws-ap-southeast-1.turso.io -> https://ailsed-metawat888.aws-ap-southeast-1.turso.io/v2/pipeline
+      function getTursoPipelineEndpoint() {
+        const rawUrl = (tursoConfig.dbUrl || DEFAULT_TURSO_URL).trim();
+        const httpsBase = rawUrl
+          .replace(/^libsql:\/\//i, 'https://')
+          .replace(/^wss?:\/\//i, 'https://')
+          .replace(/\/+$/, '');
+        return `${httpsBase}/v2/pipeline`;
+      }
+
+      // Execute SQL statements directly against Turso LibSQL HTTP v2 Pipeline API
+      async function executeTursoPipeline(statements) {
+        const endpoint = getTursoPipelineEndpoint();
+        const headers = { 'Content-Type': 'application/json' };
+        if (tursoConfig.authToken) {
+          headers['Authorization'] = `Bearer ${tursoConfig.authToken}`;
+        }
+        const requests = statements.map(s => ({
+          type: 'execute',
+          stmt: {
+            sql: s.sql,
+            args: (s.args || []).map(a => {
+              if (typeof a === 'number') return { type: 'integer', value: String(Math.trunc(a)) };
+              if (a === null || a === undefined) return { type: 'null' };
+              return { type: 'text', value: String(a) };
+            })
+          }
+        }));
+        requests.push({ type: 'close' });
+
+        try {
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ requests })
+          });
+          if (res.ok) {
+            return await res.json();
+          }
+        } catch (e) {}
+        return null;
+      }
+
+      async function initTursoSchema() {
+        await executeTursoPipeline([
+          {
+            sql: `CREATE TABLE IF NOT EXISTS think_posts (
+              id TEXT PRIMARY KEY,
+              room_code TEXT NOT NULL,
+              post_json TEXT NOT NULL,
+              updated_at INTEGER NOT NULL,
+              deleted INTEGER NOT NULL DEFAULT 0
+            )`
+          },
+          {
+            sql: `CREATE TABLE IF NOT EXISTS think_rooms (
+              room_code TEXT PRIMARY KEY,
+              state_json TEXT NOT NULL,
+              updated_at INTEGER NOT NULL
+            )`
+          }
+        ]);
+      }
+
+      async function pushPostToTurso(roomCode, post, isDeleted = false) {
+        if (!roomCode || !post || !post.id) return;
+        const cleanRoom = String(roomCode).trim().toUpperCase();
+        const updatedAt = post.updatedAtMs || Date.now();
+        await executeTursoPipeline([
+          {
+            sql: `INSERT INTO think_posts (id, room_code, post_json, updated_at, deleted)
+                  VALUES (?, ?, ?, ?, ?)
+                  ON CONFLICT(id) DO UPDATE SET
+                    post_json = excluded.post_json,
+                    updated_at = excluded.updated_at,
+                    deleted = excluded.deleted
+                  WHERE excluded.updated_at >= think_posts.updated_at OR excluded.deleted = 1`,
+            args: [post.id, cleanRoom, JSON.stringify(post), updatedAt, isDeleted ? 1 : 0]
+          }
+        ]);
+      }
+
+      async function pullRoomFromTurso(roomCode) {
+        if (!roomCode) return false;
+        const cleanRoom = String(roomCode).trim().toUpperCase();
+        const data = await executeTursoPipeline([
+          {
+            sql: `SELECT id, post_json, updated_at, deleted FROM think_posts WHERE room_code = ?`,
+            args: [cleanRoom]
+          }
+        ]);
+        if (!data || !Array.isArray(data.results) || !data.results[0]) return false;
+        const resp = data.results[0].response;
+        if (!resp || !resp.result || !Array.isArray(resp.result.rows)) return false;
+
+        let changed = false;
+        const deletedIds = [];
+        const incomingPosts = [];
+
+        for (const row of resp.result.rows) {
+          const idVal = row[0] && row[0].value;
+          const jsonVal = row[1] && row[1].value;
+          const delVal = row[3] && Number(row[3].value);
+          if (delVal === 1 && idVal) {
+            deletedIds.push(idVal);
+          } else if (jsonVal) {
+            try {
+              incomingPosts.push(JSON.parse(jsonVal));
+            } catch (e) {}
+          }
+        }
+
+        if (deletedIds.length > 0 || incomingPosts.length > 0) {
+          changed = mergeIncomingState({ deletedIds, posts: incomingPosts });
+        }
+        return changed;
+      }
 
       function createDefaultRoomState(roomCode) {
         return {
@@ -511,7 +772,7 @@
       }
 
       function getRoomStorageKey(roomCode) {
-        return LS_ROOM_PREFIX + String(roomCode || '101').trim().toUpperCase();
+        return LS_ROOM_PREFIX + String(roomCode || 'DEFAULT').trim().toUpperCase();
       }
 
       function discoverAllStoredRooms() {
@@ -524,7 +785,7 @@
               if (raw) {
                 const parsed = JSON.parse(raw);
                 const code = (parsed && parsed.roomCode) || k.slice(LS_ROOM_PREFIX.length);
-                if (code) found.add(String(code).trim());
+                if (code && code !== '101') found.add(String(code).trim());
               }
             }
           }
@@ -537,8 +798,7 @@
           const raw = localStorage.getItem(LS_SYNC_CFG_KEY);
           if (raw) {
             const parsed = JSON.parse(raw);
-            if (parsed && parsed.roomCode) {
-              if (!Array.isArray(parsed.recentRooms)) parsed.recentRooms = [parsed.roomCode];
+            if (parsed && typeof parsed.roomCode === 'string') {
               return parsed;
             }
           }
@@ -574,13 +834,13 @@
       let ntfyEventSource = null;
 
       function getNtfyTopicForRoom(roomCode) {
-        const clean = String(roomCode || '101').trim().toUpperCase();
+        const clean = String(roomCode || 'DEFAULT').trim().toUpperCase();
         let hex = '';
         for (let i = 0; i < clean.length; i++) hex += clean.charCodeAt(i).toString(16);
         return 'cb_v5_room_' + hex.slice(0, 40);
       }
 
-      // 1. Auto-Save Permanent Additive Storage (LocalStorage + window.name + IndexedDB)
+      // 1. Bulletproof Media + Post Persistence (Fixes disappearing images & YouTube!)
       function loadRoomFromLocalStorage(roomCode) {
         const key = getRoomStorageKey(roomCode);
         let parsed = null;
@@ -602,19 +862,14 @@
           if (!Array.isArray(parsed.deletedIds)) parsed.deletedIds = [];
           if (!parsed.theme) parsed.theme = 'dark';
           parsed.posts.forEach(p => {
-            if (p && p.id && !p.image && mediaCache.has(p.id)) p.image = mediaCache.get(p.id);
+            if (p && p.id) {
+              if (p.image) mediaCache.set(p.id, p.image);
+              else if (mediaCache.has(p.id)) p.image = mediaCache.get(p.id);
+            }
           });
           return parsed;
         }
         return createDefaultRoomState(roomCode);
-      }
-
-      function getRoomPostCount(roomCode) {
-        if (String(roomCode).toUpperCase() === String(syncConfig.roomCode).toUpperCase()) {
-          return (state.posts && state.posts.length) || 0;
-        }
-        const r = loadRoomFromLocalStorage(roomCode);
-        return (r && Array.isArray(r.posts)) ? r.posts.length : 0;
       }
 
       function openIndexedDB() {
@@ -632,36 +887,49 @@
       }
 
       async function hydrateRoomFromIndexedDB(roomCode) {
+        if (!roomCode) return false;
         const key = getRoomStorageKey(roomCode);
+        isHydratingRoom = true;
         try {
           const db = await openIndexedDB();
-          if (!db) return false;
+          if (!db) {
+            isHydratingRoom = false;
+            return false;
+          }
           return await new Promise(resolve => {
             const tx = db.transaction([IDB_STORE, IDB_MEDIA_STORE], 'readonly');
             const store = tx.objectStore(IDB_STORE);
             const mediaStore = tx.objectStore(IDB_MEDIA_STORE);
             const getReq = store.get(key);
             getReq.onsuccess = () => {
-              if (String(roomCode).toUpperCase() !== String(syncConfig.roomCode).toUpperCase()) return resolve(false);
+              if (String(roomCode).toUpperCase() !== String(syncConfig.roomCode).toUpperCase()) {
+                isHydratingRoom = false;
+                return resolve(false);
+              }
               const idbState = getReq.result;
               let changed = false;
-              if (idbState && Array.isArray(idbState.posts)) changed = mergeIncomingState(idbState);
+              if (idbState && Array.isArray(idbState.posts)) {
+                changed = mergeIncomingState(idbState, state, true);
+              }
               let pendingMedia = state.posts.length;
               if (pendingMedia === 0) {
+                isHydratingRoom = false;
                 if (changed) renderBoard();
                 return resolve(changed);
               }
               state.posts.forEach(p => {
                 const mReq = mediaStore.get(p.id);
                 mReq.onsuccess = () => {
-                  if (mReq.result && !p.image) {
+                  if (mReq.result) {
                     p.image = mReq.result;
                     mediaCache.set(p.id, mReq.result);
                     changed = true;
                   }
                   pendingMedia--;
                   if (pendingMedia === 0) {
+                    isHydratingRoom = false;
                     if (changed) {
+                      saveLocalOnly();
                       renderBoard();
                       if (activeDetailPostId) renderNoteDetailModal(activeDetailPostId);
                     }
@@ -670,18 +938,25 @@
                 };
                 mReq.onerror = () => {
                   pendingMedia--;
-                  if (pendingMedia === 0) resolve(changed);
+                  if (pendingMedia === 0) {
+                    isHydratingRoom = false;
+                    resolve(changed);
+                  }
                 };
               });
             };
-            getReq.onerror = () => resolve(false);
+            getReq.onerror = () => {
+              isHydratingRoom = false;
+              resolve(false);
+            };
           });
         } catch (err) {
+          isHydratingRoom = false;
           return false;
         }
       }
 
-      function mergeIncomingState(remote, targetStateObj) {
+      function mergeIncomingState(remote, targetStateObj, skipSave = false) {
         const target = targetStateObj || state;
         if (!remote || typeof remote !== 'object') return false;
         let changed = false;
@@ -711,10 +986,13 @@
             if (mergeSinglePost(rPost, deletedSet, target)) changed = true;
           });
         }
-        if (changed && target === state) saveLocalOnly();
+        if (changed && target === state && !skipSave && !isHydratingRoom) {
+          saveLocalOnly();
+        }
         return changed;
       }
 
+      // CRITICAL FIX: Never overwrite non-empty image, youtubeUrl, or webRunUrl with empty values!
       function mergeSinglePost(rPost, deletedSetInput, targetStateObj) {
         const target = targetStateObj || state;
         if (!rPost || !rPost.id) return false;
@@ -730,11 +1008,19 @@
           const clone = JSON.parse(JSON.stringify(rPost));
           if (!Array.isArray(clone.comments)) clone.comments = [];
           if (typeof clone.rating !== 'number') clone.rating = 5;
+          if (!clone.image && mediaCache.has(clone.id)) clone.image = mediaCache.get(clone.id);
           target.posts.push(clone);
           changed = true;
         } else {
           if ((rPost.likes || 0) > (lPost.likes || 0)) { lPost.likes = rPost.likes; changed = true; }
           if ((rPost.hearts || 0) > (lPost.hearts || 0)) { lPost.hearts = rPost.hearts; changed = true; }
+
+          // Always preserve media fields if one side has them and the other doesn't
+          if (!lPost.image && rPost.image) { lPost.image = rPost.image; changed = true; }
+          if (!lPost.youtubeUrl && rPost.youtubeUrl) { lPost.youtubeUrl = rPost.youtubeUrl; changed = true; }
+          if (!lPost.webRunUrl && rPost.webRunUrl) { lPost.webRunUrl = rPost.webRunUrl; changed = true; }
+          if (!lPost.webAutoCmd && rPost.webAutoCmd) { lPost.webAutoCmd = rPost.webAutoCmd; changed = true; }
+
           if ((rPost.updatedAtMs || 0) > (lPost.updatedAtMs || 0)) {
             lPost.nickname = rPost.nickname || lPost.nickname;
             lPost.role = rPost.role || lPost.role;
@@ -742,14 +1028,15 @@
             if (rPost.text !== undefined) lPost.text = rPost.text;
             lPost.color = rPost.color || lPost.color;
             if (rPost.image) lPost.image = rPost.image;
-            if (rPost.youtubeUrl !== undefined) lPost.youtubeUrl = rPost.youtubeUrl;
+            if (rPost.youtubeUrl) lPost.youtubeUrl = rPost.youtubeUrl;
             if (rPost.externalUrl !== undefined) lPost.externalUrl = rPost.externalUrl;
+            if (rPost.webRunUrl !== undefined) lPost.webRunUrl = rPost.webRunUrl;
+            if (rPost.webAutoCmd !== undefined) lPost.webAutoCmd = rPost.webAutoCmd;
+            if (rPost.webProxyMode !== undefined) lPost.webProxyMode = rPost.webProxyMode;
             lPost.updatedAtMs = rPost.updatedAtMs;
             changed = true;
-          } else if (!lPost.image && rPost.image) {
-            lPost.image = rPost.image;
-            changed = true;
           }
+
           const lComments = Array.isArray(lPost.comments) ? lPost.comments : [];
           const rComments = Array.isArray(rPost.comments) ? rPost.comments : [];
           const cMap = new Map(lComments.map(c => [c.id, c]));
@@ -765,14 +1052,14 @@
       }
 
       async function saveLocalOnly() {
+        if (!syncConfig.roomCode) return;
         const key = getRoomStorageKey(syncConfig.roomCode);
-        try {
-          const existingRaw = localStorage.getItem(key);
-          if (existingRaw) {
-            const existingParsed = JSON.parse(existingRaw);
-            if (existingParsed && Array.isArray(existingParsed.posts)) mergeIncomingState(existingParsed, state);
-          }
-        } catch (e) {}
+
+        // Ensure every post in state has its cached image attached before saving
+        state.posts.forEach(p => {
+          if (p.image) mediaCache.set(p.id, p.image);
+          else if (mediaCache.has(p.id)) p.image = mediaCache.get(p.id);
+        });
 
         try {
           localStorage.setItem(key, JSON.stringify(state));
@@ -780,7 +1067,7 @@
           try {
             const lightState = Object.assign({}, state, {
               posts: state.posts.map(p => {
-                if (p.image && p.image.startsWith('data:') && p.image.length > 15000) {
+                if (p.image && p.image.startsWith('data:') && p.image.length > 35000) {
                   mediaCache.set(p.id, p.image);
                   const copy = Object.assign({}, p);
                   delete copy.image;
@@ -795,13 +1082,7 @@
 
         try {
           const wn = window.name && window.name.startsWith('{') ? JSON.parse(window.name) : {};
-          wn[key] = Object.assign({}, state, {
-            posts: state.posts.map(p => {
-              const copy = Object.assign({}, p);
-              if (copy.image && copy.image.startsWith('data:') && copy.image.length > 15000) delete copy.image;
-              return copy;
-            })
-          });
+          wn[key] = state;
           window.name = JSON.stringify(wn);
         } catch (e) {}
 
@@ -812,7 +1093,8 @@
             tx.objectStore(IDB_STORE).put(JSON.parse(JSON.stringify(state)), key);
             const mStore = tx.objectStore(IDB_MEDIA_STORE);
             state.posts.forEach(p => {
-              if (p.image && p.image.startsWith('data:')) mStore.put(p.image, p.id);
+              const imgData = p.image || mediaCache.get(p.id);
+              if (imgData) mStore.put(imgData, p.id);
             });
           }
         } catch (err) {}
@@ -821,12 +1103,17 @@
       async function persistStatePermanently(changedPost) {
         state.updatedAt = Date.now();
         await saveLocalOnly();
+        if (changedPost) {
+          pushPostToTurso(syncConfig.roomCode, changedPost, false);
+        }
         broadcastStateToCloud(changedPost);
       }
 
       async function switchRoom(newRoomCode) {
-        await saveLocalOnly();
-        const cleanCode = (newRoomCode || '').trim(); if (!cleanCode) return;
+        const cleanCode = (newRoomCode || '').trim();
+        if (!cleanCode) return;
+        if (syncConfig.roomCode) await saveLocalOnly();
+
         syncConfig.roomCode = cleanCode;
         addRoomToHistory(cleanCode);
         saveSyncConfig();
@@ -835,17 +1122,18 @@
         document.getElementById('modalNoteDetail').classList.add('hidden');
 
         state = loadRoomFromLocalStorage(cleanCode);
-        renderBoard();
         await hydrateRoomFromIndexedDB(cleanCode);
         renderBoard();
 
+        await initTursoSchema();
         subscribeGunRoom();
         subscribeNtfyRoomStream(cleanCode);
         await pullFromCloudAllEngines();
       }
 
-      // 2. Cloud Auto-Sync
+      // 2. Cloud + Turso Auto-Sync Engine
       function initCrossDeviceSync() {
+        initTursoSchema();
         try {
           if (window.Gun) {
             gunInstance = window.Gun({
@@ -869,12 +1157,17 @@
           }
         });
 
-        subscribeNtfyRoomStream(syncConfig.roomCode);
-        pullFromCloudAllEngines();
-        setInterval(pullFromCloudAllEngines, 6000);
+        if (syncConfig.roomCode) {
+          subscribeNtfyRoomStream(syncConfig.roomCode);
+          pullFromCloudAllEngines();
+        }
+        setInterval(() => {
+          if (syncConfig.roomCode) pullFromCloudAllEngines();
+        }, 6000);
       }
 
       function subscribeNtfyRoomStream(roomCode) {
+        if (!roomCode) return;
         try {
           if (ntfyEventSource) { ntfyEventSource.close(); ntfyEventSource = null; }
           const topic = getNtfyTopicForRoom(roomCode);
@@ -958,12 +1251,12 @@
       }
 
       function subscribeGunRoom() {
-        if (!gunInstance) return;
-        const activeRoom = (syncConfig.roomCode || '101').trim().toUpperCase();
+        if (!gunInstance || !syncConfig.roomCode) return;
+        const activeRoom = syncConfig.roomCode.trim().toUpperCase();
         gunRoomNode = gunInstance.get('classboard_v4_room_' + activeRoom);
 
         gunRoomNode.get('posts').map().on((postJson, postId) => {
-          if (activeRoom !== (syncConfig.roomCode || '101').trim().toUpperCase() || !postJson) return;
+          if (activeRoom !== (syncConfig.roomCode || '').trim().toUpperCase() || !postJson) return;
           if (postJson === 'DELETED') {
             if (!Array.isArray(state.deletedIds)) state.deletedIds = [];
             if (!state.deletedIds.includes(postId)) {
@@ -986,6 +1279,36 @@
       }
 
       async function pullFromCloudAllEngines() {
+        if (!syncConfig.roomCode) return;
+
+        // 1. Pull from Turso LibSQL Database (libsql://ailsed-metawat888.aws-ap-southeast-1.turso.io)
+        const tursoChanged = await pullRoomFromTurso(syncConfig.roomCode);
+        if (tursoChanged) {
+          renderBoard();
+          if (activeDetailPostId) renderNoteDetailModal(activeDetailPostId);
+        }
+
+        // 2. Pull from Vercel /api/board (connected to Turso DB on server)
+        if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('googleusercontent')) {
+          try {
+            const roomSafe = encodeURIComponent(syncConfig.roomCode.trim().toUpperCase());
+            const headers = {};
+            if (tursoConfig.authToken) headers['x-turso-token'] = tursoConfig.authToken;
+            const res = await fetch(window.location.origin + '/api/' + 'board?room=' + roomSafe, {
+              method: 'GET',
+              headers
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data && Array.isArray(data.posts) && mergeIncomingState(data)) {
+                renderBoard();
+                if (activeDetailPostId) renderNoteDetailModal(activeDetailPostId);
+              }
+            }
+          } catch (e) {}
+        }
+
+        // 3. Pull from ntfy + JSONBlob full media store
         try {
           const topic = getNtfyTopicForRoom(syncConfig.roomCode);
           const res = await fetch(`https://ntfy.sh/${topic}/json?poll=1&since=all`);
@@ -1006,24 +1329,19 @@
             if (latestBlobId) await pullFromJsonBlob(latestBlobId);
           }
         } catch (e) {}
-
-        if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('googleusercontent')) {
-          try {
-            const roomSafe = encodeURIComponent((syncConfig.roomCode || '101').trim().toUpperCase());
-            const res = await fetch(window.location.origin + '/api/' + 'board?room=' + roomSafe, { method: 'GET' });
-            if (res.ok) {
-              const data = await res.json();
-              if (data && Array.isArray(data.posts) && mergeIncomingState(data)) {
-                renderBoard();
-                if (activeDetailPostId) renderNoteDetailModal(activeDetailPostId);
-              }
-            }
-          } catch (e) {}
-        }
       }
 
       async function broadcastStateToCloud(changedPost) {
+        if (!syncConfig.roomCode) return;
         const topic = getNtfyTopicForRoom(syncConfig.roomCode);
+
+        // 1. Push full state (with base64 images, YouTube, and Website Auto-Run) to JSONBlob first so blobId is ready
+        let blobId = '';
+        try {
+          blobId = await pushToJsonBlob();
+        } catch (e) {}
+
+        // 2. Send real-time event on ntfy
         if (changedPost && changedPost.id) {
           try {
             const lightPost = Object.assign({}, changedPost);
@@ -1032,14 +1350,13 @@
             }
             await fetch(`https://ntfy.sh/${topic}`, {
               method: 'POST',
-              body: JSON.stringify({ type: 'POST_UPSERT', post: lightPost, updatedAt: Date.now() })
+              body: JSON.stringify({ type: 'POST_UPSERT', post: lightPost, blobId, updatedAt: Date.now() })
             });
           } catch (e) {}
         }
 
-        try {
-          const blobId = await pushToJsonBlob();
-          if (blobId) {
+        if (blobId) {
+          try {
             await fetch(`https://ntfy.sh/${topic}`, {
               method: 'POST',
               body: JSON.stringify({
@@ -1049,26 +1366,25 @@
                 updatedAt: state.updatedAt
               })
             });
-          } else if (state.deletedIds && state.deletedIds.length > 0) {
-            await fetch(`https://ntfy.sh/${topic}`, {
-              method: 'POST',
-              body: JSON.stringify({ type: 'DELETE_IDS', deletedIds: state.deletedIds, updatedAt: state.updatedAt })
-            });
-          }
-        } catch (e) {}
+          } catch (e) {}
+        }
 
+        // 3. Push to Gun.js
         try {
           if (gunRoomNode && changedPost && changedPost.id) {
             gunRoomNode.get('posts').get(changedPost.id).put(JSON.stringify(changedPost));
           }
         } catch (e) {}
 
+        // 4. Push to Vercel /api/board (Turso-backed serverless endpoint)
         if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('googleusercontent')) {
           try {
-            const roomSafe = encodeURIComponent((syncConfig.roomCode || '101').trim().toUpperCase());
+            const roomSafe = encodeURIComponent(syncConfig.roomCode.trim().toUpperCase());
+            const headers = { 'Content-Type': 'application/json' };
+            if (tursoConfig.authToken) headers['x-turso-token'] = tursoConfig.authToken;
             await fetch(window.location.origin + '/api/' + 'board?room=' + roomSafe, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers,
               body: JSON.stringify(state)
             });
           } catch (e) {}
@@ -1092,7 +1408,7 @@
         try { return Boolean(localStorage.getItem(LS_ACTIVE_SESSION_KEY) && getSavedNickname()); } catch (e) { return false; }
       }
 
-      // 3. Helpers
+      // 3. Universal URL / YouTube / Image / Website Runner Helpers
       function escapeHtml(str) {
         return String(str || '')
           .replace(/&/g, '&amp;')
@@ -1100,6 +1416,28 @@
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#039;');
+      }
+
+      function normalizeWebUrl(urlStr) {
+        if (!urlStr) return '';
+        let s = String(urlStr).trim();
+        if (!s) return '';
+        if (!/^https?:\/\//i.test(s) && !s.startsWith('data:')) {
+          s = 'https://' + s;
+        }
+        return s;
+      }
+
+      function normalizeImageUrl(urlStr) {
+        if (!urlStr) return '';
+        const s = String(urlStr).trim();
+        if (s.startsWith('data:')) return s;
+        // Convert Google Drive share links to direct image links automatically
+        const driveMatch = s.match(/drive\.google\.com\/file\/d\/([^\/?&]+)/i) || s.match(/drive\.google\.com\/open\?id=([^\/?&]+)/i);
+        if (driveMatch && driveMatch[1]) {
+          return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
+        }
+        return normalizeWebUrl(s);
       }
 
       function formatTextWithLinks(text) {
@@ -1111,20 +1449,68 @@
 
       function extractYoutubeId(urlStr) {
         if (!urlStr) return '';
-        const match = String(urlStr).trim().match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+        const s = String(urlStr).trim();
+        const regExp = /(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i;
+        const match = s.match(regExp);
         return match && match[1] ? match[1] : '';
       }
 
       function detectYoutubeUrlInText(text) {
         if (!text) return '';
-        const match = String(text).match(/https?:\/\/(?:www\.)?(?:youtube\.com\/[^\s]+|youtu\.be\/[^\s]+)/i);
-        return match ? match[0] : '';
+        const match = String(text).match(/(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/[^\s]+|youtu\.be\/[^\s]+)/i);
+        return match ? normalizeWebUrl(match[0]) : '';
       }
 
       function detectImageUrlInText(text) {
         if (!text) return '';
         const match = String(text).match(/https?:\/\/[^\s]+\.(?:png|jpe?g|gif|webp|svg)(?:\?[^\s]*)?/i);
         return match ? match[0] : '';
+      }
+
+      // Build Proxy Srcdoc with injected Auto-Run Executor to fix blank white screen on sites blocking iframes!
+      async function loadWebsiteViaProxyIntoIframe(iframeEl, targetUrl, autoCmdText, statusLabelEl) {
+        if (!iframeEl || !targetUrl) return;
+        const cleanUrl = normalizeWebUrl(targetUrl);
+        if (statusLabelEl) statusLabelEl.textContent = '🛡️ กำลังโหลดหน้าเว็บผ่านโหมดแก้จอขาว + สคริปต์ Auto...';
+
+        const injectedAutoRunnerScript = `
+          <script>
+            (function() {
+              const cmd = ${JSON.stringify(autoCmdText || 'Auto Scroll')};
+              window.addEventListener('load', function() {
+                let dir = 1;
+                setInterval(function() {
+                  if (cmd.includes('เลื่อน') || cmd.toLowerCase().includes('scroll') || !cmd) {
+                    window.scrollBy({ top: 2 * dir, behavior: 'smooth' });
+                    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 10) dir = -1;
+                    if (window.scrollY <= 5) dir = 1;
+                  }
+                }, 50);
+              });
+            })();
+          <\/script>
+        `;
+
+        try {
+          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(cleanUrl)}`;
+          const res = await fetch(proxyUrl);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.contents) {
+              const baseTag = `<base href="${cleanUrl}">`;
+              const htmlWithBase = data.contents.replace(/<head([^>]*)>/i, `<head$1>${baseTag}`) + injectedAutoRunnerScript;
+              iframeEl.removeAttribute('src');
+              iframeEl.srcdoc = htmlWithBase;
+              if (statusLabelEl) statusLabelEl.textContent = `🟢 โหมดแก้จอขาวทำงานสำเร็จ • คำสั่ง: ${autoCmdText || 'Auto Run'}`;
+              return;
+            }
+          }
+        } catch (e) {}
+
+        // Fallback to direct src if proxy is unreachable
+        iframeEl.removeAttribute('srcdoc');
+        iframeEl.src = cleanUrl;
+        if (statusLabelEl) statusLabelEl.textContent = `🟢 กำลังรันเว็บไซต์ • คำสั่ง: ${autoCmdText || 'Auto Run'}`;
       }
 
       function triggerReactionAnimation(btnEl, type) {
@@ -1172,7 +1558,7 @@
           el.style.opacity = '0';
           el.style.transition = 'opacity 0.25s ease';
           setTimeout(() => el.remove(), 250);
-        }, 1800);
+        }, 1900);
       }
 
       function requestPinProtectedDelete(titleText, descText, onConfirmCallback) {
@@ -1186,7 +1572,7 @@
         setTimeout(() => pinInput.focus(), 60);
       }
 
-      function compressImageFile(file, maxWidth = 560, quality = 0.72) {
+      function compressImageFile(file, maxWidth = 520, quality = 0.7) {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = ev => {
@@ -1227,9 +1613,13 @@
         return map[color] || map.green;
       }
 
-      // 4. Render Think Board (Auto Grid Always)
+      // 4. Render Think Board (With Guaranteed Image, YouTube, and Live Auto-Run Website Box)
       function renderBoard() {
         document.getElementById('emptyStateRoomLabel').textContent = syncConfig.roomCode || '-';
+
+        // Clear previous intervals
+        autoRunnerTimers.forEach(t => clearInterval(t));
+        autoRunnerTimers.clear();
 
         const surface = document.getElementById('whiteboardSurface');
         surface.className = 'whiteboard-canvas flex-1 relative w-full min-h-[calc(100vh-58px)] overflow-auto';
@@ -1257,7 +1647,12 @@
           const roleStr = post.role || 'นักเรียน';
           const initial = (post.nickname || 'น').trim().charAt(0).toUpperCase();
           const latestComment = post.comments.length > 0 ? post.comments[post.comments.length - 1] : null;
-          const ytId = extractYoutubeId(post.youtubeUrl || detectYoutubeUrlInText(post.text));
+
+          // Resolve YouTube ID from any field
+          const ytId = post.youtubeId || extractYoutubeId(post.youtubeUrl || post.externalUrl || detectYoutubeUrlInText(post.text));
+          // Resolve Website Runner URL
+          const webRunUrl = post.webRunUrl ? normalizeWebUrl(post.webRunUrl) : '';
+          const webAutoCmd = post.webAutoCmd || 'ทำงานอัตโนมัติ (Auto-Run)';
 
           card.className = `note-card w-full rounded-3xl border-2 ${colorCls} p-5 flex flex-col animate-pop`;
 
@@ -1293,26 +1688,34 @@
               </div>
             </div>
 
+            <!-- Media & Content Area -->
             <div class="note-clickable-body cursor-pointer group">
               ${
                 post.image
-                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-black/10 bg-white/70">
-                       <img src="${escapeHtml(post.image)}" alt="รูปภาพประกอบ" class="note-image w-full max-h-52 object-cover group-hover:scale-[1.01] transition" />
+                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-black/10 bg-white/80 shadow-sm">
+                       <img src="${escapeHtml(post.image)}" alt="รูปภาพประกอบ" class="note-image w-full max-h-56 object-cover group-hover:scale-[1.01] transition" onerror="this.style.display='none'" />
                      </div>`
                   : ''
               }
               ${
                 ytId
-                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-black/10 bg-black aspect-video relative" onclick="event.stopPropagation()">
-                       <iframe class="w-full h-full" src="https://www.youtube.com/embed/${escapeHtml(ytId)}" title="YouTube video" frameborder="0" allowfullscreen></iframe>
+                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-black/15 bg-slate-950 shadow-sm" onclick="event.stopPropagation()">
+                       <div class="aspect-video w-full bg-black">
+                         <iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${escapeHtml(ytId)}?rel=0" title="YouTube video" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                       </div>
+                       <div class="px-3 py-1.5 bg-slate-900 text-white flex items-center justify-between text-[11px]">
+                         <span class="text-slate-300 font-medium truncate">▶️ YouTube Video</span>
+                         <a href="https://www.youtube.com/watch?v=${escapeHtml(ytId)}" target="_blank" rel="noopener noreferrer" class="text-orange-400 hover:underline font-bold shrink-0">ดูบน YouTube ↗</a>
+                       </div>
                      </div>`
                   : ''
               }
               ${
-                post.externalUrl
-                  ? `<a href="${escapeHtml(post.externalUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="mb-3 p-2.5 rounded-2xl bg-white/90 hover:bg-white border border-black/10 flex items-center gap-2 text-xs font-semibold text-sky-700 transition shadow-sm">
+                post.externalUrl && !ytId
+                  ? `<a href="${escapeHtml(normalizeWebUrl(post.externalUrl))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="mb-3 p-2.5 rounded-2xl bg-white/90 hover:bg-white border border-black/10 flex items-center gap-2 text-xs font-semibold text-sky-700 transition shadow-sm">
                        <span>🔗</span>
                        <span class="truncate flex-1">${escapeHtml(post.externalUrl)}</span>
+                       <span class="text-[10px] text-slate-400 shrink-0">เปิด ↗</span>
                      </a>`
                   : ''
               }
@@ -1322,6 +1725,49 @@
                   : ''
               }
             </div>
+
+            <!-- Interactive Live Website Runner & Auto-Command Box -->
+            ${
+              webRunUrl
+                ? `<div class="mb-3 rounded-2xl overflow-hidden border-2 border-sky-600/40 bg-slate-950 text-white shadow-md" onclick="event.stopPropagation()">
+                     <div class="px-3 py-1.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-1.5">
+                       <div class="flex items-center gap-1.5 min-w-0">
+                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                         <span class="text-[11px] font-mono text-sky-300 truncate">${escapeHtml(webRunUrl)}</span>
+                       </div>
+                       <div class="flex items-center gap-1 shrink-0">
+                         <button type="button" class="btn-card-proxy px-2 py-0.5 rounded bg-purple-600/40 hover:bg-purple-600/60 text-purple-200 text-[10px] font-bold transition" title="แก้หน้าจอขาวด้วย Proxy Render">
+                           🛡️ แก้จอขาว
+                         </button>
+                         <button type="button" class="btn-card-reload-web px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition" title="รีโหลดหน้าเว็บ">
+                           🔄
+                         </button>
+                         <button type="button" class="btn-open-comments px-2 py-0.5 rounded bg-sky-600 hover:bg-sky-500 text-white text-[10px] font-bold transition" title="ขยายเต็มจอ">
+                           ⛶
+                         </button>
+                       </div>
+                     </div>
+
+                     <div class="relative w-full h-52 bg-white overflow-hidden">
+                       <div class="auto-run-scanline"></div>
+                       <iframe class="card-web-iframe w-full h-full border-0" src="${escapeHtml(webRunUrl)}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation" referrerpolicy="no-referrer-when-downgrade" loading="lazy"></iframe>
+                     </div>
+
+                     <div class="p-2.5 bg-slate-900 border-t border-slate-800 space-y-2">
+                       <div class="flex items-center justify-between gap-2 text-[11px]">
+                         <span class="card-auto-status text-emerald-400 font-semibold truncate">⚡ Auto: ${escapeHtml(webAutoCmd)}</span>
+                         <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold shrink-0">AUTO RUN</span>
+                       </div>
+                       <form class="form-card-autocmd flex gap-1.5">
+                         <input type="text" class="input-card-autocmd flex-1 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-700 text-[11px] text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400" placeholder="สั่งงานกล่องนี้ Auto เช่น รีเฟรช, เลื่อนจอ..." value="${escapeHtml(webAutoCmd)}" />
+                         <button type="submit" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold shrink-0 transition">
+                           ส่งคำสั่ง
+                         </button>
+                       </form>
+                     </div>
+                   </div>`
+                : ''
+            }
 
             ${
               latestComment
@@ -1350,6 +1796,76 @@
               </button>
             </div>
           `;
+
+          // Bind Website Runner Box Controls if present
+          if (webRunUrl) {
+            const iframeEl = card.querySelector('.card-web-iframe');
+            const statusEl = card.querySelector('.card-auto-status');
+            const proxyBtn = card.querySelector('.btn-card-proxy');
+            const reloadBtn = card.querySelector('.btn-card-reload-web');
+            const autoForm = card.querySelector('.form-card-autocmd');
+            const autoInput = card.querySelector('.input-card-autocmd');
+
+            if (post.webProxyMode) {
+              loadWebsiteViaProxyIntoIframe(iframeEl, webRunUrl, webAutoCmd, statusEl);
+            }
+
+            proxyBtn.addEventListener('click', e => {
+              e.stopPropagation();
+              post.webProxyMode = !post.webProxyMode;
+              post.updatedAtMs = Date.now();
+              if (post.webProxyMode) {
+                loadWebsiteViaProxyIntoIframe(iframeEl, webRunUrl, post.webAutoCmd, statusEl);
+              } else {
+                iframeEl.removeAttribute('srcdoc');
+                iframeEl.src = webRunUrl;
+                statusEl.textContent = `⚡ Auto: ${post.webAutoCmd || 'ทำงานอัตโนมัติ'}`;
+              }
+              persistStatePermanently(post);
+            });
+
+            reloadBtn.addEventListener('click', e => {
+              e.stopPropagation();
+              if (post.webProxyMode) {
+                loadWebsiteViaProxyIntoIframe(iframeEl, webRunUrl, post.webAutoCmd, statusEl);
+              } else {
+                iframeEl.src = webRunUrl + (webRunUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+              }
+              showToast('🔄 รีโหลดกล่องเว็บไซต์แล้ว');
+            });
+
+            autoForm.addEventListener('submit', e => {
+              e.preventDefault();
+              e.stopPropagation();
+              const newCmd = (autoInput.value || '').trim() || 'ทำงานอัตโนมัติ';
+              post.webAutoCmd = newCmd;
+              post.updatedAtMs = Date.now();
+              statusEl.textContent = `⚡ กำลังรันคำสั่ง: ${newCmd}`;
+              if (newCmd.includes('จอขาว') || newCmd.toLowerCase().includes('proxy')) {
+                post.webProxyMode = true;
+                loadWebsiteViaProxyIntoIframe(iframeEl, webRunUrl, newCmd, statusEl);
+              } else if (post.webProxyMode) {
+                loadWebsiteViaProxyIntoIframe(iframeEl, webRunUrl, newCmd, statusEl);
+              } else {
+                try {
+                  iframeEl.contentWindow.postMessage({ type: 'THINK_AUTO_CMD', command: newCmd }, '*');
+                } catch (err) {}
+              }
+              persistStatePermanently(post);
+              showToast(`⚡ ส่งคำสั่ง Auto "${newCmd}" ให้กล่องทำงานแล้ว`);
+            });
+
+            // Periodic Auto-Runner heartbeat for commands like Auto Refresh
+            const timerId = setInterval(() => {
+              const cmd = (post.webAutoCmd || '').toLowerCase();
+              if (cmd.includes('รีเฟรช') || cmd.includes('refresh') || cmd.includes('reload')) {
+                if (!post.webProxyMode && iframeEl) {
+                  iframeEl.src = webRunUrl + (webRunUrl.includes('?') ? '&' : '?') + '_auto=' + Date.now();
+                }
+              }
+            }, 30000);
+            autoRunnerTimers.set(post.id, timerId);
+          }
 
           const likeBtn = card.querySelector('.btn-like-note');
           likeBtn.addEventListener('click', e => {
@@ -1392,6 +1908,7 @@
                 if (!Array.isArray(state.deletedIds)) state.deletedIds = [];
                 state.deletedIds.push(post.id);
                 state.posts = state.posts.filter(p => p.id !== post.id);
+                pushPostToTurso(syncConfig.roomCode, post, true);
                 try { if (gunRoomNode) gunRoomNode.get('posts').get(post.id).put('DELETED'); } catch (err) {}
                 persistStatePermanently();
                 renderBoard();
@@ -1405,7 +1922,7 @@
         });
       }
 
-      // 5. Note Detail & Comments Modal
+      // 5. Note Detail & Full Website Auto-Runner Modal
       function openNoteDetailModal(postId) {
         activeDetailPostId = postId;
         renderNoteDetailModal(postId);
@@ -1421,6 +1938,7 @@
           return;
         }
         if (!Array.isArray(post.comments)) post.comments = [];
+        if (!post.image && mediaCache.has(post.id)) post.image = mediaCache.get(post.id);
 
         document.getElementById('detailCardHeader').className = `px-6 pt-5 pb-4 border-b border-black/5 flex items-start justify-between gap-3 ${getCardStyle(post.color)}`;
         document.getElementById('detailAuthorInitial').textContent = (post.nickname || 'น').trim().charAt(0).toUpperCase();
@@ -1437,21 +1955,49 @@
 
         const ytWrap = document.getElementById('detailYoutubeWrapper');
         const ytIframe = document.getElementById('detailYoutubeIframe');
-        const ytId = extractYoutubeId(post.youtubeUrl || detectYoutubeUrlInText(post.text));
+        const ytDirectLink = document.getElementById('detailYoutubeDirectLink');
+        const ytId = post.youtubeId || extractYoutubeId(post.youtubeUrl || post.externalUrl || detectYoutubeUrlInText(post.text));
         if (ytId) {
-          const embedSrc = `https://www.youtube.com/embed/${ytId}`;
+          const embedSrc = `https://www.youtube-nocookie.com/embed/${ytId}?rel=0`;
           if (ytIframe.src !== embedSrc) ytIframe.src = embedSrc;
+          if (ytDirectLink) ytDirectLink.href = `https://www.youtube.com/watch?v=${ytId}`;
           ytWrap.classList.remove('hidden');
         } else {
           ytIframe.src = 'about:blank';
           ytWrap.classList.add('hidden');
         }
 
+        // Website Runner inside Detail Modal
+        const webWrap = document.getElementById('detailWebRunnerWrapper');
+        const webIframe = document.getElementById('detailWebIframe');
+        const webUrlLabel = document.getElementById('detailWebUrlLabel');
+        const webExtLink = document.getElementById('detailWebExternalLink');
+        const webStatusText = document.getElementById('detailWebAutoStatusText');
+        const detailAutoInput = document.getElementById('inputDetailAutoCmd');
+
+        if (post.webRunUrl) {
+          const cleanWebUrl = normalizeWebUrl(post.webRunUrl);
+          webWrap.classList.remove('hidden');
+          webUrlLabel.textContent = cleanWebUrl;
+          webExtLink.href = cleanWebUrl;
+          detailAutoInput.value = post.webAutoCmd || '';
+          webStatusText.textContent = `🤖 สถานะ Auto-Run: ${post.webAutoCmd || 'กำลังทำงานอัตโนมัติ'}`;
+          if (post.webProxyMode) {
+            loadWebsiteViaProxyIntoIframe(webIframe, cleanWebUrl, post.webAutoCmd, webStatusText);
+          } else if (webIframe.src !== cleanWebUrl) {
+            webIframe.removeAttribute('srcdoc');
+            webIframe.src = cleanWebUrl;
+          }
+        } else {
+          webIframe.src = 'about:blank';
+          webWrap.classList.add('hidden');
+        }
+
         const linkWrap = document.getElementById('detailLinkWrapper');
-        if (post.externalUrl) {
+        if (post.externalUrl && !ytId) {
           linkWrap.classList.remove('hidden');
           linkWrap.innerHTML = `
-            <a href="${escapeHtml(post.externalUrl)}" target="_blank" rel="noopener noreferrer" class="p-3 rounded-2xl bg-sky-50 hover:bg-sky-100 border border-sky-200 flex items-center justify-between gap-3 text-xs font-semibold text-sky-700 transition">
+            <a href="${escapeHtml(normalizeWebUrl(post.externalUrl))}" target="_blank" rel="noopener noreferrer" class="p-3 rounded-2xl bg-sky-50 hover:bg-sky-100 border border-sky-200 flex items-center justify-between gap-3 text-xs font-semibold text-sky-700 transition">
               <span class="truncate">🔗 ${escapeHtml(post.externalUrl)}</span>
               <span class="px-2 py-0.5 rounded bg-white text-sky-600 text-[11px] shrink-0">เปิด ↗</span>
             </a>
@@ -1532,14 +2078,16 @@
       function openPostModal(existingPost = null) {
         editingPostId = existingPost ? existingPost.id : null;
         document.getElementById('modalPostHeading').textContent = existingPost
-          ? 'แก้ไขความคิดเห็น'
-          : 'แสดงความคิดเห็น & ประเมินความพึงพอใจ';
+          ? 'แก้ไขความคิดเห็น & กล่องทำงานอัตโนมัติ'
+          : 'แสดงความคิดเห็น & สร้างกล่องทำงานอัตโนมัติ';
         document.getElementById('inputNickname').value = existingPost ? existingPost.nickname : getSavedNickname();
         document.getElementById('inputReviewerRole').value = existingPost && existingPost.role ? existingPost.role : getSavedRole();
         document.getElementById('inputNoteText').value = existingPost ? existingPost.text || '' : '';
         document.getElementById('inputImageUrl').value = existingPost && existingPost.image && existingPost.image.startsWith('http') ? existingPost.image : '';
         document.getElementById('inputYoutubeUrl').value = existingPost ? existingPost.youtubeUrl || '' : '';
         document.getElementById('inputExternalUrl').value = existingPost ? existingPost.externalUrl || '' : '';
+        document.getElementById('inputWebRunUrl').value = existingPost ? existingPost.webRunUrl || '' : '';
+        document.getElementById('inputWebAutoCmd').value = existingPost ? existingPost.webAutoCmd || '' : '';
 
         selectedRating = existingPost && typeof existingPost.rating === 'number' ? existingPost.rating : 5;
         updateStarRatingUI();
@@ -1547,7 +2095,7 @@
         selectedColor = existingPost ? existingPost.color || 'green' : 'green';
         updateColorSwatchUI();
 
-        pendingImageDataUrl = existingPost ? existingPost.image || '' : '';
+        pendingImageDataUrl = existingPost ? existingPost.image || mediaCache.get(existingPost.id) || '' : '';
         updateImagePreviewUI();
 
         document.getElementById('modalPost').classList.remove('hidden');
@@ -1581,18 +2129,33 @@
         const loginNicknameInput = document.getElementById('loginNicknameInput');
         const loginRoleSelect = document.getElementById('loginRoleSelect');
         const loginErrorMsg = document.getElementById('loginErrorMsg');
+        const inputTursoUrl = document.getElementById('inputTursoUrl');
+        const inputTursoToken = document.getElementById('inputTursoToken');
 
         loginRoomInput.value = '';
         loginNicknameInput.value = getSavedNickname() || '';
         loginRoleSelect.value = getSavedRole();
-        
-        if (hasActiveSession() && syncConfig.roomCode) loginOverlay.classList.add('hidden');
+        inputTursoUrl.value = tursoConfig.dbUrl || DEFAULT_TURSO_URL;
+        inputTursoToken.value = tursoConfig.authToken || '';
+
+        if (hasActiveSession() && syncConfig.roomCode) {
+          loginOverlay.classList.add('hidden');
+        }
+
+        document.getElementById('btnToggleTursoConfig').addEventListener('click', () => {
+          document.getElementById('tursoConfigPanel').classList.toggle('hidden');
+        });
 
         document.getElementById('formDarkLogin').addEventListener('submit', async e => {
           e.preventDefault();
           const roomVal = (loginRoomInput.value || '').trim();
           const nickVal = (loginNicknameInput.value || '').trim();
           const roleVal = loginRoleSelect.value || 'นักเรียน';
+
+          tursoConfig.dbUrl = (inputTursoUrl.value || DEFAULT_TURSO_URL).trim();
+          tursoConfig.authToken = (inputTursoToken.value || '').trim();
+          saveTursoConfig();
+
           if (!roomVal || !nickVal) {
             loginErrorMsg.classList.remove('hidden');
             return;
@@ -1613,6 +2176,12 @@
           });
         });
 
+        document.querySelectorAll('.btn-preset-autocmd').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.getElementById('inputWebAutoCmd').value = btn.getAttribute('data-autocmd') || '';
+          });
+        });
+
         document.getElementById('btnOutBoard').addEventListener('click', async () => {
           await saveLocalOnly();
           try { localStorage.removeItem(LS_ACTIVE_SESSION_KEY); } catch (e) {}
@@ -1620,14 +2189,14 @@
           loginNicknameInput.value = getSavedNickname() || '';
           loginRoleSelect.value = getSavedRole();
           loginErrorMsg.classList.add('hidden');
-                    loginOverlay.classList.remove('hidden');
+          loginOverlay.classList.remove('hidden');
         });
 
         document.getElementById('btnOpenNewPostModal').addEventListener('click', () => openPostModal());
         document.getElementById('btnEmptyStateAdd').addEventListener('click', () => openPostModal());
 
         document.getElementById('whiteboardSurface').addEventListener('dblclick', e => {
-          if (e.target.closest('article') || e.target.closest('button')) return;
+          if (e.target.closest('article') || e.target.closest('button') || e.target.closest('input') || e.target.closest('form')) return;
           openPostModal(null);
         });
 
@@ -1656,8 +2225,8 @@
 
         document.getElementById('inputImageUrl').addEventListener('input', e => {
           const urlVal = (e.target.value || '').trim();
-          if (urlVal.startsWith('http')) {
-            pendingImageDataUrl = urlVal;
+          if (urlVal) {
+            pendingImageDataUrl = normalizeImageUrl(urlVal);
             updateImagePreviewUI();
           } else if (!urlVal && pendingImageDataUrl.startsWith('http')) {
             pendingImageDataUrl = '';
@@ -1675,18 +2244,26 @@
           const nickname = (document.getElementById('inputNickname').value || '').trim();
           const role = document.getElementById('inputReviewerRole').value || 'นักเรียน';
           const text = (document.getElementById('inputNoteText').value || '').trim();
+          const imgUrlInput = (document.getElementById('inputImageUrl').value || '').trim();
           const ytUrlInput = (document.getElementById('inputYoutubeUrl').value || '').trim();
           const extUrlInput = (document.getElementById('inputExternalUrl').value || '').trim();
+          const webRunUrlInput = (document.getElementById('inputWebRunUrl').value || '').trim();
+          const webAutoCmdInput = (document.getElementById('inputWebAutoCmd').value || '').trim();
 
-          const finalImage = pendingImageDataUrl || detectImageUrlInText(text);
-          const finalYoutubeUrl = ytUrlInput || detectYoutubeUrlInText(text);
+          const finalImage = pendingImageDataUrl || (imgUrlInput ? normalizeImageUrl(imgUrlInput) : '') || detectImageUrlInText(text);
+          const rawYoutube = ytUrlInput || (extractYoutubeId(extUrlInput) ? extUrlInput : '') || detectYoutubeUrlInText(text);
+          const finalYoutubeId = extractYoutubeId(rawYoutube);
+          const finalYoutubeUrl = finalYoutubeId ? `https://www.youtube.com/watch?v=${finalYoutubeId}` : '';
+          const finalWebRunUrl = webRunUrlInput ? normalizeWebUrl(webRunUrlInput) : '';
+          const finalWebAutoCmd = webAutoCmdInput || (finalWebRunUrl ? 'เลื่อนสำรวจและรันหน้าเว็บอัตโนมัติ (Auto-Run)' : '');
+          const useProxyMode = finalWebAutoCmd.includes('จอขาว') || finalWebAutoCmd.toLowerCase().includes('proxy');
 
           if (!nickname) {
             showToast('กรุณาพิมพ์ชื่อของคุณ');
             return document.getElementById('inputNickname').focus();
           }
-          if (!text && !finalImage && !finalYoutubeUrl && !extUrlInput) {
-            showToast('กรุณาพิมพ์ความคิดเห็น หรือแนบรูปภาพ/ลิงก์');
+          if (!text && !finalImage && !finalYoutubeId && !extUrlInput && !finalWebRunUrl) {
+            showToast('กรุณาพิมพ์ข้อความ หรือแนบรูปภาพ / YouTube / เว็บไซต์');
             return document.getElementById('inputNoteText').focus();
           }
 
@@ -1704,7 +2281,11 @@
               target.color = selectedColor;
               target.image = finalImage;
               target.youtubeUrl = finalYoutubeUrl;
+              target.youtubeId = finalYoutubeId;
               target.externalUrl = extUrlInput;
+              target.webRunUrl = finalWebRunUrl;
+              target.webAutoCmd = finalWebAutoCmd;
+              target.webProxyMode = useProxyMode;
               target.updatedAtMs = nowMs;
               if (finalImage) mediaCache.set(target.id, finalImage);
               savedPost = target;
@@ -1720,7 +2301,11 @@
               text,
               image: finalImage,
               youtubeUrl: finalYoutubeUrl,
+              youtubeId: finalYoutubeId,
               externalUrl: extUrlInput,
+              webRunUrl: finalWebRunUrl,
+              webAutoCmd: finalWebAutoCmd,
+              webProxyMode: useProxyMode,
               color: selectedColor,
               likes: 0,
               hearts: 0,
@@ -1735,11 +2320,53 @@
           renderBoard();
           closePostModal();
           await persistStatePermanently(savedPost);
+          showToast('บันทึกข้อมูลลงกระดานและ Turso DB เรียบร้อยแล้ว');
+        });
+
+        // Detail Modal Website Runner Controls
+        document.getElementById('btnDetailProxyWeb').addEventListener('click', () => {
+          const post = state.posts.find(p => p.id === activeDetailPostId);
+          if (!post || !post.webRunUrl) return;
+          post.webProxyMode = !post.webProxyMode;
+          post.updatedAtMs = Date.now();
+          persistStatePermanently(post);
+          renderNoteDetailModal(post.id);
+          renderBoard();
+        });
+
+        document.getElementById('btnDetailReloadWeb').addEventListener('click', () => {
+          const post = state.posts.find(p => p.id === activeDetailPostId);
+          if (!post || !post.webRunUrl) return;
+          const webIframe = document.getElementById('detailWebIframe');
+          const statusEl = document.getElementById('detailWebAutoStatusText');
+          const cleanUrl = normalizeWebUrl(post.webRunUrl);
+          if (post.webProxyMode) {
+            loadWebsiteViaProxyIntoIframe(webIframe, cleanUrl, post.webAutoCmd, statusEl);
+          } else {
+            webIframe.src = cleanUrl + (cleanUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+          }
+        });
+
+        document.getElementById('formDetailSendAutoCmd').addEventListener('submit', e => {
+          e.preventDefault();
+          const post = state.posts.find(p => p.id === activeDetailPostId);
+          if (!post || !post.webRunUrl) return;
+          const cmd = (document.getElementById('inputDetailAutoCmd').value || '').trim() || 'ทำงานอัตโนมัติ';
+          post.webAutoCmd = cmd;
+          if (cmd.includes('จอขาว') || cmd.toLowerCase().includes('proxy')) {
+            post.webProxyMode = true;
+          }
+          post.updatedAtMs = Date.now();
+          persistStatePermanently(post);
+          renderNoteDetailModal(post.id);
+          renderBoard();
+          showToast(`⚡ ส่งคำสั่ง Auto "${cmd}" เรียบร้อยแล้ว`);
         });
 
         const closeDetailModal = () => {
           activeDetailPostId = null;
           document.getElementById('detailYoutubeIframe').src = 'about:blank';
+          document.getElementById('detailWebIframe').src = 'about:blank';
           document.getElementById('modalNoteDetail').classList.add('hidden');
         };
         document.getElementById('btnCloseNoteDetail').addEventListener('click', closeDetailModal);
@@ -1803,14 +2430,6 @@
           renderBoard();
         });
 
-        document.querySelectorAll('.theme-dot').forEach(btn => {
-          btn.addEventListener('click', () => {
-            state.theme = btn.getAttribute('data-theme');
-            persistStatePermanently();
-            renderBoard();
-          });
-        });
-
         const closeDeletePinModal = () => {
           pendingDeleteAction = null;
           document.getElementById('modalDeletePin').classList.add('hidden');
@@ -1842,10 +2461,16 @@
         });
       }
 
+      // Initialize: Hydrate IndexedDB FIRST before rendering & syncing so images never get overwritten
       bindEvents();
       renderBoard();
-      hydrateRoomFromIndexedDB(syncConfig.roomCode);
-      initCrossDeviceSync();
+      if (syncConfig.roomCode) {
+        hydrateRoomFromIndexedDB(syncConfig.roomCode).then(() => {
+          initCrossDeviceSync();
+        });
+      } else {
+        initCrossDeviceSync();
+      }
     })();
   </script>
 </body>
