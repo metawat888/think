@@ -142,7 +142,6 @@
       animation: ringRipple 0.5s ease-out forwards;
     }
 
-    /* Auto-Run Bot Visual Scan Bar inside Website Runner Box */
     @keyframes autoScanLine {
       0% { top: 0%; opacity: 0.85; }
       50% { top: 92%; opacity: 0.95; }
@@ -163,7 +162,7 @@
 </head>
 <body class="min-h-screen flex flex-col select-none">
 
-  <!-- ENTRY OVERLAY -->
+  <!-- ENTRY OVERLAY (No Turso Box, No Room History, Two-People Logo + Think Board) -->
   <div id="loginScreenOverlay" class="fixed inset-0 z-50 login-bg-surface flex items-center justify-center p-4 overflow-y-auto">
     <div class="login-card-surface rounded-[28px] max-w-[440px] w-full p-7 sm:p-8 animate-pop my-auto">
       <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 via-sky-500 to-orange-500 shadow-lg shadow-sky-500/30 flex items-center justify-center mx-auto mb-4">
@@ -208,27 +207,6 @@
               <option value="ครู/บุคลากร">ครู/บุคลากร</option>
               <option value="บุคคลทั่วไป">บุคคลทั่วไป</option>
             </select>
-          </div>
-        </div>
-
-        <!-- Collapsible Turso LibSQL Database Config -->
-        <div class="pt-1">
-          <button id="btnToggleTursoConfig" type="button" class="w-full py-1.5 px-3 rounded-xl bg-slate-900/70 hover:bg-slate-800/80 border border-slate-700/70 text-[11px] font-semibold text-emerald-300 flex items-center justify-between transition">
-            <span class="flex items-center gap-1.5 truncate">
-              <span id="tursoStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span class="truncate">Turso DB: ailsed-metawat888.aws-ap-southeast-1.turso.io</span>
-            </span>
-            <span class="text-slate-400 text-[10px] shrink-0">ตั้งค่า Token ▾</span>
-          </button>
-          <div id="tursoConfigPanel" class="hidden mt-2 p-3 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-2">
-            <div>
-              <label for="inputTursoUrl" class="block text-[10px] font-bold text-slate-400 mb-1">Turso LibSQL URL</label>
-              <input id="inputTursoUrl" type="text" value="libsql://ailsed-metawat888.aws-ap-southeast-1.turso.io" class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-[11px] font-mono text-emerald-300 focus:outline-none focus:border-emerald-400" />
-            </div>
-            <div>
-              <label for="inputTursoToken" class="block text-[10px] font-bold text-slate-400 mb-1">Turso Auth Token (ถ้าตั้งใน Vercel แล้วเว้นว่างได้)</label>
-              <input id="inputTursoToken" type="password" placeholder="วาง Turso JWT Auth Token (eyJ...)" class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-[11px] font-mono text-white placeholder-slate-600 focus:outline-none focus:border-sky-400" />
-            </div>
           </div>
         </div>
 
@@ -347,10 +325,10 @@
           <textarea id="inputNoteText" rows="3" placeholder="พิมพ์ความคิดเห็น ข้อเสนอแนะ หรือวางลิงก์ YouTube / รูปภาพ..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 transition resize-none"></textarea>
         </div>
 
-        <!-- Media Attachments: Image & YouTube (Guaranteed Permanent in Turso & IndexedDB) -->
+        <!-- Media Attachments: Image & YouTube -->
         <div class="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-2.5">
           <div class="text-xs font-bold text-emerald-300 flex items-center justify-between">
-            <span>🖼️ รูปภาพ & ▶️ วิดีโอ YouTube (บันทึกถาวรไม่หาย)</span>
+            <span>🖼️ รูปภาพ & ▶️ วิดีโอ YouTube</span>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <label for="inputImageFile" class="py-2 px-3 rounded-xl border border-dashed border-emerald-500/60 hover:border-emerald-400 bg-slate-900 text-xs font-semibold text-emerald-300 flex items-center justify-center gap-1.5 cursor-pointer transition">
@@ -363,7 +341,7 @@
           <div id="imagePreviewWrapper" class="hidden rounded-xl border border-slate-700 bg-slate-900 p-2 flex items-center justify-between">
             <div class="flex items-center gap-2 min-w-0">
               <img id="imagePreviewEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="ตัวอย่างรูปภาพ" class="h-11 w-14 object-cover rounded-lg border border-slate-700 bg-white shrink-0" />
-              <span class="text-xs font-medium text-emerald-400 truncate">พร้อมบันทึกรูปภาพลง Turso DB</span>
+              <span class="text-xs font-medium text-emerald-400 truncate">แนบรูปภาพเรียบร้อยแล้ว</span>
             </div>
             <button id="btnRemoveImage" type="button" class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-semibold shrink-0 transition">
               ลบรูป
@@ -376,7 +354,7 @@
           </div>
         </div>
 
-        <!-- NEW: Interactive Website Runner & Auto-Command Box -->
+        <!-- Interactive Website Runner & Auto-Command Box -->
         <div class="p-3.5 rounded-2xl bg-sky-950/30 border border-sky-500/30 space-y-2.5">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-sky-300">🌐 กล่องรันเว็บไซต์ & สั่งทำงานตามคำสั่ง Auto</span>
@@ -454,7 +432,13 @@
             <div id="detailPostTime" class="text-xs text-slate-500"></div>
           </div>
         </div>
-        <button id="btnCloseNoteDetail" type="button" class="p-1.5 rounded-xl bg-black/5 hover:bg-black/10 text-slate-700 transition">✕</button>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button id="btnDeleteNoteFromDetail" type="button" class="px-2.5 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-700 text-xs font-bold flex items-center gap-1 transition" title="ลบกล่องนี้ถาวร">
+            <span>🗑️</span>
+            <span>ลบกล่อง</span>
+          </button>
+          <button id="btnCloseNoteDetail" type="button" class="p-1.5 rounded-xl bg-black/5 hover:bg-black/10 text-slate-700 transition">✕</button>
+        </div>
       </div>
 
       <div class="p-6 overflow-y-auto flex-1 space-y-4">
@@ -559,11 +543,11 @@
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
           <span class="text-lg">🔒</span>
-          <h3 id="deletePinModalTitle" class="text-base font-bold text-white">ยืนยันรหัสผ่านเพื่อลบ</h3>
+          <h3 id="deletePinModalTitle" class="text-base font-bold text-white">ยืนยันรหัสผ่านเพื่อลบถาวร</h3>
         </div>
         <button id="btnCloseDeletePin" type="button" class="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition">✕</button>
       </div>
-      <p id="deletePinModalDesc" class="text-xs text-slate-400 mb-4">กรุณากรอกรหัสผ่านผู้ดูแล</p>
+      <p id="deletePinModalDesc" class="text-xs text-slate-400 mb-4">เมื่อลบด้วยรหัสผ่าน ข้อมูลกล่องนี้จะถูกลบถาวรในทุกอุปกรณ์ทันที</p>
       <form id="formDeletePin" class="space-y-3">
         <div>
           <input id="inputDeletePin" type="password" inputmode="numeric" maxlength="8" placeholder="รหัสผ่าน..." class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-center tracking-widest text-base font-bold text-white focus:outline-none focus:border-orange-500 transition" />
@@ -594,6 +578,7 @@
       const LS_ROLE_KEY = 'THINK_REVIEWER_ROLE_V1';
       const LS_SYNC_CFG_KEY = 'WHITEBOARD_CLOUD_SYNC_CFG_V3';
       const LS_ACTIVE_SESSION_KEY = 'WHITEBOARD_HAS_ACTIVE_SESSION_V5';
+      const LS_GLOBAL_TOMBSTONES_KEY = 'THINK_PERMANENT_DELETED_IDS_V1';
       const IDB_NAME = 'ClassWhiteboardPermanentDB_V3';
       const IDB_STORE = 'roomStore';
       const IDB_MEDIA_STORE = 'mediaStore';
@@ -611,6 +596,37 @@
       if (tokenFromUrl) {
         tursoConfig.authToken = tokenFromUrl;
         saveTursoConfig();
+      }
+
+      // Global Permanent Tombstone Registry (Once deleted by PIN key on ANY device, it is dead forever!)
+      const globalDeletedSet = loadGlobalTombstones();
+      let lastDeleteEpochMs = 0;
+      const pulledNtfyHistoryRooms = new Set();
+
+      function loadGlobalTombstones() {
+        const set = new Set();
+        try {
+          const raw = localStorage.getItem(LS_GLOBAL_TOMBSTONES_KEY);
+          if (raw) {
+            const arr = JSON.parse(raw);
+            if (Array.isArray(arr)) arr.forEach(id => { if (id) set.add(String(id)); });
+          }
+        } catch (e) {}
+        return set;
+      }
+
+      function saveGlobalTombstones() {
+        try {
+          localStorage.setItem(LS_GLOBAL_TOMBSTONES_KEY, JSON.stringify(Array.from(globalDeletedSet)));
+        } catch (e) {}
+      }
+
+      function isPermanentlyDeleted(id) {
+        if (!id) return false;
+        const sId = String(id);
+        if (globalDeletedSet.has(sId)) return true;
+        if (state && Array.isArray(state.deletedIds) && state.deletedIds.includes(sId)) return true;
+        return false;
       }
 
       let syncConfig = loadSyncConfig();
@@ -642,7 +658,6 @@
         } catch (e) {}
       }
 
-      // Convert libsql://ailsed-metawat888.aws-ap-southeast-1.turso.io -> https://ailsed-metawat888.aws-ap-southeast-1.turso.io/v2/pipeline
       function getTursoPipelineEndpoint() {
         const rawUrl = (tursoConfig.dbUrl || DEFAULT_TURSO_URL).trim();
         const httpsBase = rawUrl
@@ -652,8 +667,7 @@
         return `${httpsBase}/v2/pipeline`;
       }
 
-      // Execute SQL statements directly against Turso LibSQL HTTP v2 Pipeline API
-      async function executeTursoPipeline(statements) {
+      async function executeTursoPipeline(statements, useKeepalive = false) {
         const endpoint = getTursoPipelineEndpoint();
         const headers = { 'Content-Type': 'application/json' };
         if (tursoConfig.authToken) {
@@ -676,11 +690,10 @@
           const res = await fetch(endpoint, {
             method: 'POST',
             headers,
+            keepalive: Boolean(useKeepalive),
             body: JSON.stringify({ requests })
           });
-          if (res.ok) {
-            return await res.json();
-          }
+          if (res.ok) return await res.json();
         } catch (e) {}
         return null;
       }
@@ -697,10 +710,10 @@
             )`
           },
           {
-            sql: `CREATE TABLE IF NOT EXISTS think_rooms (
-              room_code TEXT PRIMARY KEY,
-              state_json TEXT NOT NULL,
-              updated_at INTEGER NOT NULL
+            sql: `CREATE TABLE IF NOT EXISTS think_tombstones (
+              id TEXT PRIMARY KEY,
+              room_code TEXT NOT NULL,
+              deleted_at INTEGER NOT NULL
             )`
           }
         ]);
@@ -709,55 +722,91 @@
       async function pushPostToTurso(roomCode, post, isDeleted = false) {
         if (!roomCode || !post || !post.id) return;
         const cleanRoom = String(roomCode).trim().toUpperCase();
-        const updatedAt = post.updatedAtMs || Date.now();
-        await executeTursoPipeline([
-          {
-            sql: `INSERT INTO think_posts (id, room_code, post_json, updated_at, deleted)
-                  VALUES (?, ?, ?, ?, ?)
-                  ON CONFLICT(id) DO UPDATE SET
-                    post_json = excluded.post_json,
-                    updated_at = excluded.updated_at,
-                    deleted = excluded.deleted
-                  WHERE excluded.updated_at >= think_posts.updated_at OR excluded.deleted = 1`,
-            args: [post.id, cleanRoom, JSON.stringify(post), updatedAt, isDeleted ? 1 : 0]
-          }
-        ]);
+        const updatedAt = Date.now();
+        if (isDeleted || isPermanentlyDeleted(post.id)) {
+          await executeTursoPipeline([
+            {
+              sql: `INSERT INTO think_tombstones (id, room_code, deleted_at)
+                    VALUES (?, ?, ?)
+                    ON CONFLICT(id) DO UPDATE SET deleted_at = excluded.deleted_at`,
+              args: [post.id, cleanRoom, updatedAt]
+            },
+            {
+              sql: `INSERT INTO think_posts (id, room_code, post_json, updated_at, deleted)
+                    VALUES (?, ?, '{}', ?, 1)
+                    ON CONFLICT(id) DO UPDATE SET
+                      post_json = '{}',
+                      updated_at = excluded.updated_at,
+                      deleted = 1`,
+              args: [post.id, cleanRoom, updatedAt]
+            }
+          ], true);
+        } else {
+          await executeTursoPipeline([
+            {
+              sql: `INSERT INTO think_posts (id, room_code, post_json, updated_at, deleted)
+                    VALUES (?, ?, ?, ?, 0)
+                    ON CONFLICT(id) DO UPDATE SET
+                      post_json = excluded.post_json,
+                      updated_at = excluded.updated_at
+                    WHERE think_posts.deleted = 0 AND excluded.updated_at >= think_posts.updated_at`,
+              args: [post.id, cleanRoom, JSON.stringify(post), post.updatedAtMs || updatedAt]
+            }
+          ]);
+        }
       }
 
       async function pullRoomFromTurso(roomCode) {
         if (!roomCode) return false;
+        const pullStartMs = Date.now();
         const cleanRoom = String(roomCode).trim().toUpperCase();
         const data = await executeTursoPipeline([
+          {
+            sql: `SELECT id FROM think_tombstones WHERE room_code = ?`,
+            args: [cleanRoom]
+          },
           {
             sql: `SELECT id, post_json, updated_at, deleted FROM think_posts WHERE room_code = ?`,
             args: [cleanRoom]
           }
         ]);
-        if (!data || !Array.isArray(data.results) || !data.results[0]) return false;
-        const resp = data.results[0].response;
-        if (!resp || !resp.result || !Array.isArray(resp.result.rows)) return false;
+        if (pullStartMs < lastDeleteEpochMs) return false;
+        if (!data || !Array.isArray(data.results)) return false;
 
-        let changed = false;
         const deletedIds = [];
         const incomingPosts = [];
 
-        for (const row of resp.result.rows) {
-          const idVal = row[0] && row[0].value;
-          const jsonVal = row[1] && row[1].value;
-          const delVal = row[3] && Number(row[3].value);
-          if (delVal === 1 && idVal) {
-            deletedIds.push(idVal);
-          } else if (jsonVal) {
-            try {
-              incomingPosts.push(JSON.parse(jsonVal));
-            } catch (e) {}
+        // 1. Collect tombstones from think_tombstones
+        const tombResp = data.results[0] && data.results[0].response;
+        if (tombResp && tombResp.result && Array.isArray(tombResp.result.rows)) {
+          for (const row of tombResp.result.rows) {
+            const idVal = row[0] && row[0].value;
+            if (idVal) deletedIds.push(idVal);
+          }
+        }
+
+        // 2. Collect posts and deleted=1 rows from think_posts
+        const postResp = data.results[1] && data.results[1].response;
+        if (postResp && postResp.result && Array.isArray(postResp.result.rows)) {
+          for (const row of postResp.result.rows) {
+            const idVal = row[0] && row[0].value;
+            const jsonVal = row[1] && row[1].value;
+            const delVal = row[3] && Number(row[3].value);
+            if (delVal === 1 && idVal) {
+              deletedIds.push(idVal);
+            } else if (jsonVal && idVal && !deletedIds.includes(idVal) && !isPermanentlyDeleted(idVal)) {
+              try {
+                const parsedPost = JSON.parse(jsonVal);
+                if (parsedPost && parsedPost.id) incomingPosts.push(parsedPost);
+              } catch (e) {}
+            }
           }
         }
 
         if (deletedIds.length > 0 || incomingPosts.length > 0) {
-          changed = mergeIncomingState({ deletedIds, posts: incomingPosts });
+          return mergeIncomingState({ deletedIds, posts: incomingPosts });
         }
-        return changed;
+        return false;
       }
 
       function createDefaultRoomState(roomCode) {
@@ -766,7 +815,7 @@
           theme: 'dark',
           cloudBlobId: '',
           updatedAt: 0,
-          deletedIds: [],
+          deletedIds: Array.from(globalDeletedSet),
           posts: []
         };
       }
@@ -798,9 +847,7 @@
           const raw = localStorage.getItem(LS_SYNC_CFG_KEY);
           if (raw) {
             const parsed = JSON.parse(raw);
-            if (parsed && typeof parsed.roomCode === 'string') {
-              return parsed;
-            }
+            if (parsed && typeof parsed.roomCode === 'string') return parsed;
           }
         } catch (e) {}
         return { roomCode: '', recentRooms: [] };
@@ -840,7 +887,137 @@
         return 'cb_v5_room_' + hex.slice(0, 40);
       }
 
-      // 1. Bulletproof Media + Post Persistence (Fixes disappearing images & YouTube!)
+      // TERMINAL INSTANT PARALLEL DELETION (Deletes locally in <5ms and broadcasts to all servers in parallel with keepalive!)
+      async function purgeIdEverywhere(targetId, parentPost = null) {
+        if (!targetId) return;
+        const sId = String(targetId);
+        lastDeleteEpochMs = Date.now();
+
+        globalDeletedSet.add(sId);
+        saveGlobalTombstones();
+
+        if (!Array.isArray(state.deletedIds)) state.deletedIds = [];
+        if (!state.deletedIds.includes(sId)) state.deletedIds.push(sId);
+
+        if (autoRunnerTimers.has(sId)) {
+          clearInterval(autoRunnerTimers.get(sId));
+          autoRunnerTimers.delete(sId);
+        }
+
+        mediaCache.delete(sId);
+        state.posts = state.posts.filter(p => p && p.id && !isPermanentlyDeleted(p.id));
+        state.posts.forEach(p => {
+          if (Array.isArray(p.comments)) {
+            p.comments = p.comments.filter(c => c && c.id && !isPermanentlyDeleted(c.id));
+          }
+        });
+
+        if (activeDetailPostId === sId) {
+          activeDetailPostId = null;
+          document.getElementById('modalNoteDetail').classList.add('hidden');
+        }
+
+        state.updatedAt = Date.now();
+        renderBoard();
+
+        // Purge from all stored room keys in localStorage so switching rooms or reloading can never resurrect it
+        try {
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith(LS_ROOM_PREFIX)) {
+              const raw = localStorage.getItem(k);
+              if (raw && raw.includes(sId)) {
+                const parsed = JSON.parse(raw);
+                if (parsed && Array.isArray(parsed.posts)) {
+                  parsed.posts = parsed.posts.filter(p => p && p.id !== sId);
+                  parsed.deletedIds = Array.from(new Set([...(parsed.deletedIds || []), sId]));
+                  localStorage.setItem(k, JSON.stringify(parsed));
+                }
+              }
+            }
+          }
+        } catch (e) {}
+
+        // Save local state & IndexedDB immediately
+        await saveLocalOnly(sId);
+
+        const roomCode = syncConfig.roomCode;
+        if (!roomCode) return;
+        const topic = getNtfyTopicForRoom(roomCode);
+        const roomSafe = encodeURIComponent(roomCode.trim().toUpperCase());
+
+        // Fire ALL remote deletion calls IN PARALLEL with keepalive: true so none can be blocked or delayed!
+        const tasks = [];
+
+        // 1. Turso LibSQL Tombstone
+        tasks.push(
+          !parentPost
+            ? pushPostToTurso(roomCode, { id: sId, updatedAtMs: state.updatedAt }, true)
+            : pushPostToTurso(roomCode, parentPost, false)
+        );
+
+        // 2. Vercel Serverless /api/board (Immediate keepalive POST)
+        if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('googleusercontent')) {
+          const headers = { 'Content-Type': 'application/json' };
+          if (tursoConfig.authToken) headers['x-turso-token'] = tursoConfig.authToken;
+          tasks.push(
+            fetch(window.location.origin + '/api/' + 'board?room=' + roomSafe, {
+              method: 'POST',
+              headers,
+              keepalive: true,
+              body: JSON.stringify(state)
+            }).catch(() => {})
+          );
+        }
+
+        // 3. ntfy.sh Real-Time SSE Broadcast (Immediate keepalive POST)
+        tasks.push(
+          fetch(`https://ntfy.sh/${topic}`, {
+            method: 'POST',
+            keepalive: true,
+            body: JSON.stringify({
+              type: 'DELETE_IDS',
+              deletedIds: state.deletedIds,
+              targetId: sId,
+              updatedAt: state.updatedAt
+            })
+          }).catch(() => {})
+        );
+
+        // 4. Gun.js Multi-Peer Tombstone
+        try {
+          if (gunRoomNode) {
+            if (!parentPost) {
+              gunRoomNode.get('posts').get(sId).put('DELETED');
+            } else {
+              gunRoomNode.get('posts').get(parentPost.id).put(JSON.stringify(parentPost));
+            }
+            gunRoomNode.get('tombstones').get(sId).put(1);
+          }
+        } catch (e) {}
+
+        // 5. JSONBlob Update
+        tasks.push(
+          pushToJsonBlob().then(blobId => {
+            if (blobId) {
+              return fetch(`https://ntfy.sh/${topic}`, {
+                method: 'POST',
+                keepalive: true,
+                body: JSON.stringify({
+                  type: 'BLOB_SYNC',
+                  blobId: blobId,
+                  deletedIds: state.deletedIds,
+                  updatedAt: state.updatedAt
+                })
+              }).catch(() => {});
+            }
+          }).catch(() => {})
+        );
+
+        await Promise.allSettled(tasks);
+      }
+
+      // 1. Storage Engine
       function loadRoomFromLocalStorage(roomCode) {
         const key = getRoomStorageKey(roomCode);
         let parsed = null;
@@ -860,12 +1037,17 @@
 
         if (parsed && Array.isArray(parsed.posts)) {
           if (!Array.isArray(parsed.deletedIds)) parsed.deletedIds = [];
+          parsed.deletedIds.forEach(id => { if (id) globalDeletedSet.add(String(id)); });
+          parsed.deletedIds = Array.from(globalDeletedSet);
           if (!parsed.theme) parsed.theme = 'dark';
+
+          parsed.posts = parsed.posts.filter(p => p && p.id && !globalDeletedSet.has(String(p.id)));
           parsed.posts.forEach(p => {
-            if (p && p.id) {
-              if (p.image) mediaCache.set(p.id, p.image);
-              else if (mediaCache.has(p.id)) p.image = mediaCache.get(p.id);
+            if (Array.isArray(p.comments)) {
+              p.comments = p.comments.filter(c => c && c.id && !globalDeletedSet.has(String(c.id)));
             }
+            if (p.image) mediaCache.set(p.id, p.image);
+            else if (mediaCache.has(p.id)) p.image = mediaCache.get(p.id);
           });
           return parsed;
         }
@@ -918,9 +1100,13 @@
                 return resolve(changed);
               }
               state.posts.forEach(p => {
+                if (isPermanentlyDeleted(p.id)) {
+                  pendingMedia--;
+                  return;
+                }
                 const mReq = mediaStore.get(p.id);
                 mReq.onsuccess = () => {
-                  if (mReq.result) {
+                  if (mReq.result && !isPermanentlyDeleted(p.id)) {
                     p.image = mReq.result;
                     mediaCache.set(p.id, mReq.result);
                     changed = true;
@@ -961,17 +1147,49 @@
         if (!remote || typeof remote !== 'object') return false;
         let changed = false;
 
-        const deletedSet = new Set(Array.isArray(target.deletedIds) ? target.deletedIds : []);
+        const deletedSet = new Set([...globalDeletedSet, ...(Array.isArray(target.deletedIds) ? target.deletedIds : [])]);
         if (Array.isArray(remote.deletedIds)) {
           remote.deletedIds.forEach(id => {
-            if (id && !deletedSet.has(id)) { deletedSet.add(id); changed = true; }
+            if (id) {
+              const sId = String(id);
+              if (!deletedSet.has(sId)) {
+                deletedSet.add(sId);
+                globalDeletedSet.add(sId);
+                mediaCache.delete(sId);
+                changed = true;
+              }
+            }
           });
         }
+        if (remote.targetId) {
+          const sTarget = String(remote.targetId);
+          if (!deletedSet.has(sTarget)) {
+            deletedSet.add(sTarget);
+            globalDeletedSet.add(sTarget);
+            mediaCache.delete(sTarget);
+            changed = true;
+          }
+        }
         target.deletedIds = Array.from(deletedSet);
+        if (changed) saveGlobalTombstones();
 
         const beforeLen = target.posts.length;
-        target.posts = target.posts.filter(p => p && p.id && !deletedSet.has(p.id));
-        if (target.posts.length !== beforeLen) changed = true;
+        target.posts = target.posts.filter(p => p && p.id && !deletedSet.has(String(p.id)));
+        if (target.posts.length !== beforeLen) {
+          changed = true;
+          if (activeDetailPostId && deletedSet.has(String(activeDetailPostId))) {
+            activeDetailPostId = null;
+            document.getElementById('modalNoteDetail').classList.add('hidden');
+          }
+        }
+
+        target.posts.forEach(p => {
+          if (Array.isArray(p.comments)) {
+            const cBefore = p.comments.length;
+            p.comments = p.comments.filter(c => c && c.id && !deletedSet.has(String(c.id)));
+            if (p.comments.length !== cBefore) changed = true;
+          }
+        });
 
         if (remote.cloudBlobId && !target.cloudBlobId) {
           target.cloudBlobId = remote.cloudBlobId;
@@ -992,30 +1210,30 @@
         return changed;
       }
 
-      // CRITICAL FIX: Never overwrite non-empty image, youtubeUrl, or webRunUrl with empty values!
       function mergeSinglePost(rPost, deletedSetInput, targetStateObj) {
         const target = targetStateObj || state;
         if (!rPost || !rPost.id) return false;
-        const deletedSet = deletedSetInput || new Set(Array.isArray(target.deletedIds) ? target.deletedIds : []);
-        if (deletedSet.has(rPost.id)) return false;
+        const sId = String(rPost.id);
+        const deletedSet = deletedSetInput || new Set([...globalDeletedSet, ...(Array.isArray(target.deletedIds) ? target.deletedIds : [])]);
+        if (deletedSet.has(sId) || globalDeletedSet.has(sId)) return false;
 
-        if (rPost.image) mediaCache.set(rPost.id, rPost.image);
-        else if (mediaCache.has(rPost.id)) rPost.image = mediaCache.get(rPost.id);
+        if (rPost.image) mediaCache.set(sId, rPost.image);
+        else if (mediaCache.has(sId)) rPost.image = mediaCache.get(sId);
 
         let changed = false;
-        const lPost = target.posts.find(p => p.id === rPost.id);
+        const lPost = target.posts.find(p => p.id === sId);
         if (!lPost) {
           const clone = JSON.parse(JSON.stringify(rPost));
           if (!Array.isArray(clone.comments)) clone.comments = [];
+          clone.comments = clone.comments.filter(c => c && c.id && !deletedSet.has(String(c.id)));
           if (typeof clone.rating !== 'number') clone.rating = 5;
-          if (!clone.image && mediaCache.has(clone.id)) clone.image = mediaCache.get(clone.id);
+          if (!clone.image && mediaCache.has(sId)) clone.image = mediaCache.get(sId);
           target.posts.push(clone);
           changed = true;
         } else {
           if ((rPost.likes || 0) > (lPost.likes || 0)) { lPost.likes = rPost.likes; changed = true; }
           if ((rPost.hearts || 0) > (lPost.hearts || 0)) { lPost.hearts = rPost.hearts; changed = true; }
 
-          // Always preserve media fields if one side has them and the other doesn't
           if (!lPost.image && rPost.image) { lPost.image = rPost.image; changed = true; }
           if (!lPost.youtubeUrl && rPost.youtubeUrl) { lPost.youtubeUrl = rPost.youtubeUrl; changed = true; }
           if (!lPost.webRunUrl && rPost.webRunUrl) { lPost.webRunUrl = rPost.webRunUrl; changed = true; }
@@ -1041,21 +1259,23 @@
           const rComments = Array.isArray(rPost.comments) ? rPost.comments : [];
           const cMap = new Map(lComments.map(c => [c.id, c]));
           rComments.forEach(rc => {
-            if (rc && rc.id && !deletedSet.has(rc.id) && !cMap.has(rc.id)) {
+            if (rc && rc.id && !deletedSet.has(String(rc.id)) && !cMap.has(rc.id)) {
               lComments.push(rc);
               changed = true;
             }
           });
-          lPost.comments = lComments.filter(c => !deletedSet.has(c.id));
+          lPost.comments = lComments.filter(c => c && c.id && !deletedSet.has(String(c.id)));
         }
         return changed;
       }
 
-      async function saveLocalOnly() {
+      async function saveLocalOnly(deletedIdToRemove = null) {
         if (!syncConfig.roomCode) return;
         const key = getRoomStorageKey(syncConfig.roomCode);
 
-        // Ensure every post in state has its cached image attached before saving
+        state.deletedIds = Array.from(new Set([...globalDeletedSet, ...(state.deletedIds || [])]));
+        state.posts = state.posts.filter(p => p && p.id && !isPermanentlyDeleted(p.id));
+
         state.posts.forEach(p => {
           if (p.image) mediaCache.set(p.id, p.image);
           else if (mediaCache.has(p.id)) p.image = mediaCache.get(p.id);
@@ -1092,9 +1312,10 @@
             const tx = db.transaction([IDB_STORE, IDB_MEDIA_STORE], 'readwrite');
             tx.objectStore(IDB_STORE).put(JSON.parse(JSON.stringify(state)), key);
             const mStore = tx.objectStore(IDB_MEDIA_STORE);
+            if (deletedIdToRemove) mStore.delete(deletedIdToRemove);
             state.posts.forEach(p => {
               const imgData = p.image || mediaCache.get(p.id);
-              if (imgData) mStore.put(imgData, p.id);
+              if (imgData && !isPermanentlyDeleted(p.id)) mStore.put(imgData, p.id);
             });
           }
         } catch (err) {}
@@ -1103,7 +1324,7 @@
       async function persistStatePermanently(changedPost) {
         state.updatedAt = Date.now();
         await saveLocalOnly();
-        if (changedPost) {
+        if (changedPost && !isPermanentlyDeleted(changedPost.id)) {
           pushPostToTurso(syncConfig.roomCode, changedPost, false);
         }
         broadcastStateToCloud(changedPost);
@@ -1128,16 +1349,21 @@
         await initTursoSchema();
         subscribeGunRoom();
         subscribeNtfyRoomStream(cleanCode);
-        await pullFromCloudAllEngines();
+        await pullFromCloudAllEngines(true);
       }
 
-      // 2. Cloud + Turso Auto-Sync Engine
+      // 2. Cloud + Turso Auto-Sync Engine (Rate-Limit Safe + Terminal Tombstone Priority)
       function initCrossDeviceSync() {
         initTursoSchema();
         try {
           if (window.Gun) {
             gunInstance = window.Gun({
-              peers: ['https://gun-manhattan.herokuapp.com/gun', 'https://peer.wallie.io/gun'],
+              peers: [
+                'https://relay.peer.ooo/gun',
+                'https://gun.defucc.me/gun',
+                'https://gun-manhattan.herokuapp.com/gun',
+                'https://peer.wallie.io/gun'
+              ],
               localStorage: false
             });
             subscribeGunRoom();
@@ -1145,6 +1371,14 @@
         } catch (e) {}
 
         window.addEventListener('storage', e => {
+          if (e.key === LS_GLOBAL_TOMBSTONES_KEY && e.newValue) {
+            try {
+              const ids = JSON.parse(e.newValue);
+              if (Array.isArray(ids) && mergeIncomingState({ deletedIds: ids })) {
+                renderBoard();
+              }
+            } catch (err) {}
+          }
           const currentKey = getRoomStorageKey(syncConfig.roomCode);
           if (e.key === currentKey && e.newValue) {
             try {
@@ -1159,10 +1393,10 @@
 
         if (syncConfig.roomCode) {
           subscribeNtfyRoomStream(syncConfig.roomCode);
-          pullFromCloudAllEngines();
+          pullFromCloudAllEngines(true);
         }
         setInterval(() => {
-          if (syncConfig.roomCode) pullFromCloudAllEngines();
+          if (syncConfig.roomCode) pullFromCloudAllEngines(false);
         }, 6000);
       }
 
@@ -1185,15 +1419,33 @@
         try {
           const packet = typeof rawMessage === 'string' ? JSON.parse(rawMessage) : rawMessage;
           if (!packet) return;
+
+          if (packet.type === 'DELETE_IDS') {
+            const delList = Array.isArray(packet.deletedIds) ? [...packet.deletedIds] : [];
+            if (packet.targetId) delList.push(packet.targetId);
+            if (mergeIncomingState({ deletedIds: delList })) {
+              await saveLocalOnly(packet.targetId || null);
+              renderBoard();
+            }
+            return;
+          }
+
           if (packet.type === 'POST_UPSERT' && packet.post) {
+            if (Array.isArray(packet.deletedIds)) {
+              mergeIncomingState({ deletedIds: packet.deletedIds });
+            }
+            if (isPermanentlyDeleted(packet.post.id)) return;
             if (mergeSinglePost(packet.post)) {
               saveLocalOnly();
               renderBoard();
               if (activeDetailPostId === packet.post.id) renderNoteDetailModal(packet.post.id);
             }
-          } else if (packet.type === 'DELETE_IDS' && Array.isArray(packet.deletedIds)) {
-            if (mergeIncomingState({ deletedIds: packet.deletedIds })) renderBoard();
           } else if (packet.type === 'BLOB_SYNC' && packet.blobId) {
+            if (Array.isArray(packet.deletedIds)) {
+              if (mergeIncomingState({ deletedIds: packet.deletedIds })) {
+                renderBoard();
+              }
+            }
             if (packet.blobId !== state.cloudBlobId || (packet.updatedAt || 0) >= (state.updatedAt || 0)) {
               state.cloudBlobId = packet.blobId;
               await pullFromJsonBlob(packet.blobId);
@@ -1206,11 +1458,13 @@
 
       async function pullFromJsonBlob(blobId) {
         if (!blobId) return;
+        const pullStartMs = Date.now();
         try {
           const res = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, {
             method: 'GET',
             headers: { Accept: 'application/json' }
           });
+          if (pullStartMs < lastDeleteEpochMs) return;
           if (res.ok) {
             const remoteData = await res.json();
             if (remoteData && mergeIncomingState(remoteData)) {
@@ -1255,21 +1509,28 @@
         const activeRoom = syncConfig.roomCode.trim().toUpperCase();
         gunRoomNode = gunInstance.get('classboard_v4_room_' + activeRoom);
 
+        gunRoomNode.get('tombstones').map().on((val, postId) => {
+          if (val && postId && !isPermanentlyDeleted(postId)) {
+            if (mergeIncomingState({ deletedIds: [postId] })) {
+              saveLocalOnly(postId);
+              renderBoard();
+            }
+          }
+        });
+
         gunRoomNode.get('posts').map().on((postJson, postId) => {
           if (activeRoom !== (syncConfig.roomCode || '').trim().toUpperCase() || !postJson) return;
           if (postJson === 'DELETED') {
-            if (!Array.isArray(state.deletedIds)) state.deletedIds = [];
-            if (!state.deletedIds.includes(postId)) {
-              state.deletedIds.push(postId);
-              state.posts = state.posts.filter(p => p.id !== postId);
-              saveLocalOnly();
+            if (mergeIncomingState({ deletedIds: [postId] })) {
+              saveLocalOnly(postId);
               renderBoard();
             }
             return;
           }
+          if (isPermanentlyDeleted(postId)) return;
           try {
             const rPost = typeof postJson === 'string' ? JSON.parse(postJson) : postJson;
-            if (mergeSinglePost(rPost)) {
+            if (rPost && !isPermanentlyDeleted(rPost.id) && mergeSinglePost(rPost)) {
               saveLocalOnly();
               renderBoard();
               if (activeDetailPostId === rPost.id) renderNoteDetailModal(rPost.id);
@@ -1278,29 +1539,31 @@
         });
       }
 
-      async function pullFromCloudAllEngines() {
+      async function pullFromCloudAllEngines(isInitialRoomLoad = false) {
         if (!syncConfig.roomCode) return;
+        const pullStartMs = Date.now();
+        const activeRoomKey = syncConfig.roomCode.trim().toUpperCase();
 
-        // 1. Pull from Turso LibSQL Database (libsql://ailsed-metawat888.aws-ap-southeast-1.turso.io)
+        // 1. Pull from Turso LibSQL Database
         const tursoChanged = await pullRoomFromTurso(syncConfig.roomCode);
-        if (tursoChanged) {
+        if (tursoChanged && pullStartMs >= lastDeleteEpochMs) {
           renderBoard();
           if (activeDetailPostId) renderNoteDetailModal(activeDetailPostId);
         }
 
-        // 2. Pull from Vercel /api/board (connected to Turso DB on server)
+        // 2. Pull from Vercel /api/board
         if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('googleusercontent')) {
           try {
-            const roomSafe = encodeURIComponent(syncConfig.roomCode.trim().toUpperCase());
+            const roomSafe = encodeURIComponent(activeRoomKey);
             const headers = {};
             if (tursoConfig.authToken) headers['x-turso-token'] = tursoConfig.authToken;
             const res = await fetch(window.location.origin + '/api/' + 'board?room=' + roomSafe, {
               method: 'GET',
               headers
             });
-            if (res.ok) {
+            if (res.ok && pullStartMs >= lastDeleteEpochMs) {
               const data = await res.json();
-              if (data && Array.isArray(data.posts) && mergeIncomingState(data)) {
+              if (data && mergeIncomingState(data)) {
                 renderBoard();
                 if (activeDetailPostId) renderNoteDetailModal(activeDetailPostId);
               }
@@ -1308,41 +1571,94 @@
           } catch (e) {}
         }
 
-        // 3. Pull from ntfy + JSONBlob full media store
-        try {
-          const topic = getNtfyTopicForRoom(syncConfig.roomCode);
-          const res = await fetch(`https://ntfy.sh/${topic}/json?poll=1&since=all`);
-          if (res.ok) {
-            const text = await res.text();
-            const lines = text.split('\n').filter(Boolean);
-            let latestBlobId = state.cloudBlobId || '';
-            for (const line of lines) {
-              try {
-                const outer = JSON.parse(line);
-                if (outer && outer.event === 'message' && outer.message) {
-                  const pkt = JSON.parse(outer.message);
-                  if (pkt && pkt.type === 'BLOB_SYNC' && pkt.blobId) latestBlobId = pkt.blobId;
+        // 3. Pull ntfy history ONCE per room load (prevents HTTP 429 rate-limiting while SSE handles real-time!)
+        if (isInitialRoomLoad || !pulledNtfyHistoryRooms.has(activeRoomKey)) {
+          pulledNtfyHistoryRooms.add(activeRoomKey);
+          try {
+            const topic = getNtfyTopicForRoom(syncConfig.roomCode);
+            const res = await fetch(`https://ntfy.sh/${topic}/json?poll=1&since=all`);
+            if (res.ok && pullStartMs >= lastDeleteEpochMs) {
+              const text = await res.text();
+              const lines = text.split('\n').filter(Boolean);
+              const packets = [];
+              const allDeletedFromStream = [];
+              let latestBlobId = state.cloudBlobId || '';
+
+              // PASS 1: Extract every deletedId across the entire stream FIRST!
+              for (const line of lines) {
+                try {
+                  const outer = JSON.parse(line);
+                  if (outer && outer.event === 'message' && outer.message) {
+                    const pkt = JSON.parse(outer.message);
+                    if (!pkt) continue;
+                    packets.push(pkt);
+                    if (Array.isArray(pkt.deletedIds)) {
+                      allDeletedFromStream.push(...pkt.deletedIds);
+                    }
+                    if (pkt.targetId) {
+                      allDeletedFromStream.push(pkt.targetId);
+                    }
+                    if (pkt.type === 'BLOB_SYNC' && pkt.blobId) {
+                      latestBlobId = pkt.blobId;
+                    }
+                  }
+                } catch (innerErr) {}
+              }
+
+              if (allDeletedFromStream.length > 0) {
+                if (mergeIncomingState({ deletedIds: allDeletedFromStream })) {
+                  renderBoard();
+                }
+              }
+
+              // PASS 2: Process only non-deleted posts
+              for (const pkt of packets) {
+                if (pkt.type !== 'DELETE_IDS' && pkt.type !== 'BLOB_SYNC') {
                   await handleIncomingNtfyPacket(pkt);
                 }
-              } catch (innerErr) {}
+              }
+
+              if (latestBlobId) {
+                await pullFromJsonBlob(latestBlobId);
+              }
             }
-            if (latestBlobId) await pullFromJsonBlob(latestBlobId);
-          }
-        } catch (e) {}
+          } catch (e) {}
+        } else if (state.cloudBlobId) {
+          await pullFromJsonBlob(state.cloudBlobId);
+        }
       }
 
       async function broadcastStateToCloud(changedPost) {
         if (!syncConfig.roomCode) return;
         const topic = getNtfyTopicForRoom(syncConfig.roomCode);
+        const roomSafe = encodeURIComponent(syncConfig.roomCode.trim().toUpperCase());
 
-        // 1. Push full state (with base64 images, YouTube, and Website Auto-Run) to JSONBlob first so blobId is ready
+        // 1. Push to Vercel /api/board immediately
+        if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('googleusercontent')) {
+          const headers = { 'Content-Type': 'application/json' };
+          if (tursoConfig.authToken) headers['x-turso-token'] = tursoConfig.authToken;
+          fetch(window.location.origin + '/api/' + 'board?room=' + roomSafe, {
+            method: 'POST',
+            headers,
+            keepalive: true,
+            body: JSON.stringify(state)
+          }).catch(() => {});
+        }
+
+        // 2. Push to Gun.js
+        try {
+          if (gunRoomNode && changedPost && changedPost.id && !isPermanentlyDeleted(changedPost.id)) {
+            gunRoomNode.get('posts').get(changedPost.id).put(JSON.stringify(changedPost));
+          }
+        } catch (e) {}
+
+        // 3. Push to ntfy & JSONBlob
         let blobId = '';
         try {
           blobId = await pushToJsonBlob();
         } catch (e) {}
 
-        // 2. Send real-time event on ntfy
-        if (changedPost && changedPost.id) {
+        if (changedPost && changedPost.id && !isPermanentlyDeleted(changedPost.id)) {
           try {
             const lightPost = Object.assign({}, changedPost);
             if (lightPost.image && lightPost.image.startsWith('data:') && lightPost.image.length > 2500) {
@@ -1350,7 +1666,14 @@
             }
             await fetch(`https://ntfy.sh/${topic}`, {
               method: 'POST',
-              body: JSON.stringify({ type: 'POST_UPSERT', post: lightPost, blobId, updatedAt: Date.now() })
+              keepalive: true,
+              body: JSON.stringify({
+                type: 'POST_UPSERT',
+                post: lightPost,
+                deletedIds: state.deletedIds,
+                blobId,
+                updatedAt: Date.now()
+              })
             });
           } catch (e) {}
         }
@@ -1359,33 +1682,13 @@
           try {
             await fetch(`https://ntfy.sh/${topic}`, {
               method: 'POST',
+              keepalive: true,
               body: JSON.stringify({
                 type: 'BLOB_SYNC',
                 blobId: blobId,
                 deletedIds: state.deletedIds,
                 updatedAt: state.updatedAt
               })
-            });
-          } catch (e) {}
-        }
-
-        // 3. Push to Gun.js
-        try {
-          if (gunRoomNode && changedPost && changedPost.id) {
-            gunRoomNode.get('posts').get(changedPost.id).put(JSON.stringify(changedPost));
-          }
-        } catch (e) {}
-
-        // 4. Push to Vercel /api/board (Turso-backed serverless endpoint)
-        if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('googleusercontent')) {
-          try {
-            const roomSafe = encodeURIComponent(syncConfig.roomCode.trim().toUpperCase());
-            const headers = { 'Content-Type': 'application/json' };
-            if (tursoConfig.authToken) headers['x-turso-token'] = tursoConfig.authToken;
-            await fetch(window.location.origin + '/api/' + 'board?room=' + roomSafe, {
-              method: 'POST',
-              headers,
-              body: JSON.stringify(state)
             });
           } catch (e) {}
         }
@@ -1432,7 +1735,6 @@
         if (!urlStr) return '';
         const s = String(urlStr).trim();
         if (s.startsWith('data:')) return s;
-        // Convert Google Drive share links to direct image links automatically
         const driveMatch = s.match(/drive\.google\.com\/file\/d\/([^\/?&]+)/i) || s.match(/drive\.google\.com\/open\?id=([^\/?&]+)/i);
         if (driveMatch && driveMatch[1]) {
           return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
@@ -1467,7 +1769,6 @@
         return match ? match[0] : '';
       }
 
-      // Build Proxy Srcdoc with injected Auto-Run Executor to fix blank white screen on sites blocking iframes!
       async function loadWebsiteViaProxyIntoIframe(iframeEl, targetUrl, autoCmdText, statusLabelEl) {
         if (!iframeEl || !targetUrl) return;
         const cleanUrl = normalizeWebUrl(targetUrl);
@@ -1507,7 +1808,6 @@
           }
         } catch (e) {}
 
-        // Fallback to direct src if proxy is unreachable
         iframeEl.removeAttribute('srcdoc');
         iframeEl.src = cleanUrl;
         if (statusLabelEl) statusLabelEl.textContent = `🟢 กำลังรันเว็บไซต์ • คำสั่ง: ${autoCmdText || 'Auto Run'}`;
@@ -1563,8 +1863,8 @@
 
       function requestPinProtectedDelete(titleText, descText, onConfirmCallback) {
         pendingDeleteAction = onConfirmCallback;
-        document.getElementById('deletePinModalTitle').textContent = titleText || 'ยืนยันรหัสผ่านเพื่อลบ';
-        document.getElementById('deletePinModalDesc').textContent = descText || 'กรุณากรอกรหัสผ่านผู้ดูแล';
+        document.getElementById('deletePinModalTitle').textContent = titleText || 'ยืนยันรหัสผ่านเพื่อลบถาวร';
+        document.getElementById('deletePinModalDesc').textContent = descText || 'เมื่อลบด้วยรหัสผ่าน ข้อมูลกล่องนี้จะถูกลบถาวรในทุกอุปกรณ์ทันที';
         const pinInput = document.getElementById('inputDeletePin');
         pinInput.value = '';
         document.getElementById('deletePinError').classList.add('hidden');
@@ -1613,13 +1913,16 @@
         return map[color] || map.green;
       }
 
-      // 4. Render Think Board (With Guaranteed Image, YouTube, and Live Auto-Run Website Box)
+      // 4. Render Think Board
       function renderBoard() {
         document.getElementById('emptyStateRoomLabel').textContent = syncConfig.roomCode || '-';
 
-        // Clear previous intervals
         autoRunnerTimers.forEach(t => clearInterval(t));
         autoRunnerTimers.clear();
+
+        if (Array.isArray(state.posts)) {
+          state.posts = state.posts.filter(p => p && p.id && !isPermanentlyDeleted(p.id));
+        }
 
         const surface = document.getElementById('whiteboardSurface');
         surface.className = 'whiteboard-canvas flex-1 relative w-full min-h-[calc(100vh-58px)] overflow-auto';
@@ -1636,7 +1939,9 @@
         emptyState.classList.add('hidden');
 
         state.posts.forEach(post => {
+          if (isPermanentlyDeleted(post.id)) return;
           if (!Array.isArray(post.comments)) post.comments = [];
+          post.comments = post.comments.filter(c => c && c.id && !isPermanentlyDeleted(c.id));
           if (!post.image && mediaCache.has(post.id)) post.image = mediaCache.get(post.id);
 
           const card = document.createElement('article');
@@ -1648,9 +1953,7 @@
           const initial = (post.nickname || 'น').trim().charAt(0).toUpperCase();
           const latestComment = post.comments.length > 0 ? post.comments[post.comments.length - 1] : null;
 
-          // Resolve YouTube ID from any field
           const ytId = post.youtubeId || extractYoutubeId(post.youtubeUrl || post.externalUrl || detectYoutubeUrlInText(post.text));
-          // Resolve Website Runner URL
           const webRunUrl = post.webRunUrl ? normalizeWebUrl(post.webRunUrl) : '';
           const webAutoCmd = post.webAutoCmd || 'ทำงานอัตโนมัติ (Auto-Run)';
 
@@ -1674,16 +1977,15 @@
                 </div>
               </div>
 
-              <div class="flex items-center gap-0.5 shrink-0">
-                <button type="button" class="btn-edit-note p-1.5 rounded-xl hover:bg-black/5 text-slate-600 hover:text-slate-900 transition" title="แก้ไข">
+              <div class="flex items-center gap-1 shrink-0">
+                <button type="button" class="btn-edit-note p-1.5 rounded-xl hover:bg-black/10 text-slate-600 hover:text-slate-900 transition" title="แก้ไข">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
                 </button>
-                <button type="button" class="btn-delete-note p-1.5 rounded-xl hover:bg-orange-500/15 text-slate-400 hover:text-orange-600 transition" title="ลบ">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                <button type="button" class="btn-delete-note px-2 py-1 rounded-xl bg-rose-500/10 hover:bg-rose-500/25 text-rose-600 text-[11px] font-bold flex items-center gap-0.5 transition" title="ลบกล่องถาวร">
+                  <span>🗑️</span>
+                  <span>ลบ</span>
                 </button>
               </div>
             </div>
@@ -1797,7 +2099,6 @@
             </div>
           `;
 
-          // Bind Website Runner Box Controls if present
           if (webRunUrl) {
             const iframeEl = card.querySelector('.card-web-iframe');
             const statusEl = card.querySelector('.card-auto-status');
@@ -1855,7 +2156,6 @@
               showToast(`⚡ ส่งคำสั่ง Auto "${newCmd}" ให้กล่องทำงานแล้ว`);
             });
 
-            // Periodic Auto-Runner heartbeat for commands like Auto Refresh
             const timerId = setInterval(() => {
               const cmd = (post.webAutoCmd || '').toLowerCase();
               if (cmd.includes('รีเฟรช') || cmd.includes('refresh') || cmd.includes('reload')) {
@@ -1902,17 +2202,11 @@
           card.querySelector('.btn-delete-note').addEventListener('click', e => {
             e.stopPropagation();
             requestPinProtectedDelete(
-              'ยืนยันรหัสผ่านเพื่อลบ',
-              `ลบความคิดเห็นของ "${post.nickname}"`,
-              () => {
-                if (!Array.isArray(state.deletedIds)) state.deletedIds = [];
-                state.deletedIds.push(post.id);
-                state.posts = state.posts.filter(p => p.id !== post.id);
-                pushPostToTurso(syncConfig.roomCode, post, true);
-                try { if (gunRoomNode) gunRoomNode.get('posts').get(post.id).put('DELETED'); } catch (err) {}
-                persistStatePermanently();
-                renderBoard();
-                showToast('ลบเรียบร้อยแล้ว');
+              'ยืนยันรหัสผ่านเพื่อลบถาวร',
+              `ลบกล่องของ "${post.nickname}" ถาวรจากทุกอุปกรณ์`,
+              async () => {
+                await purgeIdEverywhere(post.id, null);
+                showToast('ลบกล่องนี้ถาวรจากทุกอุปกรณ์เรียบร้อยแล้ว');
               }
             );
           });
@@ -1924,6 +2218,7 @@
 
       // 5. Note Detail & Full Website Auto-Runner Modal
       function openNoteDetailModal(postId) {
+        if (isPermanentlyDeleted(postId)) return;
         activeDetailPostId = postId;
         renderNoteDetailModal(postId);
         const nickInput = document.getElementById('inputCommentNickname');
@@ -1932,12 +2227,13 @@
       }
 
       function renderNoteDetailModal(postId) {
-        const post = state.posts.find(p => p.id === postId);
+        const post = state.posts.find(p => p.id === postId && !isPermanentlyDeleted(p.id));
         if (!post) {
           document.getElementById('modalNoteDetail').classList.add('hidden');
           return;
         }
         if (!Array.isArray(post.comments)) post.comments = [];
+        post.comments = post.comments.filter(c => c && c.id && !isPermanentlyDeleted(c.id));
         if (!post.image && mediaCache.has(post.id)) post.image = mediaCache.get(post.id);
 
         document.getElementById('detailCardHeader').className = `px-6 pt-5 pb-4 border-b border-black/5 flex items-start justify-between gap-3 ${getCardStyle(post.color)}`;
@@ -1967,7 +2263,6 @@
           ytWrap.classList.add('hidden');
         }
 
-        // Website Runner inside Detail Modal
         const webWrap = document.getElementById('detailWebRunnerWrapper');
         const webIframe = document.getElementById('detailWebIframe');
         const webUrlLabel = document.getElementById('detailWebUrlLabel');
@@ -2024,6 +2319,7 @@
         listEl.innerHTML = '';
 
         post.comments.forEach(comment => {
+          if (isPermanentlyDeleted(comment.id)) return;
           const item = document.createElement('div');
           item.className = 'p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-start justify-between gap-2';
           const cInit = (comment.nickname || 'น').trim().charAt(0).toUpperCase();
@@ -2038,20 +2334,17 @@
                 <div class="text-xs sm:text-sm text-slate-700 mt-0.5 break-words leading-relaxed select-text">${formatTextWithLinks(comment.text)}</div>
               </div>
             </div>
-            <button type="button" class="btn-delete-comment p-1 rounded-lg text-slate-300 hover:text-orange-600 transition shrink-0" title="ลบ">✕</button>
+            <button type="button" class="btn-delete-comment p-1 rounded-lg text-slate-300 hover:text-orange-600 transition shrink-0" title="ลบถาวร">✕</button>
           `;
           item.querySelector('.btn-delete-comment').addEventListener('click', () => {
             requestPinProtectedDelete(
-              'ยืนยันรหัสผ่านเพื่อลบ',
-              `ลบความคิดเห็นของ "${comment.nickname}"`,
-              () => {
-                if (!Array.isArray(state.deletedIds)) state.deletedIds = [];
-                state.deletedIds.push(comment.id);
+              'ยืนยันรหัสผ่านเพื่อลบถาวร',
+              `ลบความคิดเห็นของ "${comment.nickname}" ถาวร`,
+              async () => {
                 post.comments = post.comments.filter(c => c.id !== comment.id);
                 post.updatedAtMs = Date.now();
-                persistStatePermanently(post);
+                await purgeIdEverywhere(comment.id, post);
                 renderNoteDetailModal(post.id);
-                renderBoard();
               }
             );
           });
@@ -2129,32 +2422,20 @@
         const loginNicknameInput = document.getElementById('loginNicknameInput');
         const loginRoleSelect = document.getElementById('loginRoleSelect');
         const loginErrorMsg = document.getElementById('loginErrorMsg');
-        const inputTursoUrl = document.getElementById('inputTursoUrl');
-        const inputTursoToken = document.getElementById('inputTursoToken');
 
         loginRoomInput.value = '';
         loginNicknameInput.value = getSavedNickname() || '';
         loginRoleSelect.value = getSavedRole();
-        inputTursoUrl.value = tursoConfig.dbUrl || DEFAULT_TURSO_URL;
-        inputTursoToken.value = tursoConfig.authToken || '';
 
         if (hasActiveSession() && syncConfig.roomCode) {
           loginOverlay.classList.add('hidden');
         }
-
-        document.getElementById('btnToggleTursoConfig').addEventListener('click', () => {
-          document.getElementById('tursoConfigPanel').classList.toggle('hidden');
-        });
 
         document.getElementById('formDarkLogin').addEventListener('submit', async e => {
           e.preventDefault();
           const roomVal = (loginRoomInput.value || '').trim();
           const nickVal = (loginNicknameInput.value || '').trim();
           const roleVal = loginRoleSelect.value || 'นักเรียน';
-
-          tursoConfig.dbUrl = (inputTursoUrl.value || DEFAULT_TURSO_URL).trim();
-          tursoConfig.authToken = (inputTursoToken.value || '').trim();
-          saveTursoConfig();
 
           if (!roomVal || !nickVal) {
             loginErrorMsg.classList.remove('hidden');
@@ -2320,10 +2601,23 @@
           renderBoard();
           closePostModal();
           await persistStatePermanently(savedPost);
-          showToast('บันทึกข้อมูลลงกระดานและ Turso DB เรียบร้อยแล้ว');
+          showToast('บันทึกข้อมูลเรียบร้อยแล้ว');
         });
 
-        // Detail Modal Website Runner Controls
+        // Delete Box button inside Detail Modal
+        document.getElementById('btnDeleteNoteFromDetail').addEventListener('click', () => {
+          const post = state.posts.find(p => p.id === activeDetailPostId);
+          if (!post) return;
+          requestPinProtectedDelete(
+            'ยืนยันรหัสผ่านเพื่อลบถาวร',
+            `ลบกล่องของ "${post.nickname}" ถาวรจากทุกอุปกรณ์`,
+            async () => {
+              await purgeIdEverywhere(post.id, null);
+              showToast('ลบกล่องนี้ถาวรจากทุกอุปกรณ์เรียบร้อยแล้ว');
+            }
+          );
+        });
+
         document.getElementById('btnDetailProxyWeb').addEventListener('click', () => {
           const post = state.posts.find(p => p.id === activeDetailPostId);
           if (!post || !post.webRunUrl) return;
@@ -2461,7 +2755,6 @@
         });
       }
 
-      // Initialize: Hydrate IndexedDB FIRST before rendering & syncing so images never get overwritten
       bindEvents();
       renderBoard();
       if (syncConfig.roomCode) {
