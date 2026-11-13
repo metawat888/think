@@ -14,84 +14,111 @@
     body { margin: 0; background-color: #0f172a; color: #0f172a; overflow-x: hidden; }
 
     @keyframes rainbowFlow {
-      0% { background-position: 0% 50%, 0 0; }
-      50% { background-position: 100% 50%, 0 0; }
-      100% { background-position: 0% 50%, 0 0; }
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
     @keyframes auroraGlow {
       0% { background-position: 0% 50%; filter: hue-rotate(0deg); }
-      50% { background-position: 100% 50%; filter: hue-rotate(35deg); }
+      50% { background-position: 100% 50%; filter: hue-rotate(28deg); }
       100% { background-position: 0% 50%; filter: hue-rotate(0deg); }
     }
 
+    /* Silky Dot-Free Aurora Mesh Canvas */
     .whiteboard-canvas {
+      background-color: #070b14;
       background-image:
-        linear-gradient(-45deg, rgba(16,185,129,0.22), rgba(14,165,233,0.22), rgba(168,85,247,0.2), rgba(249,115,22,0.22), rgba(236,72,153,0.2)),
-        radial-gradient(rgba(148, 163, 184, 0.35) 1.5px, transparent 1.5px);
-      background-size: 400% 400%, 26px 26px;
-      animation: rainbowFlow 14s ease infinite;
-      background-color: #0b1120;
-      transition: background-color 0.3s ease;
+        radial-gradient(at 12% 18%, rgba(16, 185, 129, 0.28) 0px, transparent 52%),
+        radial-gradient(at 88% 22%, rgba(14, 165, 233, 0.28) 0px, transparent 52%),
+        radial-gradient(at 50% 85%, rgba(249, 115, 22, 0.22) 0px, transparent 55%),
+        radial-gradient(at 20% 80%, rgba(139, 92, 246, 0.22) 0px, transparent 50%),
+        linear-gradient(125deg, #060a12 0%, #0b172a 30%, #0f172a 65%, #070b14 100%);
+      background-size: 250% 250%;
+      animation: auroraGlow 15s ease infinite;
+      transition: background 0.4s ease;
     }
     .whiteboard-canvas.theme-green {
       background-color: #ecfdf5;
       background-image:
-        linear-gradient(-45deg, rgba(16,185,129,0.25), rgba(56,189,248,0.2), rgba(250,204,21,0.18), rgba(52,211,153,0.25)),
-        radial-gradient(#6ee7b7 1.5px, transparent 1.5px);
-      background-size: 400% 400%, 26px 26px;
+        radial-gradient(at 15% 20%, rgba(16, 185, 129, 0.32) 0px, transparent 55%),
+        radial-gradient(at 85% 75%, rgba(56, 189, 248, 0.25) 0px, transparent 55%),
+        linear-gradient(125deg, #ecfdf5 0%, #d1fae5 50%, #f0fdfa 100%);
+      background-size: 250% 250%;
       animation: rainbowFlow 14s ease infinite;
     }
     .whiteboard-canvas.theme-blue {
       background-color: #f0f9ff;
       background-image:
-        linear-gradient(-45deg, rgba(14,165,233,0.25), rgba(99,102,241,0.2), rgba(16,185,129,0.2), rgba(56,189,248,0.25)),
-        radial-gradient(#7dd3fc 1.5px, transparent 1.5px);
-      background-size: 400% 400%, 26px 26px;
+        radial-gradient(at 20% 20%, rgba(14, 165, 233, 0.3) 0px, transparent 55%),
+        radial-gradient(at 80% 80%, rgba(99, 102, 241, 0.22) 0px, transparent 55%),
+        linear-gradient(125deg, #f0f9ff 0%, #e0f2fe 50%, #eef2ff 100%);
+      background-size: 250% 250%;
       animation: rainbowFlow 14s ease infinite;
     }
     .whiteboard-canvas.theme-orange {
       background-color: #fff7ed;
       background-image:
-        linear-gradient(-45deg, rgba(249,115,22,0.24), rgba(236,72,153,0.18), rgba(250,204,21,0.22), rgba(16,185,129,0.18)),
-        radial-gradient(#fdba74 1.5px, transparent 1.5px);
-      background-size: 400% 400%, 26px 26px;
+        radial-gradient(at 20% 25%, rgba(249, 115, 22, 0.28) 0px, transparent 55%),
+        radial-gradient(at 80% 75%, rgba(250, 204, 21, 0.25) 0px, transparent 55%),
+        linear-gradient(125deg, #fff7ed 0%, #ffedd5 50%, #fef3c7 100%);
+      background-size: 250% 250%;
       animation: rainbowFlow 14s ease infinite;
     }
     .whiteboard-canvas.theme-gray {
       background-color: #f1f5f9;
       background-image:
-        linear-gradient(-45deg, rgba(148,163,184,0.25), rgba(56,189,248,0.18), rgba(16,185,129,0.18), rgba(249,115,22,0.18)),
-        radial-gradient(#94a3b8 1.5px, transparent 1.5px);
-      background-size: 400% 400%, 26px 26px;
+        radial-gradient(at 15% 20%, rgba(148, 163, 184, 0.3) 0px, transparent 55%),
+        radial-gradient(at 85% 80%, rgba(56, 189, 248, 0.18) 0px, transparent 55%),
+        linear-gradient(125deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+      background-size: 250% 250%;
       animation: rainbowFlow 14s ease infinite;
     }
     .whiteboard-canvas.theme-dark {
-      background-color: #090d16;
+      background-color: #070b14;
       background-image:
-        linear-gradient(-45deg, rgba(16,185,129,0.22), rgba(14,165,233,0.24), rgba(139,92,246,0.22), rgba(249,115,22,0.22), rgba(236,72,153,0.2)),
-        radial-gradient(#334155 1.5px, transparent 1.5px);
-      background-size: 400% 400%, 26px 26px;
-      animation: rainbowFlow 12s ease infinite;
+        radial-gradient(at 12% 18%, rgba(16, 185, 129, 0.3) 0px, transparent 50%),
+        radial-gradient(at 88% 22%, rgba(14, 165, 233, 0.32) 0px, transparent 50%),
+        radial-gradient(at 52% 85%, rgba(249, 115, 22, 0.25) 0px, transparent 52%),
+        radial-gradient(at 18% 82%, rgba(168, 85, 247, 0.25) 0px, transparent 50%),
+        linear-gradient(135deg, #060913 0%, #0b1528 35%, #111827 70%, #060913 100%);
+      background-size: 240% 240%;
+      animation: auroraGlow 14s ease infinite;
     }
 
     .login-bg-surface {
-      background: linear-gradient(-45deg, #0f172a, #064e3b, #0c4a6e, #3b0764, #7c2d12, #0f172a);
-      background-size: 400% 400%;
+      background-color: #060913;
+      background-image:
+        radial-gradient(at 18% 20%, rgba(16, 185, 129, 0.32) 0px, transparent 50%),
+        radial-gradient(at 82% 25%, rgba(14, 165, 233, 0.34) 0px, transparent 50%),
+        radial-gradient(at 50% 82%, rgba(249, 115, 22, 0.26) 0px, transparent 52%),
+        linear-gradient(135deg, #060913 0%, #0c192c 45%, #111827 100%);
+      background-size: 240% 240%;
       animation: auroraGlow 12s ease infinite;
     }
     .login-card-surface {
-      background: linear-gradient(180deg, rgba(30, 41, 59, 0.96) 0%, rgba(15, 23, 42, 0.98) 100%);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      box-shadow: 0 25px 70px -12px rgba(0, 0, 0, 0.75);
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.88) 0%, rgba(15, 23, 42, 0.94) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 28px 75px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
     }
 
+    /* Elevated Pro Glass Message Cards */
     .note-card {
-      box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.16), 0 4px 10px -3px rgba(15, 23, 42, 0.08);
-      transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(18px);
+      box-shadow:
+        0 20px 42px -12px rgba(2, 6, 23, 0.38),
+        0 6px 16px -4px rgba(2, 6, 23, 0.18),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+      transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease;
     }
     .note-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 20px 36px -8px rgba(15, 23, 42, 0.24), 0 8px 16px -4px rgba(15, 23, 42, 0.12);
+      transform: translateY(-5px) scale(1.005);
+      box-shadow:
+        0 28px 55px -12px rgba(2, 6, 23, 0.5),
+        0 10px 24px -6px rgba(14, 165, 233, 0.18),
+        inset 0 1px 0 0 rgba(255, 255, 255, 1);
     }
 
     .notes-grid-mode {
@@ -1895,20 +1922,36 @@
 
       function getCardStyle(color) {
         const styles = {
-          green: 'bg-gradient-to-br from-[#ecfdf5] to-[#d1fae5] border-emerald-400 text-slate-900',
-          blue: 'bg-gradient-to-br from-[#f0f9ff] to-[#e0f2fe] border-sky-400 text-slate-900',
-          orange: 'bg-gradient-to-br from-[#fff7ed] to-[#ffedd5] border-orange-400 text-slate-900',
-          gray: 'bg-gradient-to-br from-[#f8fafc] to-[#e2e8f0] border-slate-400 text-slate-900'
+          green: 'bg-gradient-to-br from-[#f0fdf4]/95 via-[#dcfce7]/95 to-[#d1fae5]/90 border-emerald-400/80 text-slate-900',
+          blue: 'bg-gradient-to-br from-[#f0f9ff]/95 via-[#e0f2fe]/95 to-[#dbeafe]/90 border-sky-400/80 text-slate-900',
+          orange: 'bg-gradient-to-br from-[#fffbeb]/95 via-[#ffedd5]/95 to-[#fed7aa]/90 border-orange-400/80 text-slate-900',
+          gray: 'bg-gradient-to-br from-[#ffffff]/95 via-[#f1f5f9]/95 to-[#e2e8f0]/90 border-slate-300/90 text-slate-900'
         };
         return styles[color] || styles.green;
       }
 
       function getTeamBadge(color) {
         const map = {
-          green: { label: 'ชื่นชม', cls: 'bg-emerald-600 text-white' },
-          blue: { label: 'ข้อเสนอแนะ', cls: 'bg-sky-600 text-white' },
-          orange: { label: 'ควรพัฒนา', cls: 'bg-orange-500 text-white' },
-          gray: { label: 'ทั่วไป', cls: 'bg-slate-600 text-white' }
+          green: {
+            label: 'ชื่นชม',
+            cls: 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/25',
+            bar: 'bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500'
+          },
+          blue: {
+            label: 'ข้อเสนอแนะ',
+            cls: 'bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-md shadow-sky-500/25',
+            bar: 'bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500'
+          },
+          orange: {
+            label: 'ควรพัฒนา',
+            cls: 'bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-md shadow-orange-500/25',
+            bar: 'bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500'
+          },
+          gray: {
+            label: 'ทั่วไป',
+            cls: 'bg-gradient-to-br from-slate-600 to-slate-800 text-white shadow-md shadow-slate-500/25',
+            bar: 'bg-gradient-to-r from-slate-400 via-slate-500 to-slate-600'
+          }
         };
         return map[color] || map.green;
       }
@@ -1957,22 +2000,25 @@
           const webRunUrl = post.webRunUrl ? normalizeWebUrl(post.webRunUrl) : '';
           const webAutoCmd = post.webAutoCmd || 'ทำงานอัตโนมัติ (Auto-Run)';
 
-          card.className = `note-card w-full rounded-3xl border-2 ${colorCls} p-5 flex flex-col animate-pop`;
+          card.className = `note-card w-full rounded-[26px] border ${colorCls} pt-6 pb-5 px-5 flex flex-col animate-pop`;
 
           card.innerHTML = `
-            <div class="flex items-start justify-between gap-2 mb-2.5">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-9 h-9 rounded-2xl ${teamBadge.cls} font-bold text-xs flex items-center justify-center shrink-0 shadow-sm">
+            <div class="
+              absolute top-0 left-0 right-0 h-1.5 ${teamBadge.bar || 'bg-emerald-500'}
+            "></div>
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-2xl ${teamBadge.cls} font-bold text-sm flex items-center justify-center shrink-0 ring-2 ring-white/80">
                   ${escapeHtml(initial)}
                 </div>
                 <div class="min-w-0">
                   <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="font-bold text-sm text-slate-900 truncate">${escapeHtml(post.nickname)}</span>
-                    <span class="px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-black/10 text-slate-800">${escapeHtml(roleStr)}</span>
+                    <span class="font-bold text-sm sm:text-[15px] text-slate-900 truncate tracking-tight">${escapeHtml(post.nickname)}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900/10 text-slate-700">${escapeHtml(roleStr)}</span>
                   </div>
-                  <div class="flex items-center gap-1.5 mt-0.5">
-                    <span class="text-[11px] leading-none">${starsStr}</span>
-                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold ${teamBadge.cls} opacity-90">${teamBadge.label}</span>
+                  <div class="flex items-center gap-1.5 mt-1">
+                    <span class="px-2 py-0.5 rounded-full bg-white/80 border border-black/5 text-[10px] leading-none shadow-sm">${starsStr}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${teamBadge.cls}">${teamBadge.label}</span>
                   </div>
                 </div>
               </div>
@@ -2023,7 +2069,7 @@
               }
               ${
                 post.text
-                  ? `<div class="text-sm text-slate-800 whitespace-pre-line leading-relaxed break-words mb-3">${formatTextWithLinks(post.text)}</div>`
+                  ? `<div class="p-3.5 rounded-2xl bg-white/80 border border-white/90 shadow-sm text-sm text-slate-800 whitespace-pre-line leading-relaxed break-words mb-3">${formatTextWithLinks(post.text)}</div>`
                   : ''
               }
             </div>
