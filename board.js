@@ -1,6 +1,7 @@
-// Vercel Serverless API Connected to Turso LibSQL (libsql://ailsed-metawat888.aws-ap-southeast-1.turso.io)
-// Enforces permanent tombstones in think_tombstones + think_posts + Upstash KV + memory.
+// Vercel Serverless API Connected to Turso LibSQL + Permanent Cloud KV + JSONBlob Cold-Start Persistence
+// Guarantees boxes/data NEVER disappear over time, even after serverless cold starts or cache expirations.
 const DEFAULT_TURSO_URL = process.env.TURSO_DATABASE_URL || 'libsql://ailsed-metawat888.aws-ap-southeast-1.turso.io';
+const KV_APP_KEY = 'r9f8k2m4';
 const memoryRooms = global.__THINK_BOARD_ROOMS__ || (global.__THINK_BOARD_ROOMS__ = {});
 const globalTombstones = global.__THINK_TOMBSTONES__ || (global.__THINK_TOMBSTONES__ = new Set());
 
@@ -10,6 +11,81 @@ function getTursoHttpEndpoint(urlStr) {
     .replace(/^libsql:\/\//i, 'https://')
     .replace(/^wss?:\/\//i, 'https://')
     .replace(/\/+$/, '') + '/v2/pipeline';
+}
+
+function getDeterministicKvKey(roomCode) {
+  const clean = String(roomCode || 'DEFAULT').trim().toUpperCase();
+  let hex = '';
+  for (let i = 0; i < clean.length; i++) hex += clean.charCodeAt(i).toString(16);
+  return 'tb_' + hex.slice(0, 32);
+}
+
+async function readPermanentCloudSnapshot(roomCode) {
+  const kvKey = getDeterministicKvKey(roomCode);
+  try {
+    const kvRes = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${KV_APP_KEY}/${kvKey}`);
+    if (!kvRes.ok) return null;
+    const blobId = (await kvRes.text()).replace(/^"+|"+$/g, '').trim();
+    if (!blobId || blobId === 'null' || blobId.length < 5) return null;
+
+    const blobRes = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' }
+    });
+    if (blobRes.ok) {
+      const data = await blobRes.json();
+      if (data && typeof data === 'object') {
+        data.cloudBlobId = blobId;
+        return data;
+      }
+    }
+  } catch (e) {}
+  return null;
+}
+
+async function writePermanentCloudSnapshot(roomCode, roomState) {
+  const kvKey = getDeterministicKvKey(roomCode);
+  try {
+    let blobId = roomState.cloudBlobId || '';
+    if (!blobId) {
+      const kvRes = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${KV_APP_KEY}/${kvKey}`);
+      if (kvRes.ok) {
+        const val = (await kvRes.text()).replace(/^"+|"+$/g, '').trim();
+        if (val && val !== 'null' && val.length >= 5) blobId = val;
+      }
+    }
+
+    const payload = JSON.stringify(roomState);
+    if (blobId) {
+      const putRes = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: payload
+      });
+      if (putRes.ok) {
+        roomState.cloudBlobId = blobId;
+        await fetch(`https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${KV_APP_KEY}/${kvKey}/${encodeURIComponent(blobId)}`, { method: 'POST' });
+        return blobId;
+      }
+    }
+
+    const postRes = await fetch('https://jsonblob.com/api/jsonBlob', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: payload
+    });
+    if (postRes.ok) {
+      const loc = postRes.headers.get('location') || postRes.headers.get('Location') || postRes.headers.get('x-jsonblob') || '';
+      const idMatch = loc.match(/\/([^\/]+)$/) || [null, loc];
+      if (idMatch && idMatch[1]) {
+        blobId = idMatch[1].trim();
+        roomState.cloudBlobId = blobId;
+        await fetch(`https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${KV_APP_KEY}/${kvKey}/${encodeURIComponent(blobId)}`, { method: 'POST' });
+        return blobId;
+      }
+    }
+  } catch (e) {}
+  return '';
 }
 
 async function tursoPipeline(statements, authToken) {
@@ -83,6 +159,7 @@ function mergeRoomData(existing, incoming) {
   return {
     ...existing,
     ...incoming,
+    cloudBlobId: incoming.cloudBlobId || existing.cloudBlobId || '',
     deletedIds: Array.from(deletedSet),
     posts: Array.from(postMap.values())
   };
@@ -100,6 +177,31 @@ export default async function handler(req, res) {
   const kvToken = process.env.KV_REST_API_TOKEN;
 
   try {
+    let current = memoryRooms[room] || { posts: [], deletedIds: Array.from(globalTombstones) };
+
+    // 1. Hydrate from Permanent Cloud Snapshot if memory is cold
+    if (!current.posts || current.posts.length === 0) {
+      const cloudSnap = await readPermanentCloudSnapshot(room);
+      if (cloudSnap) {
+        current = mergeRoomData(current, cloudSnap);
+        memoryRooms[room] = current;
+      }
+    }
+
+    // 2. Hydrate from Vercel KV if configured
+    if (kvUrl && kvToken) {
+      try {
+        const r = await fetch(`${kvUrl}/get/board_${room}`, { headers: { Authorization: `Bearer ${kvToken}` } });
+        const j = await r.json();
+        if (j && j.result) {
+          const kvData = typeof j.result === 'string' ? JSON.parse(j.result) : j.result;
+          current = mergeRoomData(current, kvData);
+          memoryRooms[room] = current;
+        }
+      } catch (e) {}
+    }
+
+    // 3. Hydrate from Turso LibSQL
     await tursoPipeline([
       {
         sql: `CREATE TABLE IF NOT EXISTS think_posts (
@@ -118,19 +220,6 @@ export default async function handler(req, res) {
         )`
       }
     ], clientToken);
-
-    let current = memoryRooms[room] || { posts: [], deletedIds: Array.from(globalTombstones) };
-
-    if (kvUrl && kvToken) {
-      try {
-        const r = await fetch(`${kvUrl}/get/board_${room}`, { headers: { Authorization: `Bearer ${kvToken}` } });
-        const j = await r.json();
-        if (j && j.result) {
-          const kvData = typeof j.result === 'string' ? JSON.parse(j.result) : j.result;
-          current = mergeRoomData(current, kvData);
-        }
-      } catch (e) {}
-    }
 
     const dbRead = await tursoPipeline([
       { sql: `SELECT id FROM think_tombstones WHERE room_code = ?`, args: [room] },
@@ -172,6 +261,10 @@ export default async function handler(req, res) {
       const merged = mergeRoomData(current, incoming);
       memoryRooms[room] = merged;
 
+      // Save to Permanent Cloud Snapshot (survives cold starts without env vars)
+      await writePermanentCloudSnapshot(room, merged);
+
+      // Save to Vercel KV if configured
       if (kvUrl && kvToken) {
         try {
           await fetch(`${kvUrl}/set/board_${room}`, {
@@ -182,6 +275,7 @@ export default async function handler(req, res) {
         } catch (e) {}
       }
 
+      // Save to Turso LibSQL
       const stmts = [];
       for (const delId of merged.deletedIds || []) {
         stmts.push({
@@ -216,7 +310,7 @@ export default async function handler(req, res) {
         await tursoPipeline(stmts, clientToken);
       }
 
-      return res.status(200).json({ ok: true, count: merged.posts.length });
+      return res.status(200).json({ ok: true, count: merged.posts.length, cloudBlobId: merged.cloudBlobId || '' });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });

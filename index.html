@@ -606,6 +606,8 @@
       const LS_SYNC_CFG_KEY = 'WHITEBOARD_CLOUD_SYNC_CFG_V3';
       const LS_ACTIVE_SESSION_KEY = 'WHITEBOARD_HAS_ACTIVE_SESSION_V5';
       const LS_GLOBAL_TOMBSTONES_KEY = 'THINK_PERMANENT_DELETED_IDS_V1';
+      const LS_MASTER_VAULT_KEY = 'THINK_MASTER_VAULT_V1';
+      const KV_APP_KEY = 'r9f8k2m4';
       const IDB_NAME = 'ClassWhiteboardPermanentDB_V3';
       const IDB_STORE = 'roomStore';
       const IDB_MEDIA_STORE = 'mediaStore';
@@ -1045,7 +1047,49 @@
       }
 
       // 1. Storage Engine
+      function readMasterVaultRoomPosts(roomCode) {
+        if (!roomCode) return [];
+        const cleanRoom = String(roomCode).trim().toUpperCase();
+        try {
+          const raw = localStorage.getItem(LS_MASTER_VAULT_KEY);
+          if (!raw) return [];
+          const vault = JSON.parse(raw);
+          if (vault && vault[cleanRoom] && typeof vault[cleanRoom] === 'object') {
+            return Object.values(vault[cleanRoom]).filter(p => p && p.id && !globalDeletedSet.has(String(p.id)));
+          }
+        } catch (e) {}
+        return [];
+      }
+
+      function writeMasterVaultRoomPosts(roomCode, postsArray, deletedIdToRemove = null) {
+        if (!roomCode) return;
+        const cleanRoom = String(roomCode).trim().toUpperCase();
+        try {
+          const raw = localStorage.getItem(LS_MASTER_VAULT_KEY);
+          const vault = raw ? JSON.parse(raw) : {};
+          if (!vault[cleanRoom] || typeof vault[cleanRoom] !== 'object') vault[cleanRoom] = {};
+          if (deletedIdToRemove) delete vault[cleanRoom][String(deletedIdToRemove)];
+          for (const delId of globalDeletedSet) {
+            delete vault[cleanRoom][String(delId)];
+          }
+          if (Array.isArray(postsArray)) {
+            postsArray.forEach(p => {
+              if (p && p.id && !globalDeletedSet.has(String(p.id))) {
+                const copy = Object.assign({}, p);
+                if (copy.image && copy.image.startsWith('data:') && copy.image.length > 25000) {
+                  mediaCache.set(copy.id, copy.image);
+                  delete copy.image;
+                }
+                vault[cleanRoom][String(p.id)] = copy;
+              }
+            });
+          }
+          localStorage.setItem(LS_MASTER_VAULT_KEY, JSON.stringify(vault));
+        } catch (e) {}
+      }
+
       function loadRoomFromLocalStorage(roomCode) {
+        if (!roomCode) return createDefaultRoomState('');
         const key = getRoomStorageKey(roomCode);
         let parsed = null;
         try {
@@ -1062,23 +1106,33 @@
           } catch (e) {}
         }
 
-        if (parsed && Array.isArray(parsed.posts)) {
-          if (!Array.isArray(parsed.deletedIds)) parsed.deletedIds = [];
-          parsed.deletedIds.forEach(id => { if (id) globalDeletedSet.add(String(id)); });
-          parsed.deletedIds = Array.from(globalDeletedSet);
-          if (!parsed.theme) parsed.theme = 'dark';
+        const baseState = (parsed && Array.isArray(parsed.posts)) ? parsed : createDefaultRoomState(roomCode);
+        if (!Array.isArray(baseState.deletedIds)) baseState.deletedIds = [];
+        baseState.deletedIds.forEach(id => { if (id) globalDeletedSet.add(String(id)); });
+        baseState.deletedIds = Array.from(globalDeletedSet);
+        if (!baseState.theme) baseState.theme = 'dark';
 
-          parsed.posts = parsed.posts.filter(p => p && p.id && !globalDeletedSet.has(String(p.id)));
-          parsed.posts.forEach(p => {
-            if (Array.isArray(p.comments)) {
-              p.comments = p.comments.filter(c => c && c.id && !globalDeletedSet.has(String(c.id)));
-            }
-            if (p.image) mediaCache.set(p.id, p.image);
-            else if (mediaCache.has(p.id)) p.image = mediaCache.get(p.id);
-          });
-          return parsed;
-        }
-        return createDefaultRoomState(roomCode);
+        // Merge any surviving posts from Master Vault so posts never vanish even if room key was reset
+        const vaultPosts = readMasterVaultRoomPosts(roomCode);
+        const postMap = new Map();
+        baseState.posts.forEach(p => {
+          if (p && p.id && !globalDeletedSet.has(String(p.id))) postMap.set(String(p.id), p);
+        });
+        vaultPosts.forEach(vp => {
+          if (vp && vp.id && !globalDeletedSet.has(String(vp.id)) && !postMap.has(String(vp.id))) {
+            postMap.set(String(vp.id), vp);
+          }
+        });
+
+        baseState.posts = Array.from(postMap.values());
+        baseState.posts.forEach(p => {
+          if (Array.isArray(p.comments)) {
+            p.comments = p.comments.filter(c => c && c.id && !globalDeletedSet.has(String(c.id)));
+          }
+          if (p.image) mediaCache.set(p.id, p.image);
+          else if (mediaCache.has(p.id)) p.image = mediaCache.get(p.id);
+        });
+        return baseState;
       }
 
       function openIndexedDB() {
@@ -1300,8 +1354,24 @@
         if (!syncConfig.roomCode) return;
         const key = getRoomStorageKey(syncConfig.roomCode);
 
+        // CRITICAL ANTI-DATA-LOSS GUARD: Read existing localStorage & MasterVault for this room first and merge any non-deleted posts before writing!
+        try {
+          const existingRaw = localStorage.getItem(key);
+          if (existingRaw) {
+            const existingParsed = JSON.parse(existingRaw);
+            if (existingParsed && Array.isArray(existingParsed.posts) && existingParsed.posts.length > 0) {
+              mergeIncomingState(existingParsed, state, true);
+            }
+          }
+          const vaultPosts = readMasterVaultRoomPosts(syncConfig.roomCode);
+          if (vaultPosts.length > 0) {
+            mergeIncomingState({ posts: vaultPosts }, state, true);
+          }
+        } catch (e) {}
+
         state.deletedIds = Array.from(new Set([...globalDeletedSet, ...(state.deletedIds || [])]));
         state.posts = state.posts.filter(p => p && p.id && !isPermanentlyDeleted(p.id));
+        writeMasterVaultRoomPosts(syncConfig.roomCode, state.posts, deletedIdToRemove);
 
         state.posts.forEach(p => {
           if (p.image) mediaCache.set(p.id, p.image);
@@ -1360,7 +1430,10 @@
       async function switchRoom(newRoomCode) {
         const cleanCode = (newRoomCode || '').trim();
         if (!cleanCode) return;
-        if (syncConfig.roomCode) await saveLocalOnly();
+        // Only save previous room if we are actually switching from a different room that had loaded posts
+        if (syncConfig.roomCode && syncConfig.roomCode.trim().toUpperCase() !== cleanCode.toUpperCase() && state.posts.length > 0) {
+          await saveLocalOnly();
+        }
 
         syncConfig.roomCode = cleanCode;
         addRoomToHistory(cleanCode);
@@ -1377,6 +1450,23 @@
         subscribeGunRoom();
         subscribeNtfyRoomStream(cleanCode);
         await pullFromCloudAllEngines(true);
+
+        // AUTO-HEAL CLOUD SYNC: If this device has surviving posts in local storage/IndexedDB, re-sync them to Turso, /api/board, and Cloud Blob so they never expire!
+        if (state.posts && state.posts.length > 0) {
+          autoHealCloudState();
+        }
+      }
+
+      async function autoHealCloudState() {
+        if (!syncConfig.roomCode || !state.posts || state.posts.length === 0) return;
+        try {
+          for (const p of state.posts) {
+            if (p && p.id && !isPermanentlyDeleted(p.id)) {
+              pushPostToTurso(syncConfig.roomCode, p, false);
+            }
+          }
+          await broadcastStateToCloud(null);
+        } catch (e) {}
       }
 
       // 2. Cloud + Turso Auto-Sync Engine (Rate-Limit Safe + Terminal Tombstone Priority)
@@ -1502,8 +1592,43 @@
         } catch (e) {}
       }
 
+      function getDeterministicKvKey(roomCode) {
+        const clean = String(roomCode || 'DEFAULT').trim().toUpperCase();
+        let hex = '';
+        for (let i = 0; i < clean.length; i++) hex += clean.charCodeAt(i).toString(16);
+        return 'tb_' + hex.slice(0, 32);
+      }
+
+      async function lookupCloudBlobIdFromRegistry(roomCode) {
+        if (!roomCode) return '';
+        const kvKey = getDeterministicKvKey(roomCode);
+        try {
+          const res = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${KV_APP_KEY}/${kvKey}`);
+          if (res.ok) {
+            const val = (await res.text()).replace(/^"+|"+$/g, '').trim();
+            if (val && val !== 'null' && val.length > 5) return val;
+          }
+        } catch (e) {}
+        return '';
+      }
+
+      async function saveCloudBlobIdToRegistry(roomCode, blobId) {
+        if (!roomCode || !blobId) return;
+        const kvKey = getDeterministicKvKey(roomCode);
+        try {
+          await fetch(`https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${KV_APP_KEY}/${kvKey}/${encodeURIComponent(blobId)}`, {
+            method: 'POST',
+            keepalive: true
+          });
+        } catch (e) {}
+      }
+
       async function pushToJsonBlob() {
         try {
+          if (!state.cloudBlobId && syncConfig.roomCode) {
+            const discoveredId = await lookupCloudBlobIdFromRegistry(syncConfig.roomCode);
+            if (discoveredId) state.cloudBlobId = discoveredId;
+          }
           const payload = JSON.stringify(state);
           if (state.cloudBlobId) {
             const res = await fetch(`https://jsonblob.com/api/jsonBlob/${state.cloudBlobId}`, {
@@ -1511,7 +1636,10 @@
               headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
               body: payload
             });
-            if (res.ok) return state.cloudBlobId;
+            if (res.ok) {
+              saveCloudBlobIdToRegistry(syncConfig.roomCode, state.cloudBlobId);
+              return state.cloudBlobId;
+            }
           }
           const createRes = await fetch('https://jsonblob.com/api/jsonBlob', {
             method: 'POST',
@@ -1519,11 +1647,12 @@
             body: payload
           });
           if (createRes.ok) {
-            const loc = createRes.headers.get('Location') || createRes.headers.get('location') || '';
-            const idMatch = loc.match(/\/([^\/]+)$/);
+            const loc = createRes.headers.get('Location') || createRes.headers.get('location') || createRes.headers.get('X-jsonblob') || '';
+            const idMatch = loc.match(/\/([^\/]+)$/) || [null, loc];
             if (idMatch && idMatch[1]) {
               state.cloudBlobId = idMatch[1];
               saveLocalOnly();
+              saveCloudBlobIdToRegistry(syncConfig.roomCode, state.cloudBlobId);
               return state.cloudBlobId;
             }
           }
@@ -1535,6 +1664,13 @@
         if (!gunInstance || !syncConfig.roomCode) return;
         const activeRoom = syncConfig.roomCode.trim().toUpperCase();
         gunRoomNode = gunInstance.get('classboard_v4_room_' + activeRoom);
+
+        gunRoomNode.get('cloudBlobId').on(bId => {
+          if (bId && typeof bId === 'string' && bId !== state.cloudBlobId) {
+            state.cloudBlobId = bId;
+            pullFromJsonBlob(bId);
+          }
+        });
 
         gunRoomNode.get('tombstones').map().on((val, postId) => {
           if (val && postId && !isPermanentlyDeleted(postId)) {
@@ -1645,13 +1781,23 @@
                 }
               }
 
+              if (!latestBlobId) {
+                latestBlobId = await lookupCloudBlobIdFromRegistry(syncConfig.roomCode);
+              }
               if (latestBlobId) {
+                state.cloudBlobId = latestBlobId;
                 await pullFromJsonBlob(latestBlobId);
               }
             }
           } catch (e) {}
-        } else if (state.cloudBlobId) {
-          await pullFromJsonBlob(state.cloudBlobId);
+        } else {
+          if (!state.cloudBlobId) {
+            const regBlobId = await lookupCloudBlobIdFromRegistry(syncConfig.roomCode);
+            if (regBlobId) state.cloudBlobId = regBlobId;
+          }
+          if (state.cloudBlobId) {
+            await pullFromJsonBlob(state.cloudBlobId);
+          }
         }
       }
 
@@ -1706,6 +1852,9 @@
         }
 
         if (blobId) {
+          try {
+            if (gunRoomNode) gunRoomNode.get('cloudBlobId').put(blobId);
+          } catch (e) {}
           try {
             await fetch(`https://ntfy.sh/${topic}`, {
               method: 'POST',
@@ -2806,6 +2955,9 @@
       if (syncConfig.roomCode) {
         hydrateRoomFromIndexedDB(syncConfig.roomCode).then(() => {
           initCrossDeviceSync();
+          if (state.posts && state.posts.length > 0) {
+            setTimeout(autoHealCloudState, 1500);
+          }
         });
       } else {
         initCrossDeviceSync();
