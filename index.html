@@ -87,10 +87,10 @@
     }
 
     .notes-grid-mode {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+      display: flex;
+      flex-direction: column;
       gap: 1.25rem;
-      align-items: start;
+      width: 100%;
     }
 
     @keyframes popIn {
@@ -247,7 +247,7 @@
 
   <!-- FIXED APP HEADER BAR (Never Scrolls With Board | Truncates Long Board Code with ...) -->
   <header class="shrink-0 relative z-30 bg-white/95 backdrop-blur-xl border-b border-neutral-200 px-4 sm:px-7 py-2.5 shadow-sm">
-    <div class="max-w-[1600px] mx-auto flex items-center justify-between gap-2 sm:gap-3">
+    <div class="w-full flex items-center justify-between gap-2 sm:gap-3">
 
       <!-- Left: Bare Two-People Silhouette (No Box) + Think Board -->
       <div class="flex items-center gap-2.5 shrink-0">
@@ -285,7 +285,7 @@
   <main id="whiteboardSurface" class="whiteboard-canvas flex-1 relative w-full overflow-y-auto">
 
     <!-- DIRECT INLINE COMPOSER (Top Bar: Board Code & Name | No Color Picker | No Instructional Text | + Button Only For Image) -->
-    <section id="inlineComposerSection" class="relative z-10 max-w-3xl mx-auto px-4 sm:px-7 pt-5 pb-1">
+    <section id="inlineComposerSection" class="relative z-10 w-full px-3 sm:px-6 pt-4 pb-1">
       <div id="inlineComposerCard" class="fb-luxury-composer rounded-[26px] p-4 sm:p-5 text-neutral-900 transition-all duration-300">
         <!-- Top Bar Inside Composer: Board Code & Name + Stars -->
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
@@ -384,7 +384,7 @@
     </div>
 
     <!-- Smart Feed Filter & Search Bar -->
-    <div id="smartFeedToolbar" class="max-w-[1600px] mx-auto px-4 sm:px-7 pt-3 pb-1 flex flex-wrap items-center justify-between gap-2">
+    <div id="smartFeedToolbar" class="w-full px-3 sm:px-6 pt-3 pb-1 flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-1.5">
         <button id="btnSortLatest" type="button" class="px-3 py-1 rounded-full bg-neutral-900 text-white text-xs font-bold transition">
           🕒 ล่าสุด
@@ -406,7 +406,7 @@
     </div>
 
     <!-- Auto-Arranged Responsive Social Feed Grid -->
-    <div id="notesLayer" class="relative w-full max-w-[1600px] mx-auto min-h-[calc(100vh-230px)] p-4 sm:p-7 notes-grid-mode"></div>
+    <div id="notesLayer" class="relative w-full min-h-[calc(100vh-230px)] px-3 sm:px-6 pt-3 pb-28 notes-grid-mode"></div>
   </main>
 
   <!-- MODAL 1: LUXURY FACEBOOK-STYLE COMPOSER MODAL -->
@@ -2484,19 +2484,19 @@
               }
               ${
                 post.image
-                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-black/10 bg-slate-950/5 shadow-sm relative">
-                       <img src="${escapeHtml(post.image)}" alt="รูปภาพประกอบ" class="note-image w-full max-h-64 object-cover group-hover:scale-[1.015] transition duration-300" onerror="this.style.display='none'" />
+                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-100/70 shadow-sm relative">
+                       <img src="${escapeHtml(post.image)}" alt="รูปภาพประกอบ" class="note-image w-full max-h-[520px] object-contain mx-auto transition duration-300" onerror="this.style.display='none'" />
                      </div>`
                   : ''
               }
               ${
                 ytId
-                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-black/15 bg-slate-950 shadow-md" onclick="event.stopPropagation()">
-                       <div class="aspect-video w-full bg-black">
+                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-neutral-300 bg-neutral-950 shadow-md" onclick="event.stopPropagation()">
+                       <div class="w-full aspect-video max-h-[500px] bg-black">
                          <iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${escapeHtml(ytId)}?rel=0" title="YouTube video" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                        </div>
-                       <div class="px-3.5 py-2 bg-slate-900 text-white flex items-center justify-between text-[11px]">
-                         <span class="text-slate-300 font-medium truncate">▶️ YouTube Video</span>
+                       <div class="px-4 py-2 bg-neutral-900 text-white flex items-center justify-between text-xs">
+                         <span class="text-neutral-300 font-medium truncate">▶️ YouTube Video</span>
                          <a href="https://www.youtube.com/watch?v=${escapeHtml(ytId)}" target="_blank" rel="noopener noreferrer" class="text-orange-400 hover:underline font-bold shrink-0">ดูบน YouTube ↗</a>
                        </div>
                      </div>`
@@ -2535,7 +2535,7 @@
                        </div>
                      </div>
 
-                     <div class="relative w-full h-52 bg-white overflow-hidden">
+                     <div class="relative w-full h-80 sm:h-96 bg-white overflow-hidden">
                        <div class="auto-run-scanline"></div>
                        <iframe class="card-web-iframe w-full h-full border-0" src="${escapeHtml(webRunUrl)}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation" referrerpolicy="no-referrer-when-downgrade" loading="lazy"></iframe>
                      </div>
