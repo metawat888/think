@@ -11,114 +11,64 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; font-family: 'Sarabun', 'Inter', sans-serif; }
-    body { margin: 0; background-color: #0f172a; color: #0f172a; overflow-x: hidden; }
+    body { margin: 0; background-color: #ffffff; color: #171717; overflow-x: hidden; }
 
-    @keyframes rainbowFlow {
+    @keyframes ambientFlow {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-    @keyframes auroraGlow {
-      0% { background-position: 0% 50%; filter: hue-rotate(0deg); }
-      50% { background-position: 100% 50%; filter: hue-rotate(28deg); }
-      100% { background-position: 0% 50%; filter: hue-rotate(0deg); }
-    }
 
-    /* Silky Dot-Free Aurora Mesh Canvas */
-    .whiteboard-canvas {
-      background-color: #070b14;
-      background-image:
-        radial-gradient(at 12% 18%, rgba(16, 185, 129, 0.28) 0px, transparent 52%),
-        radial-gradient(at 88% 22%, rgba(14, 165, 233, 0.28) 0px, transparent 52%),
-        radial-gradient(at 50% 85%, rgba(249, 115, 22, 0.22) 0px, transparent 55%),
-        radial-gradient(at 20% 80%, rgba(139, 92, 246, 0.22) 0px, transparent 50%),
-        linear-gradient(125deg, #060a12 0%, #0b172a 30%, #0f172a 65%, #070b14 100%);
-      background-size: 250% 250%;
-      animation: auroraGlow 15s ease infinite;
-      transition: background 0.4s ease;
-    }
-    .whiteboard-canvas.theme-green {
-      background-color: #ecfdf5;
-      background-image:
-        radial-gradient(at 15% 20%, rgba(16, 185, 129, 0.32) 0px, transparent 55%),
-        radial-gradient(at 85% 75%, rgba(56, 189, 248, 0.25) 0px, transparent 55%),
-        linear-gradient(125deg, #ecfdf5 0%, #d1fae5 50%, #f0fdfa 100%);
-      background-size: 250% 250%;
-      animation: rainbowFlow 14s ease infinite;
-    }
-    .whiteboard-canvas.theme-blue {
-      background-color: #f0f9ff;
-      background-image:
-        radial-gradient(at 20% 20%, rgba(14, 165, 233, 0.3) 0px, transparent 55%),
-        radial-gradient(at 80% 80%, rgba(99, 102, 241, 0.22) 0px, transparent 55%),
-        linear-gradient(125deg, #f0f9ff 0%, #e0f2fe 50%, #eef2ff 100%);
-      background-size: 250% 250%;
-      animation: rainbowFlow 14s ease infinite;
-    }
-    .whiteboard-canvas.theme-orange {
-      background-color: #fff7ed;
-      background-image:
-        radial-gradient(at 20% 25%, rgba(249, 115, 22, 0.28) 0px, transparent 55%),
-        radial-gradient(at 80% 75%, rgba(250, 204, 21, 0.25) 0px, transparent 55%),
-        linear-gradient(125deg, #fff7ed 0%, #ffedd5 50%, #fef3c7 100%);
-      background-size: 250% 250%;
-      animation: rainbowFlow 14s ease infinite;
-    }
+    /* Clean White, Black, Orange & Gray Luxury Surface (Dot-Free) */
+    .whiteboard-canvas,
+    .whiteboard-canvas.theme-dark,
+    .whiteboard-canvas.theme-green,
+    .whiteboard-canvas.theme-blue,
+    .whiteboard-canvas.theme-orange,
     .whiteboard-canvas.theme-gray {
-      background-color: #f1f5f9;
+      background-color: #ffffff;
       background-image:
-        radial-gradient(at 15% 20%, rgba(148, 163, 184, 0.3) 0px, transparent 55%),
-        radial-gradient(at 85% 80%, rgba(56, 189, 248, 0.18) 0px, transparent 55%),
-        linear-gradient(125deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
-      background-size: 250% 250%;
-      animation: rainbowFlow 14s ease infinite;
-    }
-    .whiteboard-canvas.theme-dark {
-      background-color: #070b14;
-      background-image:
-        radial-gradient(at 12% 18%, rgba(16, 185, 129, 0.3) 0px, transparent 50%),
-        radial-gradient(at 88% 22%, rgba(14, 165, 233, 0.32) 0px, transparent 50%),
-        radial-gradient(at 52% 85%, rgba(249, 115, 22, 0.25) 0px, transparent 52%),
-        radial-gradient(at 18% 82%, rgba(168, 85, 247, 0.25) 0px, transparent 50%),
-        linear-gradient(135deg, #060913 0%, #0b1528 35%, #111827 70%, #060913 100%);
-      background-size: 240% 240%;
-      animation: auroraGlow 14s ease infinite;
+        radial-gradient(at 12% 15%, rgba(249, 115, 22, 0.09) 0px, transparent 50%),
+        radial-gradient(at 88% 20%, rgba(23, 23, 23, 0.05) 0px, transparent 50%),
+        radial-gradient(at 50% 85%, rgba(249, 115, 22, 0.07) 0px, transparent 55%),
+        linear-gradient(135deg, #ffffff 0%, #f8fafc 48%, #f3f4f6 100%);
+      background-size: 220% 220%;
+      animation: ambientFlow 16s ease infinite;
+      transition: background 0.4s ease;
     }
 
     .login-bg-surface {
-      background-color: #060913;
+      background-color: #ffffff;
       background-image:
-        radial-gradient(at 18% 20%, rgba(16, 185, 129, 0.32) 0px, transparent 50%),
-        radial-gradient(at 82% 25%, rgba(14, 165, 233, 0.34) 0px, transparent 50%),
-        radial-gradient(at 50% 82%, rgba(249, 115, 22, 0.26) 0px, transparent 52%),
-        linear-gradient(135deg, #060913 0%, #0c192c 45%, #111827 100%);
-      background-size: 240% 240%;
-      animation: auroraGlow 12s ease infinite;
+        radial-gradient(at 18% 20%, rgba(249, 115, 22, 0.12) 0px, transparent 50%),
+        radial-gradient(at 82% 80%, rgba(23, 23, 23, 0.06) 0px, transparent 50%),
+        linear-gradient(135deg, #ffffff 0%, #f5f5f5 55%, #e5e7eb 100%);
+      background-size: 220% 220%;
+      animation: ambientFlow 14s ease infinite;
     }
     .login-card-surface {
-      background: linear-gradient(180deg, rgba(30, 41, 59, 0.88) 0%, rgba(15, 23, 42, 0.94) 100%);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: 0 28px 75px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 24px 60px -15px rgba(23, 23, 23, 0.12), 0 4px 16px -2px rgba(23, 23, 23, 0.05);
     }
 
-    /* Elevated Pro Glass Message Cards */
+    /* Luxury White / Black / Orange / Gray Post Cards */
     .note-card {
       position: relative;
       overflow: hidden;
-      backdrop-filter: blur(18px);
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
       box-shadow:
-        0 20px 42px -12px rgba(2, 6, 23, 0.38),
-        0 6px 16px -4px rgba(2, 6, 23, 0.18),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
-      transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease;
+        0 14px 32px -10px rgba(23, 23, 23, 0.08),
+        0 4px 12px -2px rgba(23, 23, 23, 0.04);
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease;
     }
     .note-card:hover {
-      transform: translateY(-5px) scale(1.005);
+      transform: translateY(-4px);
+      border-color: #fdba74;
       box-shadow:
-        0 28px 55px -12px rgba(2, 6, 23, 0.5),
-        0 10px 24px -6px rgba(14, 165, 233, 0.18),
-        inset 0 1px 0 0 rgba(255, 255, 255, 1);
+        0 22px 44px -12px rgba(23, 23, 23, 0.13),
+        0 8px 20px -6px rgba(249, 115, 22, 0.12);
     }
 
     .notes-grid-mode {
@@ -129,14 +79,14 @@
     }
 
     @keyframes popIn {
-      0% { opacity: 0; transform: scale(0.95) translateY(8px); }
+      0% { opacity: 0; transform: scale(0.96) translateY(6px); }
       100% { opacity: 1; transform: scale(1) translateY(0); }
     }
     .animate-pop { animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
     @keyframes reactionBounce {
       0% { transform: scale(1); }
-      35% { transform: scale(1.38) rotate(-8deg); }
+      35% { transform: scale(1.35) rotate(-8deg); }
       70% { transform: scale(0.94) rotate(4deg); }
       100% { transform: scale(1) rotate(0deg); }
     }
@@ -174,13 +124,38 @@
       50% { top: 92%; opacity: 0.95; }
       100% { top: 0%; opacity: 0.85; }
     }
+
+    /* White, Black, Orange, Gray Luxury Inline Composer */
+    .fb-luxury-composer {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      box-shadow:
+        0 18px 40px -14px rgba(23, 23, 23, 0.09),
+        0 4px 12px -2px rgba(23, 23, 23, 0.04);
+    }
+    .fb-action-btn {
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fb-action-btn:hover {
+      background: #f5f5f5;
+      transform: translateY(-1px);
+    }
+    .fb-action-btn:active {
+      transform: scale(0.96);
+    }
+    .luxury-modal-surface {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 32px 80px -12px rgba(23, 23, 23, 0.25);
+    }
+
     .auto-run-scanline {
       position: absolute;
       left: 0;
       right: 0;
       height: 2px;
-      background: linear-gradient(90deg, transparent, #10b981, #0ea5e9, #f97316, transparent);
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
+      background: linear-gradient(90deg, transparent, #f97316, #171717, #f97316, transparent);
+      box-shadow: 0 0 10px rgba(249, 115, 22, 0.7);
       pointer-events: none;
       z-index: 15;
       animation: autoScanLine 5s ease-in-out infinite;
@@ -189,45 +164,46 @@
 </head>
 <body class="min-h-screen flex flex-col select-none">
 
-  <!-- ENTRY OVERLAY (No Turso Box, No Room History, Two-People Logo + Think Board) -->
+  <!-- ENTRY OVERLAY (White, Black, Orange, Gray Theme | Bare Two-People Silhouette Logo Without Box) -->
   <div id="loginScreenOverlay" class="fixed inset-0 z-50 login-bg-surface flex items-center justify-center p-4 overflow-y-auto">
-    <div class="login-card-surface rounded-[28px] max-w-[440px] w-full p-7 sm:p-8 animate-pop my-auto">
-      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 via-sky-500 to-orange-500 shadow-lg shadow-sky-500/30 flex items-center justify-center mx-auto mb-4">
-        <svg class="w-9 h-9 text-white" viewBox="0 0 64 56" fill="currentColor" aria-hidden="true">
+    <div class="login-card-surface rounded-[28px] max-w-[420px] w-full p-7 sm:p-8 animate-pop my-auto">
+      <!-- Bare Two-People Icon (No Box) -->
+      <div class="flex items-center justify-center mx-auto mb-3">
+        <svg class="w-14 h-14 text-neutral-900" viewBox="0 0 64 56" fill="currentColor" aria-hidden="true">
           <circle cx="23" cy="14" r="10" />
           <path d="M5 48 C5 33 13 26 23 26 C33 26 41 33 41 48 Z" />
           <circle cx="46" cy="22" r="7.5" />
           <path d="M33 48 C33 37 39 32 46 32 C53 32 59 37 59 48 Z" />
         </svg>
       </div>
-      <h2 class="text-2xl font-bold text-white text-center tracking-tight mb-5">Think Board</h2>
+      <h2 class="text-2xl font-bold text-neutral-900 text-center tracking-tight mb-5">Think Board</h2>
 
       <form id="formDarkLogin" class="space-y-3.5">
         <div>
-          <label for="loginRoomInput" class="block text-xs font-bold text-slate-300 mb-1.5">รหัส Board *</label>
+          <label for="loginRoomInput" class="block text-xs font-bold text-neutral-700 mb-1.5">รหัส Board *</label>
           <input
             id="loginRoomInput"
             type="text"
             placeholder="กรอกรหัส Board..."
-            class="w-full px-4 py-3 rounded-2xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-sm font-semibold focus:outline-none focus:border-sky-400 transition"
+            class="w-full px-4 py-3 rounded-2xl bg-neutral-100 border border-neutral-300 text-neutral-900 placeholder-neutral-400 text-sm font-semibold focus:outline-none focus:bg-white focus:border-orange-500 transition"
           />
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           <div class="sm:col-span-2">
-            <label for="loginNicknameInput" class="block text-xs font-bold text-slate-300 mb-1.5">ชื่อของคุณ *</label>
+            <label for="loginNicknameInput" class="block text-xs font-bold text-neutral-700 mb-1.5">ชื่อของคุณ *</label>
             <input
               id="loginNicknameInput"
               type="text"
               placeholder="พิมพ์ชื่อ..."
-              class="w-full px-4 py-3 rounded-2xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-sm font-semibold focus:outline-none focus:border-emerald-400 transition"
+              class="w-full px-4 py-3 rounded-2xl bg-neutral-100 border border-neutral-300 text-neutral-900 placeholder-neutral-400 text-sm font-semibold focus:outline-none focus:bg-white focus:border-orange-500 transition"
             />
           </div>
           <div>
-            <label for="loginRoleSelect" class="block text-xs font-bold text-slate-300 mb-1.5">สถานะ</label>
+            <label for="loginRoleSelect" class="block text-xs font-bold text-neutral-700 mb-1.5">สถานะ</label>
             <select
               id="loginRoleSelect"
-              class="w-full px-3 py-3 rounded-2xl bg-slate-900/90 border border-slate-700 text-white text-xs font-semibold focus:outline-none focus:border-sky-400 transition"
+              class="w-full px-3 py-3 rounded-2xl bg-neutral-100 border border-neutral-300 text-neutral-900 text-xs font-semibold focus:outline-none focus:bg-white focus:border-orange-500 transition"
             >
               <option value="นักเรียน">นักเรียน</option>
               <option value="ผู้เข้ามาศึกษา">ผู้เข้ามาศึกษา</option>
@@ -237,7 +213,7 @@
           </div>
         </div>
 
-        <p id="loginErrorMsg" class="hidden text-xs font-semibold text-orange-400 text-center">
+        <p id="loginErrorMsg" class="hidden text-xs font-semibold text-orange-600 text-center">
           กรุณากรอกรหัส Board และชื่อของคุณ
         </p>
 
@@ -245,7 +221,7 @@
           <button
             id="btnSubmitDarkLogin"
             type="submit"
-            class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-sky-500 to-orange-500 hover:from-emerald-600 hover:via-sky-600 hover:to-orange-600 active:scale-[0.99] text-white font-bold text-sm shadow-lg shadow-sky-500/25 transition"
+            class="w-full py-3.5 rounded-2xl bg-neutral-900 hover:bg-orange-500 active:scale-[0.99] text-white font-bold text-sm shadow-md transition"
           >
             เข้า Board
           </button>
@@ -254,33 +230,33 @@
     </div>
   </div>
 
-  <!-- MINIMAL PRO HEADER BAR (Left: Two-People Logo + Think Board | Right: ONLY "เพิ่มความคิดเห็น" & "Out") -->
-  <header class="sticky top-0 z-30 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 px-4 sm:px-7 py-2.5">
+  <!-- HEADER BAR (Left: Bare Two-People Silhouette + Think Board | Right: Board Code, User Name, and Out) -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-neutral-200 px-4 sm:px-7 py-2.5">
     <div class="max-w-[1600px] mx-auto flex items-center justify-between gap-3">
 
-      <!-- Left: Two-People Logo + Think Board -->
+      <!-- Left: Bare Two-People Silhouette (No Box) + Think Board -->
       <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 via-sky-500 to-orange-500 text-white flex items-center justify-center shadow-sm">
-          <svg class="w-6 h-6 text-white" viewBox="0 0 64 56" fill="currentColor" aria-hidden="true">
-            <circle cx="23" cy="14" r="10" />
-            <path d="M5 48 C5 33 13 26 23 26 C33 26 41 33 41 48 Z" />
-            <circle cx="46" cy="22" r="7.5" />
-            <path d="M33 48 C33 37 39 32 46 32 C53 32 59 37 59 48 Z" />
-          </svg>
-        </div>
-        <h1 class="font-bold text-base sm:text-lg text-white tracking-tight">Think Board</h1>
+        <svg class="w-8 h-8 text-neutral-900 shrink-0" viewBox="0 0 64 56" fill="currentColor" aria-hidden="true">
+          <circle cx="23" cy="14" r="10" />
+          <path d="M5 48 C5 33 13 26 23 26 C33 26 41 33 41 48 Z" />
+          <circle cx="46" cy="22" r="7.5" />
+          <path d="M33 48 C33 37 39 32 46 32 C53 32 59 37 59 48 Z" />
+        </svg>
+        <h1 class="font-bold text-base sm:text-lg text-neutral-900 tracking-tight">Think Board</h1>
       </div>
 
-      <!-- Right: ONLY "เพิ่มความคิดเห็น" and "Out" -->
-      <div class="flex items-center gap-2">
-        <button id="btnOpenNewPostModal" type="button" class="px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 active:scale-[0.99] text-white font-bold text-xs sm:text-sm shadow-md shadow-orange-500/25 flex items-center gap-1.5 transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>เพิ่มความคิดเห็น</span>
-        </button>
+      <!-- Right: Board Code + User Name + Out Button (Orange Add Comment Button Removed) -->
+      <div class="flex items-center gap-2 sm:gap-2.5">
+        <div class="px-3 py-1.5 rounded-xl bg-orange-50 border border-orange-200 text-xs sm:text-sm font-bold text-orange-600 flex items-center gap-1.5">
+          <span class="text-neutral-500 font-semibold">Board:</span>
+          <span id="headerBoardCodeLabel">-</span>
+        </div>
 
-        <button id="btnOutBoard" type="button" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-500/20 text-slate-200 hover:text-rose-300 border border-slate-700 hover:border-rose-500/40 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition" title="ออกจาก Board">
+        <div class="px-3 py-1.5 rounded-xl bg-neutral-100 border border-neutral-200 text-xs sm:text-sm font-bold text-neutral-900 flex items-center gap-1.5 max-w-[180px]">
+          <span id="headerUserNameLabel" class="truncate">ผู้ใช้งาน</span>
+        </div>
+
+        <button id="btnOutBoard" type="button" class="px-3.5 py-1.5 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 transition" title="ออกจาก Board">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
           </svg>
@@ -290,108 +266,235 @@
     </div>
   </header>
 
-  <!-- MAIN THINK BOARD CANVAS (Auto-Grid Always) -->
-  <main id="whiteboardSurface" class="whiteboard-canvas theme-dark flex-1 relative w-full min-h-[calc(100vh-58px)] overflow-auto">
+  <!-- MAIN THINK BOARD CANVAS (White, Black, Orange, Gray Theme) -->
+  <main id="whiteboardSurface" class="whiteboard-canvas flex-1 relative w-full min-h-[calc(100vh-58px)] overflow-auto">
 
-    <!-- Minimal Empty State -->
-    <div id="emptyBoardState" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center pointer-events-none">
-      <div class="bg-slate-900/95 backdrop-blur-md border border-slate-800 rounded-3xl p-7 max-w-xs shadow-2xl pointer-events-auto">
-        <div class="text-xs font-bold text-emerald-400 mb-4">Board: <span id="emptyStateRoomLabel">-</span></div>
-        <button id="btnEmptyStateAdd" type="button" class="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-sm shadow-md transition">
-          + เพิ่มความคิดเห็น
-        </button>
+    <!-- DIRECT INLINE COMPOSER (Top Bar: Board Code & Name | No Color Picker | No Instructional Text | + Button Only For Image) -->
+    <section id="inlineComposerSection" class="relative z-10 max-w-3xl mx-auto px-4 sm:px-7 pt-5 pb-1">
+      <div id="inlineComposerCard" class="fb-luxury-composer rounded-[26px] p-4 sm:p-5 text-neutral-900 transition-all duration-300">
+        <!-- Top Bar Inside Composer: Board Code & Name + Stars -->
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div id="composerAvatarInitial" class="w-9 h-9 rounded-full bg-neutral-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
+              น
+            </div>
+            <div class="flex items-center gap-2 flex-wrap min-w-0">
+              <span class="px-2.5 py-0.5 rounded-lg bg-orange-500 text-white text-xs font-bold">Board: <span id="composerRoomCodeLabel">-</span></span>
+              <span id="composerAuthorNameLabel" class="font-bold text-sm text-neutral-900 truncate">ผู้ใช้งาน</span>
+              <span id="composerRoleBadgeLabel" class="px-2 py-0.5 rounded-full bg-neutral-100 border border-neutral-200 text-neutral-600 text-[10px] font-bold">นักเรียน</span>
+              <span id="inlineEditModeBadge" class="hidden px-2 py-0.5 rounded-full bg-orange-100 border border-orange-300 text-orange-700 text-[10px] font-bold">แก้ไข</span>
+            </div>
+          </div>
+
+          <div id="inlineStarGroup" class="flex items-center gap-0.5 bg-neutral-100 border border-neutral-200 px-2.5 py-1 rounded-full ml-auto" title="ระดับความพึงพอใจ">
+            <button type="button" data-star="1" class="star-btn text-sm hover:scale-125 transition">⭐</button>
+            <button type="button" data-star="2" class="star-btn text-sm hover:scale-125 transition">⭐</button>
+            <button type="button" data-star="3" class="star-btn text-sm hover:scale-125 transition">⭐</button>
+            <button type="button" data-star="4" class="star-btn text-sm hover:scale-125 transition">⭐</button>
+            <button type="button" data-star="5" class="star-btn text-sm hover:scale-125 transition">⭐</button>
+          </div>
+        </div>
+
+        <!-- Direct Input Box with + Button ONLY for Adding Image, Clean Textarea (No Instructional Text), and Post Button -->
+        <form id="formInlineDirectPost" class="relative">
+          <div class="rounded-2xl bg-neutral-50 border border-neutral-200 focus-within:border-orange-500 focus-within:bg-white transition p-2.5 sm:p-3 flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+              <!-- + Button Specifically for Adding Image -->
+              <label
+                for="inlineImageFileInput"
+                class="w-10 h-10 rounded-xl bg-neutral-200/80 hover:bg-orange-500 text-neutral-800 hover:text-white font-bold text-xl flex items-center justify-center shrink-0 cursor-pointer transition select-none"
+                title="เพิ่มรูปภาพ"
+              >
+                +
+                <input id="inlineImageFileInput" type="file" accept="image/*" class="hidden" />
+              </label>
+
+              <textarea
+                id="inlinePostText"
+                rows="1"
+                placeholder=""
+                class="flex-1 bg-transparent text-sm sm:text-[15px] text-neutral-900 focus:outline-none resize-none leading-relaxed py-1.5"
+              ></textarea>
+
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button
+                  id="btnInlineCancelEdit"
+                  type="button"
+                  class="hidden px-3 py-2 rounded-xl bg-neutral-200 hover:bg-neutral-300 text-neutral-700 text-xs font-semibold transition"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  id="btnInlinePostSubmit"
+                  type="submit"
+                  class="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-neutral-900 active:scale-[0.98] text-white font-bold text-xs sm:text-sm shadow-sm transition"
+                >
+                  โพสต์
+                </button>
+              </div>
+            </div>
+
+            <!-- Live Smart Auto-Detection Preview Bar -->
+            <div id="inlineAutoDetectBar" class="hidden pt-2 border-t border-neutral-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div id="inlineAutoDetectBadges" class="flex flex-wrap items-center gap-2"></div>
+              <div id="inlinePastedImagePreviewWrap" class="hidden flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded-xl px-2.5 py-1">
+                <img id="inlinePastedImageEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="รูปที่แนบ" class="h-8 w-10 object-cover rounded-lg border border-neutral-300" />
+                <button id="btnClearInlineImage" type="button" class="text-neutral-600 hover:text-orange-600 font-bold text-xs px-1">✕</button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <!-- Hidden compatibility hooks -->
+        <div class="hidden" aria-hidden="true">
+          <span id="composerPromptLabel"></span>
+          <button id="btnOpenNewPostModal" type="button">เพิ่มความคิดเห็น</button>
+          <button id="btnOpenComposerPrompt" type="button">โพสต์ทันที ✨</button>
+          <button id="btnQuickPostPhoto" type="button">🖼️ รูปภาพ</button>
+          <button id="btnQuickPostYoutube" type="button">▶️ YouTube</button>
+          <button id="btnQuickPostWebAuto" type="button">🌐 รันเว็บ Auto</button>
+          <button id="btnQuickPostRating" type="button">⭐ ให้คะแนนดาว</button>
+          <button type="button" data-color="green" class="color-swatch">เขียว</button>
+          <button type="button" data-color="blue" class="color-swatch">ฟ้า</button>
+          <button type="button" data-color="orange" class="color-swatch">ส้ม</button>
+          <button type="button" data-color="gray" class="color-swatch">เทา</button>
+        </div>
       </div>
+    </section>
+
+    <!-- Empty State Box Permanently Hidden as Requested -->
+    <div id="emptyBoardState" class="hidden" aria-hidden="true">
+      <span id="emptyStateRoomLabel">-</span>
+      <button id="btnEmptyStateAdd" type="button">+ เพิ่มความคิดเห็น</button>
     </div>
 
-    <!-- Auto-Arranged Responsive Grid -->
-    <div id="notesLayer" class="relative w-full max-w-[1600px] mx-auto min-h-[calc(100vh-58px)] p-4 sm:p-7 notes-grid-mode"></div>
+    <!-- Auto-Arranged Responsive Social Feed Grid -->
+    <div id="notesLayer" class="relative w-full max-w-[1600px] mx-auto min-h-[calc(100vh-210px)] p-4 sm:p-7 notes-grid-mode"></div>
   </main>
 
-  <!-- MODAL 1: CREATE / EDIT FEEDBACK, IMAGE, YOUTUBE & AUTO-RUN WEBSITE BOX -->
-  <div id="modalPost" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 text-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-700 animate-pop max-h-[92vh] overflow-y-auto">
-      <div class="flex items-center justify-between mb-4">
-        <h3 id="modalPostHeading" class="text-base font-bold text-white">แสดงความคิดเห็น & สร้างกล่องทำงานอัตโนมัติ</h3>
-        <button id="btnClosePostModal" type="button" class="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition">✕</button>
+  <!-- MODAL 1: LUXURY FACEBOOK-STYLE COMPOSER MODAL -->
+  <div id="modalPost" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="luxury-modal-surface text-white rounded-[30px] max-w-xl w-full p-6 shadow-2xl animate-pop max-h-[92vh] overflow-y-auto">
+      <!-- Top Centered Facebook-Style Header -->
+      <div class="relative flex items-center justify-between pb-3.5 mb-4 border-b border-white/10">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-emerald-400 to-sky-400"></span>
+          <h3 id="modalPostHeading" class="text-base sm:text-lg font-bold text-white tracking-tight">สร้างโพสต์ใหม่</h3>
+        </div>
+        <button id="btnClosePostModal" type="button" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition">✕</button>
       </div>
 
-      <div class="space-y-3.5">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-          <div class="sm:col-span-2">
-            <label for="inputNickname" class="block text-xs font-semibold text-slate-300 mb-1">ชื่อของคุณ <span class="text-orange-400">*</span></label>
-            <input id="inputNickname" type="text" placeholder="พิมพ์ชื่อ..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm font-semibold text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition" />
+      <div class="space-y-4">
+        <!-- Author Identity Profile Bar (Facebook Composer Header Style) -->
+        <div class="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-950/60 border border-white/10">
+          <div id="modalAuthorAvatarPreview" class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 via-sky-500 to-indigo-600 text-white font-bold text-lg flex items-center justify-center shrink-0 shadow-md ring-2 ring-white/20">
+            น
           </div>
-          <div>
-            <label for="inputReviewerRole" class="block text-xs font-semibold text-slate-300 mb-1">สถานะ</label>
-            <select id="inputReviewerRole" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs sm:text-sm font-semibold text-white focus:outline-none focus:border-sky-400 transition">
-              <option value="นักเรียน">นักเรียน</option>
-              <option value="ผู้เข้ามาศึกษา">ผู้เข้ามาศึกษา</option>
-              <option value="ครู/บุคลากร">ครู/บุคลากร</option>
-              <option value="บุคคลทั่วไป">บุคคลทั่วไป</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- 5-Star Satisfaction Rating -->
-        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2">
-          <div>
-            <span class="block text-xs font-bold text-slate-200">ความพึงพอใจ</span>
-            <span id="ratingLabelText" class="text-[11px] font-semibold text-emerald-400">5 ดาว — พึงพอใจมากที่สุด</span>
-          </div>
-          <div id="starRatingGroup" class="flex items-center gap-1">
-            <button type="button" data-star="1" class="star-btn text-xl hover:scale-110 transition">⭐</button>
-            <button type="button" data-star="2" class="star-btn text-xl hover:scale-110 transition">⭐</button>
-            <button type="button" data-star="3" class="star-btn text-xl hover:scale-110 transition">⭐</button>
-            <button type="button" data-star="4" class="star-btn text-xl hover:scale-110 transition">⭐</button>
-            <button type="button" data-star="5" class="star-btn text-xl hover:scale-110 transition">⭐</button>
+          <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div class="sm:col-span-2">
+              <label for="inputNickname" class="block text-[11px] font-semibold text-slate-400 mb-0.5">ชื่อผู้โพสต์ <span class="text-orange-400">*</span></label>
+              <input id="inputNickname" type="text" placeholder="พิมพ์ชื่อของคุณ..." class="w-full px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-sm font-bold text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition" />
+            </div>
+            <div>
+              <label for="inputReviewerRole" class="block text-[11px] font-semibold text-slate-400 mb-0.5">สถานะ</label>
+              <select id="inputReviewerRole" class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-xs font-semibold text-sky-300 focus:outline-none focus:border-sky-400 transition">
+                <option value="นักเรียน">นักเรียน</option>
+                <option value="ผู้เข้ามาศึกษา">ผู้เข้ามาศึกษา</option>
+                <option value="ครู/บุคลากร">ครู/บุคลากร</option>
+                <option value="บุคคลทั่วไป">บุคคลทั่วไป</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <div>
-          <label for="inputNoteText" class="block text-xs font-semibold text-slate-300 mb-1">ความคิดเห็น / คำแนะนำเพื่อการพัฒนา</label>
-          <textarea id="inputNoteText" rows="3" placeholder="พิมพ์ความคิดเห็น ข้อเสนอแนะ หรือวางลิงก์ YouTube / รูปภาพ..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 transition resize-none"></textarea>
+        <!-- Spacious Facebook-Style Post Textarea -->
+        <div class="relative rounded-2xl bg-slate-950/75 border border-white/10 p-3.5 focus-within:border-sky-400/60 transition">
+          <label for="inputNoteText" class="sr-only">ความคิดเห็น / คำแนะนำเพื่อการพัฒนา</label>
+          <textarea id="inputNoteText" rows="3" placeholder="คุณกำลังคิดอะไรอยู่... แบ่งปันความประทับใจ ข้อเสนอแนะ หรือวางลิงก์รูปภาพ / YouTube ได้เลย" class="w-full bg-transparent text-sm sm:text-base text-white placeholder-slate-400 focus:outline-none resize-none leading-relaxed"></textarea>
+
+          <!-- Luxury 5-Star Rating Pill Bar Inside Composer -->
+          <div id="modalRatingSection" class="mt-2 pt-2.5 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-amber-300">⭐ ความพึงพอใจ:</span>
+              <span id="ratingLabelText" class="text-[11px] font-semibold text-emerald-400">5 ดาว — พึงพอใจมากที่สุด</span>
+            </div>
+            <div id="starRatingGroup" class="flex items-center gap-1">
+              <button type="button" data-star="1" class="star-btn text-xl hover:scale-125 transition">⭐</button>
+              <button type="button" data-star="2" class="star-btn text-xl hover:scale-125 transition">⭐</button>
+              <button type="button" data-star="3" class="star-btn text-xl hover:scale-125 transition">⭐</button>
+              <button type="button" data-star="4" class="star-btn text-xl hover:scale-125 transition">⭐</button>
+              <button type="button" data-star="5" class="star-btn text-xl hover:scale-125 transition">⭐</button>
+            </div>
+          </div>
         </div>
 
-        <!-- Media Attachments: Image & YouTube -->
-        <div class="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-2.5">
+        <!-- Team Color / Card Theme Selector (เขียว ฟ้า ส้ม เทา) -->
+        <div class="p-3 rounded-2xl bg-slate-950/60 border border-white/10">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-bold text-slate-300">🎨 โทนสีการ์ดโพสต์ (เขียว • ฟ้า • ส้ม • เทา)</label>
+            <span class="text-[11px] text-slate-400">เลือกสไตล์ที่ต้องการ</span>
+          </div>
+          <div class="grid grid-cols-4 gap-2">
+            <button type="button" data-color="green" class="color-swatch py-2 px-2 rounded-xl bg-[#d1fae5] text-emerald-950 font-bold text-xs flex items-center justify-center gap-1.5 border-2 border-emerald-500 transition">
+              <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+              <span>เขียว</span>
+            </button>
+            <button type="button" data-color="blue" class="color-swatch py-2 px-2 rounded-xl bg-[#e0f2fe] text-sky-950 font-bold text-xs flex items-center justify-center gap-1.5 border border-sky-400 transition">
+              <span class="w-3 h-3 rounded-full bg-sky-500"></span>
+              <span>ฟ้า</span>
+            </button>
+            <button type="button" data-color="orange" class="color-swatch py-2 px-2 rounded-xl bg-[#ffedd5] text-orange-950 font-bold text-xs flex items-center justify-center gap-1.5 border border-orange-400 transition">
+              <span class="w-3 h-3 rounded-full bg-orange-500"></span>
+              <span>ส้ม</span>
+            </button>
+            <button type="button" data-color="gray" class="color-swatch py-2 px-2 rounded-xl bg-[#f1f5f9] text-slate-900 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-400 transition">
+              <span class="w-3 h-3 rounded-full bg-slate-500"></span>
+              <span>เทา</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- "เพิ่มลงในโพสต์ของคุณ" Media Attachments: Image & YouTube -->
+        <div id="modalMediaSection" class="p-3.5 rounded-2xl bg-slate-950/80 border border-white/10 space-y-2.5">
           <div class="text-xs font-bold text-emerald-300 flex items-center justify-between">
-            <span>🖼️ รูปภาพ & ▶️ วิดีโอ YouTube</span>
+            <span>🖼️ เพิ่มรูปภาพ & ▶️ วิดีโอ YouTube ลงในโพสต์</span>
+            <span class="text-[10px] text-slate-400 font-medium">รองรับไฟล์ภาพและลิงก์ทุกชนิด</span>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <label for="inputImageFile" class="py-2 px-3 rounded-xl border border-dashed border-emerald-500/60 hover:border-emerald-400 bg-slate-900 text-xs font-semibold text-emerald-300 flex items-center justify-center gap-1.5 cursor-pointer transition">
+            <label for="inputImageFile" class="py-2.5 px-3 rounded-xl border border-dashed border-emerald-500/60 hover:border-emerald-400 bg-slate-900/90 text-xs font-semibold text-emerald-300 flex items-center justify-center gap-1.5 cursor-pointer transition">
               <span>🖼️ อัปโหลดรูปภาพ</span>
               <input id="inputImageFile" type="file" accept="image/*" class="hidden" />
             </label>
-            <input id="inputImageUrl" type="text" placeholder="หรือวางลิงก์รูปภาพ (https://...)" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400" />
+            <input id="inputImageUrl" type="text" placeholder="หรือวางลิงก์รูปภาพ (https://...)" class="px-3 py-2 rounded-xl bg-slate-900/90 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400" />
           </div>
 
-          <div id="imagePreviewWrapper" class="hidden rounded-xl border border-slate-700 bg-slate-900 p-2 flex items-center justify-between">
-            <div class="flex items-center gap-2 min-w-0">
-              <img id="imagePreviewEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="ตัวอย่างรูปภาพ" class="h-11 w-14 object-cover rounded-lg border border-slate-700 bg-white shrink-0" />
-              <span class="text-xs font-medium text-emerald-400 truncate">แนบรูปภาพเรียบร้อยแล้ว</span>
+          <div id="imagePreviewWrapper" class="hidden rounded-xl border border-emerald-500/40 bg-slate-900/95 p-2.5 flex items-center justify-between">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <img id="imagePreviewEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="ตัวอย่างรูปภาพ" class="h-12 w-16 object-cover rounded-lg border border-slate-700 bg-white shrink-0" />
+              <span class="text-xs font-semibold text-emerald-400 truncate">แนบรูปภาพพร้อมโพสต์แล้ว</span>
             </div>
-            <button id="btnRemoveImage" type="button" class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-semibold shrink-0 transition">
+            <button id="btnRemoveImage" type="button" class="px-3 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-semibold shrink-0 transition">
               ลบรูป
             </button>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input id="inputYoutubeUrl" type="text" placeholder="▶️ วางลิงก์ YouTube (watch / youtu.be / shorts)" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-400" />
-            <input id="inputExternalUrl" type="text" placeholder="🔗 ลิงก์เอกสาร / ไฟล์แนบ (ถ้ามี)" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400" />
+            <input id="inputYoutubeUrl" type="text" placeholder="▶️ วางลิงก์ YouTube (watch / youtu.be / shorts)" class="w-full px-3 py-2 rounded-xl bg-slate-900/90 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-400" />
+            <input id="inputExternalUrl" type="text" placeholder="🔗 ลิงก์เอกสาร / ไฟล์แนบ (ถ้ามี)" class="w-full px-3 py-2 rounded-xl bg-slate-900/90 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400" />
           </div>
         </div>
 
         <!-- Interactive Website Runner & Auto-Command Box -->
-        <div class="p-3.5 rounded-2xl bg-sky-950/30 border border-sky-500/30 space-y-2.5">
+        <div id="modalWebRunnerSection" class="p-3.5 rounded-2xl bg-sky-950/30 border border-sky-500/30 space-y-2.5">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-sky-300">🌐 กล่องรันเว็บไซต์ & สั่งทำงานตามคำสั่ง Auto</span>
             <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">Auto-Run Engine</span>
           </div>
           <div>
-            <input id="inputWebRunUrl" type="text" placeholder="วางลิงก์เว็บไซต์ที่ต้องการรันในกล่อง เช่น https://ailabv2.vercel.app" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400" />
+            <input id="inputWebRunUrl" type="text" placeholder="วางลิงก์เว็บไซต์ที่ต้องการรันในกล่อง เช่น https://ailabv2.vercel.app" class="w-full px-3 py-2 rounded-xl bg-slate-900/90 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400" />
           </div>
           <div>
-            <input id="inputWebAutoCmd" type="text" placeholder="คำสั่ง Auto เช่น เลื่อนหน้าจออัตโนมัติ, รีเฟรชทุก 30 วินาที, คลิกปุ่มเริ่มใช้งาน..." class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-emerald-300 placeholder-slate-500 focus:outline-none focus:border-emerald-400" />
+            <input id="inputWebAutoCmd" type="text" placeholder="คำสั่ง Auto เช่น เลื่อนหน้าจออัตโนมัติ, รีเฟรชทุก 30 วินาที, คลิกปุ่มเริ่มใช้งาน..." class="w-full px-3 py-2 rounded-xl bg-slate-900/90 border border-slate-700 text-xs text-emerald-300 placeholder-slate-500 focus:outline-none focus:border-emerald-400" />
           </div>
           <div class="flex flex-wrap gap-1.5">
             <button type="button" data-autocmd="เลื่อนสำรวจหน้าเว็บอัตโนมัติ (Auto Scroll)" class="btn-preset-autocmd px-2 py-1 rounded-lg bg-slate-900 hover:bg-sky-500/20 border border-slate-700 text-[10px] font-semibold text-sky-300 transition">
@@ -408,36 +511,14 @@
             </button>
           </div>
         </div>
-
-        <!-- Team Colors: เขียว ฟ้า ส้ม เทา -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5">สีการ์ด (เขียว • ฟ้า • ส้ม • เทา)</label>
-          <div class="grid grid-cols-4 gap-2">
-            <button type="button" data-color="green" class="color-swatch py-2 px-2 rounded-xl bg-[#d1fae5] text-emerald-950 font-bold text-xs flex items-center justify-center gap-1.5 border-2 border-emerald-500">
-              <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
-              <span>เขียว</span>
-            </button>
-            <button type="button" data-color="blue" class="color-swatch py-2 px-2 rounded-xl bg-[#e0f2fe] text-sky-950 font-bold text-xs flex items-center justify-center gap-1.5 border border-sky-400">
-              <span class="w-3 h-3 rounded-full bg-sky-500"></span>
-              <span>ฟ้า</span>
-            </button>
-            <button type="button" data-color="orange" class="color-swatch py-2 px-2 rounded-xl bg-[#ffedd5] text-orange-950 font-bold text-xs flex items-center justify-center gap-1.5 border border-orange-400">
-              <span class="w-3 h-3 rounded-full bg-orange-500"></span>
-              <span>ส้ม</span>
-            </button>
-            <button type="button" data-color="gray" class="color-swatch py-2 px-2 rounded-xl bg-[#f1f5f9] text-slate-900 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-400">
-              <span class="w-3 h-3 rounded-full bg-slate-500"></span>
-              <span>เทา</span>
-            </button>
-          </div>
-        </div>
       </div>
 
-      <div class="mt-5 flex items-center justify-end gap-2">
-        <button id="btnCancelPost" type="button" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">
+      <!-- Luxury Facebook-Style Action Footer -->
+      <div class="mt-5 pt-3 border-t border-white/10 flex items-center justify-end gap-2.5">
+        <button id="btnCancelPost" type="button" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-300 text-xs font-semibold transition">
           ยกเลิก
         </button>
-        <button id="btnSavePost" type="button" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-sky-500 hover:from-emerald-600 hover:to-sky-600 text-white text-xs sm:text-sm font-bold shadow-md transition">
+        <button id="btnSavePost" type="button" class="flex-1 sm:flex-none px-7 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-sky-500 to-indigo-500 hover:from-emerald-600 hover:via-sky-600 hover:to-indigo-600 text-white text-xs sm:text-sm font-bold shadow-lg shadow-sky-500/25 transition">
           โพสต์ลงกระดาน
         </button>
       </div>
@@ -1935,14 +2016,50 @@
 
       function detectYoutubeUrlInText(text) {
         if (!text) return '';
-        const match = String(text).match(/(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/[^\s]+|youtu\.be\/[^\s]+)/i);
+        const match = String(text).match(/(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube(?:-nocookie)?\.com\/[^\s]+|youtu\.be\/[^\s]+)/i);
         return match ? normalizeWebUrl(match[0]) : '';
       }
 
       function detectImageUrlInText(text) {
         if (!text) return '';
-        const match = String(text).match(/https?:\/\/[^\s]+\.(?:png|jpe?g|gif|webp|svg)(?:\?[^\s]*)?/i);
-        return match ? match[0] : '';
+        const s = String(text);
+        const dataMatch = s.match(/data:image\/[a-zA-Z0-9.+-]+;base64,[^\s]+/);
+        if (dataMatch) return dataMatch[0];
+        const driveMatch = s.match(/https?:\/\/drive\.google\.com\/(?:file\/d\/|open\?id=)[^\s]+/i) || s.match(/https?:\/\/lh3\.googleusercontent\.com\/[^\s]+/i);
+        if (driveMatch) return normalizeImageUrl(driveMatch[0]);
+        const extMatch = s.match(/https?:\/\/[^\s]+\.(?:png|jpe?g|gif|webp|svg|bmp|avif)(?:\?[^\s]*)?/i);
+        if (extMatch) return extMatch[0];
+        const hostMatch = s.match(/https?:\/\/(?:images\.unsplash\.com|i\.imgur\.com|live\.staticflickr\.com|pbs\.twimg\.com|cdn\.discordapp\.com)\/[^\s]+/i);
+        return hostMatch ? hostMatch[0] : '';
+      }
+
+      function detectWebsiteUrlInText(text) {
+        if (!text) return '';
+        const urls = String(text).match(/(?:https?:\/\/|www\.)[^\s<]+/gi) || [];
+        for (const rawUrl of urls) {
+          const clean = normalizeWebUrl(rawUrl);
+          if (extractYoutubeId(clean)) continue;
+          if (detectImageUrlInText(clean)) continue;
+          return clean;
+        }
+        return '';
+      }
+
+      function stripAutoDetectedUrlsFromText(text, imgUrl, ytUrl, webUrl) {
+        if (!text) return '';
+        let cleaned = String(text);
+        const urls = cleaned.match(/(?:https?:\/\/|www\.)[^\s<]+/gi) || [];
+        for (const u of urls) {
+          const norm = normalizeWebUrl(u);
+          if (
+            (ytUrl && extractYoutubeId(norm) && extractYoutubeId(norm) === extractYoutubeId(ytUrl)) ||
+            (imgUrl && (norm === imgUrl || normalizeImageUrl(norm) === imgUrl)) ||
+            (webUrl && norm === webUrl)
+          ) {
+            cleaned = cleaned.replace(u, '');
+          }
+        }
+        return cleaned.replace(/^\s+|\s+$/g, '');
       }
 
       async function loadWebsiteViaProxyIntoIframe(iframeEl, targetUrl, autoCmdText, statusLabelEl) {
@@ -2070,44 +2187,44 @@
       }
 
       function getCardStyle(color) {
-        const styles = {
-          green: 'bg-gradient-to-br from-[#f0fdf4]/95 via-[#dcfce7]/95 to-[#d1fae5]/90 border-emerald-400/80 text-slate-900',
-          blue: 'bg-gradient-to-br from-[#f0f9ff]/95 via-[#e0f2fe]/95 to-[#dbeafe]/90 border-sky-400/80 text-slate-900',
-          orange: 'bg-gradient-to-br from-[#fffbeb]/95 via-[#ffedd5]/95 to-[#fed7aa]/90 border-orange-400/80 text-slate-900',
-          gray: 'bg-gradient-to-br from-[#ffffff]/95 via-[#f1f5f9]/95 to-[#e2e8f0]/90 border-slate-300/90 text-slate-900'
-        };
-        return styles[color] || styles.green;
+        return 'bg-white border-neutral-200 text-neutral-900';
       }
 
       function getTeamBadge(color) {
-        const map = {
-          green: {
-            label: 'ชื่นชม',
-            cls: 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/25',
-            bar: 'bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500'
-          },
-          blue: {
-            label: 'ข้อเสนอแนะ',
-            cls: 'bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-md shadow-sky-500/25',
-            bar: 'bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-500'
-          },
-          orange: {
-            label: 'ควรพัฒนา',
-            cls: 'bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-md shadow-orange-500/25',
-            bar: 'bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500'
-          },
-          gray: {
-            label: 'ทั่วไป',
-            cls: 'bg-gradient-to-br from-slate-600 to-slate-800 text-white shadow-md shadow-slate-500/25',
-            bar: 'bg-gradient-to-r from-slate-400 via-slate-500 to-slate-600'
-          }
+        return {
+          label: 'โพสต์',
+          cls: 'bg-neutral-900 text-white shadow-sm',
+          bar: 'bg-gradient-to-r from-neutral-900 via-orange-500 to-neutral-700'
         };
-        return map[color] || map.green;
       }
 
       // 4. Render Think Board
+      function updateLuxuryComposerHeader() {
+        const savedNick = getSavedNickname() || 'ผู้ใช้งาน';
+        const savedRole = getSavedRole() || 'นักเรียน';
+        const roomStr = syncConfig.roomCode || '-';
+        const initChar = (savedNick || 'น').trim().charAt(0).toUpperCase();
+
+        const avatarEl = document.getElementById('composerAvatarInitial');
+        const nameLabelEl = document.getElementById('composerAuthorNameLabel');
+        const roleLabelEl = document.getElementById('composerRoleBadgeLabel');
+        const compRoomEl = document.getElementById('composerRoomCodeLabel');
+        const hdrRoomEl = document.getElementById('headerBoardCodeLabel');
+        const hdrNameEl = document.getElementById('headerUserNameLabel');
+        const modalAvatarEl = document.getElementById('modalAuthorAvatarPreview');
+
+        if (avatarEl) avatarEl.textContent = initChar;
+        if (nameLabelEl) nameLabelEl.textContent = savedNick;
+        if (roleLabelEl) roleLabelEl.textContent = savedRole;
+        if (compRoomEl) compRoomEl.textContent = roomStr;
+        if (hdrRoomEl) hdrRoomEl.textContent = roomStr;
+        if (hdrNameEl) hdrNameEl.textContent = savedNick;
+        if (modalAvatarEl) modalAvatarEl.textContent = initChar;
+      }
+
       function renderBoard() {
         document.getElementById('emptyStateRoomLabel').textContent = syncConfig.roomCode || '-';
+        updateLuxuryComposerHeader();
 
         autoRunnerTimers.forEach(t => clearInterval(t));
         autoRunnerTimers.clear();
@@ -2118,17 +2235,16 @@
 
         const surface = document.getElementById('whiteboardSurface');
         surface.className = 'whiteboard-canvas flex-1 relative w-full min-h-[calc(100vh-58px)] overflow-auto';
-        surface.classList.add(`theme-${state.theme || 'dark'}`);
 
         const emptyState = document.getElementById('emptyBoardState');
+        if (emptyState) emptyState.classList.add('hidden');
+
         const notesLayer = document.getElementById('notesLayer');
         notesLayer.innerHTML = '';
 
         if (!state.posts || state.posts.length === 0) {
-          emptyState.classList.remove('hidden');
           return;
         }
-        emptyState.classList.add('hidden');
 
         state.posts.forEach(post => {
           if (isPermanentlyDeleted(post.id)) return;
@@ -2143,64 +2259,83 @@
           const starsStr = '⭐'.repeat(starCount);
           const roleStr = post.role || 'นักเรียน';
           const initial = (post.nickname || 'น').trim().charAt(0).toUpperCase();
-          const latestComment = post.comments.length > 0 ? post.comments[post.comments.length - 1] : null;
+          const recentComments = post.comments.slice(-2);
+          const totalReactions = (post.likes || 0) + (post.hearts || 0);
 
           const ytId = post.youtubeId || extractYoutubeId(post.youtubeUrl || post.externalUrl || detectYoutubeUrlInText(post.text));
           const webRunUrl = post.webRunUrl ? normalizeWebUrl(post.webRunUrl) : '';
           const webAutoCmd = post.webAutoCmd || 'ทำงานอัตโนมัติ (Auto-Run)';
+          const hasRichMedia = Boolean(post.image || ytId || webRunUrl);
+          const isShortHighlightText = Boolean(post.text && post.text.length <= 85 && !hasRichMedia);
 
-          card.className = `note-card w-full rounded-[26px] border ${colorCls} pt-6 pb-5 px-5 flex flex-col animate-pop`;
+          card.className = `note-card w-full rounded-[28px] border ${colorCls} pt-5 pb-4 px-5 flex flex-col animate-pop`;
 
           card.innerHTML = `
-            <div class="
-              absolute top-0 left-0 right-0 h-1.5 ${teamBadge.bar || 'bg-emerald-500'}
-            "></div>
-            <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="absolute top-0 left-0 right-0 h-1.5 ${teamBadge.bar || 'bg-emerald-500'}"></div>
+
+            <!-- Luxury Facebook-Style Author Header -->
+            <div class="flex items-start justify-between gap-2 mb-3.5">
               <div class="flex items-center gap-3 min-w-0">
-                <div class="w-10 h-10 rounded-2xl ${teamBadge.cls} font-bold text-sm flex items-center justify-center shrink-0 ring-2 ring-white/80">
-                  ${escapeHtml(initial)}
+                <div class="relative shrink-0">
+                  <div class="w-11 h-11 rounded-full ${teamBadge.cls} font-bold text-sm flex items-center justify-center ring-2 ring-white shadow-md">
+                    ${escapeHtml(initial)}
+                  </div>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-white"></span>
                 </div>
                 <div class="min-w-0">
                   <div class="flex items-center gap-1.5 flex-wrap">
                     <span class="font-bold text-sm sm:text-[15px] text-slate-900 truncate tracking-tight">${escapeHtml(post.nickname)}</span>
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900/10 text-slate-700">${escapeHtml(roleStr)}</span>
-                  </div>
-                  <div class="flex items-center gap-1.5 mt-1">
-                    <span class="px-2 py-0.5 rounded-full bg-white/80 border border-black/5 text-[10px] leading-none shadow-sm">${starsStr}</span>
                     <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${teamBadge.cls}">${teamBadge.label}</span>
+                  </div>
+                  <div class="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500 font-medium">
+                    <span class="px-2 py-0.5 rounded-full bg-white/85 border border-black/5 text-[10px] leading-none shadow-sm">${starsStr}</span>
+                    <span>•</span>
+                    <span>${escapeHtml(post.time || 'เมื่อสักครู่')}</span>
+                    <span>•</span>
+                    <span title="โพสต์สาธารณะในบอร์ด">🌐</span>
                   </div>
                 </div>
               </div>
 
               <div class="flex items-center gap-1 shrink-0">
-                <button type="button" class="btn-edit-note p-1.5 rounded-xl hover:bg-black/10 text-slate-600 hover:text-slate-900 transition" title="แก้ไข">
+                <button type="button" class="btn-edit-note p-1.5 rounded-full hover:bg-black/10 text-slate-600 hover:text-slate-900 transition" title="แก้ไขโพสต์">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
                 </button>
-                <button type="button" class="btn-delete-note px-2 py-1 rounded-xl bg-rose-500/10 hover:bg-rose-500/25 text-rose-600 text-[11px] font-bold flex items-center gap-0.5 transition" title="ลบกล่องถาวร">
+                <button type="button" class="btn-delete-note px-2.5 py-1 rounded-full bg-rose-500/10 hover:bg-rose-500/25 text-rose-600 text-[11px] font-bold flex items-center gap-0.5 transition" title="ลบกล่องถาวร">
                   <span>🗑️</span>
                   <span>ลบ</span>
                 </button>
               </div>
             </div>
 
-            <!-- Media & Content Area -->
+            <!-- Post Text & Media Showcase (Facebook Feed Order: Text First, Then Crisp Media) -->
             <div class="note-clickable-body cursor-pointer group">
               ${
+                post.text
+                  ? `<div class="${
+                      isShortHighlightText
+                        ? 'p-4 rounded-2xl bg-white/85 border border-white/95 shadow-sm text-base sm:text-[17px] font-semibold text-slate-900 leading-snug'
+                        : 'p-3.5 rounded-2xl bg-white/80 border border-white/90 shadow-sm text-sm sm:text-[14.5px] text-slate-800 leading-relaxed'
+                    } whitespace-pre-line break-words mb-3">${formatTextWithLinks(post.text)}</div>`
+                  : ''
+              }
+              ${
                 post.image
-                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-black/10 bg-white/80 shadow-sm">
-                       <img src="${escapeHtml(post.image)}" alt="รูปภาพประกอบ" class="note-image w-full max-h-56 object-cover group-hover:scale-[1.01] transition" onerror="this.style.display='none'" />
+                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-black/10 bg-slate-950/5 shadow-sm relative">
+                       <img src="${escapeHtml(post.image)}" alt="รูปภาพประกอบ" class="note-image w-full max-h-64 object-cover group-hover:scale-[1.015] transition duration-300" onerror="this.style.display='none'" />
                      </div>`
                   : ''
               }
               ${
                 ytId
-                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-black/15 bg-slate-950 shadow-sm" onclick="event.stopPropagation()">
+                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-black/15 bg-slate-950 shadow-md" onclick="event.stopPropagation()">
                        <div class="aspect-video w-full bg-black">
                          <iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${escapeHtml(ytId)}?rel=0" title="YouTube video" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                        </div>
-                       <div class="px-3 py-1.5 bg-slate-900 text-white flex items-center justify-between text-[11px]">
+                       <div class="px-3.5 py-2 bg-slate-900 text-white flex items-center justify-between text-[11px]">
                          <span class="text-slate-300 font-medium truncate">▶️ YouTube Video</span>
                          <a href="https://www.youtube.com/watch?v=${escapeHtml(ytId)}" target="_blank" rel="noopener noreferrer" class="text-orange-400 hover:underline font-bold shrink-0">ดูบน YouTube ↗</a>
                        </div>
@@ -2209,16 +2344,11 @@
               }
               ${
                 post.externalUrl && !ytId
-                  ? `<a href="${escapeHtml(normalizeWebUrl(post.externalUrl))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="mb-3 p-2.5 rounded-2xl bg-white/90 hover:bg-white border border-black/10 flex items-center gap-2 text-xs font-semibold text-sky-700 transition shadow-sm">
-                       <span>🔗</span>
+                  ? `<a href="${escapeHtml(normalizeWebUrl(post.externalUrl))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="mb-3 p-3 rounded-2xl bg-white/90 hover:bg-white border border-black/10 flex items-center gap-2.5 text-xs font-semibold text-sky-700 transition shadow-sm">
+                       <span class="w-7 h-7 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center shrink-0">🔗</span>
                        <span class="truncate flex-1">${escapeHtml(post.externalUrl)}</span>
-                       <span class="text-[10px] text-slate-400 shrink-0">เปิด ↗</span>
+                       <span class="text-[10px] text-slate-400 shrink-0">เปิดลิงก์ ↗</span>
                      </a>`
-                  : ''
-              }
-              ${
-                post.text
-                  ? `<div class="p-3.5 rounded-2xl bg-white/80 border border-white/90 shadow-sm text-sm text-slate-800 whitespace-pre-line leading-relaxed break-words mb-3">${formatTextWithLinks(post.text)}</div>`
                   : ''
               }
             </div>
@@ -2250,47 +2380,76 @@
                        <iframe class="card-web-iframe w-full h-full border-0" src="${escapeHtml(webRunUrl)}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation" referrerpolicy="no-referrer-when-downgrade" loading="lazy"></iframe>
                      </div>
 
-                     <div class="p-2.5 bg-slate-900 border-t border-slate-800 space-y-2">
-                       <div class="flex items-center justify-between gap-2 text-[11px]">
-                         <span class="card-auto-status text-emerald-400 font-semibold truncate">⚡ Auto: ${escapeHtml(webAutoCmd)}</span>
-                         <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold shrink-0">AUTO RUN</span>
-                       </div>
-                       <form class="form-card-autocmd flex gap-1.5">
-                         <input type="text" class="input-card-autocmd flex-1 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-700 text-[11px] text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400" placeholder="สั่งงานกล่องนี้ Auto เช่น รีเฟรช, เลื่อนจอ..." value="${escapeHtml(webAutoCmd)}" />
-                         <button type="submit" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold shrink-0 transition">
-                           ส่งคำสั่ง
-                         </button>
-                       </form>
+                     <div class="px-3 py-1.5 bg-slate-900/95 border-t border-slate-800 flex items-center justify-between gap-2 text-[11px]">
+                       <span class="card-auto-status text-emerald-400 font-semibold truncate">⚡ ${escapeHtml(webAutoCmd)}</span>
+                       <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold shrink-0">AUTO RUN</span>
                      </div>
                    </div>`
                 : ''
             }
 
-            ${
-              latestComment
-                ? `<div class="btn-open-comments mb-2.5 px-3 py-2 rounded-2xl bg-white/75 hover:bg-white border border-black/5 text-xs cursor-pointer transition">
-                     <div class="font-bold text-slate-800 truncate">💬 ${escapeHtml(latestComment.nickname)}</div>
-                     <div class="text-slate-600 truncate">${escapeHtml(latestComment.text)}</div>
-                   </div>`
-                : ''
-            }
-
-            <div class="mt-auto pt-2.5 flex items-center justify-between gap-1.5 border-t border-black/10">
+            <!-- Facebook-Style Reaction & Comment Summary Row (White, Black, Orange, Gray) -->
+            <div class="mt-auto pt-1 flex items-center justify-between text-[11px] text-neutral-500 font-semibold px-1 mb-1.5">
               <div class="flex items-center gap-1.5">
-                <button type="button" class="btn-like-note inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 hover:bg-white text-xs font-bold text-sky-700 shadow-sm transition">
-                  <span class="text-sm">👍</span>
-                  <span class="like-count-span">${post.likes || 0}</span>
-                </button>
-                <button type="button" class="btn-heart-note inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 hover:bg-white text-xs font-bold text-orange-600 shadow-sm transition">
-                  <span class="text-sm">❤️</span>
-                  <span class="heart-count-span">${post.hearts || 0}</span>
-                </button>
+                <span class="inline-flex items-center -space-x-1">
+                  <span class="w-4 h-4 rounded-full bg-neutral-900 text-white text-[9px] flex items-center justify-center ring-1 ring-white">👍</span>
+                  <span class="w-4 h-4 rounded-full bg-orange-500 text-white text-[9px] flex items-center justify-center ring-1 ring-white">❤️</span>
+                </span>
+                <span class="total-reactions-label">${totalReactions > 0 ? `${totalReactions} ความรู้สึก` : 'ร่วมส่งกำลังใจ'}</span>
               </div>
+              <button type="button" class="btn-open-comments hover:underline text-neutral-500 font-semibold">
+                ${post.comments.length > 0 ? `${post.comments.length} ความคิดเห็น` : 'ยังไม่มีความคิดเห็น'}
+              </button>
+            </div>
 
-              <button type="button" class="btn-open-comments inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/90 hover:bg-white text-xs font-bold text-emerald-700 shadow-sm transition">
-                <span>💬</span>
+            <!-- Facebook-Style 3-Column Action Bar (Black, Orange, Gray) -->
+            <div class="grid grid-cols-3 gap-1 py-1 border-y border-neutral-200 mb-2.5">
+              <button type="button" class="btn-like-note fb-action-btn py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-neutral-800">
+                <span class="text-sm">👍</span>
+                <span>ถูกใจ</span>
+                <span class="like-count-span px-1.5 py-0.2 rounded-full bg-neutral-100 text-neutral-900 text-[11px]">${post.likes || 0}</span>
+              </button>
+              <button type="button" class="btn-heart-note fb-action-btn py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-orange-600">
+                <span class="text-sm">❤️</span>
+                <span>หัวใจ</span>
+                <span class="heart-count-span px-1.5 py-0.2 rounded-full bg-orange-50 text-orange-600 text-[11px]">${post.hearts || 0}</span>
+              </button>
+              <button type="button" class="btn-open-comments fb-action-btn py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-neutral-700">
+                <span class="text-sm">💬</span>
                 <span>${post.comments.length > 0 ? post.comments.length : 'ความคิดเห็น'}</span>
               </button>
+            </div>
+
+            <!-- Facebook-Style Inline Comment Bubbles & Quick Comment Input -->
+            <div class="space-y-1.5" onclick="event.stopPropagation()">
+              ${
+                post.comments.length > 2
+                  ? `<button type="button" class="btn-open-comments text-[11px] font-bold text-neutral-500 hover:text-neutral-900 px-1 transition">
+                       ดูความคิดเห็นทั้งหมด ${post.comments.length} รายการ...
+                     </button>`
+                  : ''
+              }
+              ${recentComments
+                .map(
+                  c => `
+                <div class="btn-open-comments flex items-start gap-2 cursor-pointer group/cmt">
+                  <div class="w-6 h-6 rounded-full bg-neutral-900 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                    ${escapeHtml((c.nickname || 'น').trim().charAt(0).toUpperCase())}
+                  </div>
+                  <div class="flex-1 min-w-0 px-3 py-1.5 rounded-2xl bg-neutral-100 group-hover/cmt:bg-neutral-200/70 border border-neutral-200 text-xs transition">
+                    <span class="font-bold text-neutral-900 mr-1.5">${escapeHtml(c.nickname)}</span>
+                    <span class="text-neutral-700 break-words">${escapeHtml(c.text)}</span>
+                  </div>
+                </div>`
+                )
+                .join('')}
+
+              <form class="form-card-inline-comment flex items-center gap-1.5 pt-1">
+                <input type="text" class="input-card-inline-comment flex-1 px-3.5 py-1.5 rounded-full bg-neutral-100 focus:bg-white border border-neutral-200 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-orange-500 transition" placeholder="เขียนความคิดเห็น..." />
+                <button type="submit" class="px-3 py-1.5 rounded-full bg-neutral-900 hover:bg-orange-500 text-white text-[11px] font-bold shrink-0 transition">
+                  ส่ง
+                </button>
+              </form>
             </div>
           `;
 
@@ -2330,7 +2489,7 @@
               showToast('🔄 รีโหลดกล่องเว็บไซต์แล้ว');
             });
 
-            autoForm.addEventListener('submit', e => {
+            if (autoForm) autoForm.addEventListener('submit', e => {
               e.preventDefault();
               e.stopPropagation();
               const newCmd = (autoInput.value || '').trim() || 'ทำงานอัตโนมัติ';
@@ -2362,12 +2521,19 @@
             autoRunnerTimers.set(post.id, timerId);
           }
 
+          const totalReactEl = card.querySelector('.total-reactions-label');
+          const updateCardReactionSummary = () => {
+            const tot = (post.likes || 0) + (post.hearts || 0);
+            if (totalReactEl) totalReactEl.textContent = tot > 0 ? `${tot} ความรู้สึก` : 'ร่วมส่งกำลังใจ';
+          };
+
           const likeBtn = card.querySelector('.btn-like-note');
           likeBtn.addEventListener('click', e => {
             e.stopPropagation();
             post.likes = (post.likes || 0) + 1;
             post.updatedAtMs = Date.now();
             likeBtn.querySelector('.like-count-span').textContent = post.likes;
+            updateCardReactionSummary();
             triggerReactionAnimation(likeBtn, 'like');
             persistStatePermanently(post);
           });
@@ -2378,9 +2544,34 @@
             post.hearts = (post.hearts || 0) + 1;
             post.updatedAtMs = Date.now();
             heartBtn.querySelector('.heart-count-span').textContent = post.hearts;
+            updateCardReactionSummary();
             triggerReactionAnimation(heartBtn, 'heart');
             persistStatePermanently(post);
           });
+
+          const inlineCommentForm = card.querySelector('.form-card-inline-comment');
+          const inlineCommentInput = card.querySelector('.input-card-inline-comment');
+          if (inlineCommentForm && inlineCommentInput) {
+            inlineCommentForm.addEventListener('submit', e => {
+              e.preventDefault();
+              e.stopPropagation();
+              const textVal = (inlineCommentInput.value || '').trim();
+              if (!textVal) return;
+              const nickVal = getSavedNickname() || 'ผู้ใช้งาน';
+              if (!Array.isArray(post.comments)) post.comments = [];
+              post.comments.push({
+                id: 'c-' + Date.now() + '-' + Math.random().toString(36).slice(2, 5),
+                nickname: nickVal,
+                text: textVal,
+                time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.'
+              });
+              post.updatedAtMs = Date.now();
+              inlineCommentInput.value = '';
+              persistStatePermanently(post);
+              renderBoard();
+              showToast('💬 ส่งความคิดเห็นเรียบร้อยแล้ว');
+            });
+          }
 
           card.querySelectorAll('.btn-open-comments').forEach(el => {
             el.addEventListener('click', e => {
@@ -2563,30 +2754,93 @@
         });
       }
 
+      function updateInlineAutoDetectUI() {
+        const inlineInput = document.getElementById('inlinePostText');
+        const barEl = document.getElementById('inlineAutoDetectBar');
+        const badgesEl = document.getElementById('inlineAutoDetectBadges');
+        const imgWrapEl = document.getElementById('inlinePastedImagePreviewWrap');
+        const imgEl = document.getElementById('inlinePastedImageEl');
+        if (!inlineInput || !barEl || !badgesEl) return;
+
+        const raw = inlineInput.value || '';
+        const ytRaw = detectYoutubeUrlInText(raw);
+        const ytId = extractYoutubeId(ytRaw);
+        const imgFromText = detectImageUrlInText(raw);
+        const webUrl = detectWebsiteUrlInText(raw);
+        const activeImg = pendingImageDataUrl || imgFromText;
+
+        const badges = [];
+        if (ytId) {
+          badges.push(`<span class="px-2.5 py-1 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-300 font-semibold flex items-center gap-1">▶️ YouTube Auto (${escapeHtml(ytId)})</span>`);
+        }
+        if (webUrl) {
+          badges.push(`<span class="px-2.5 py-1 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-300 font-semibold flex items-center gap-1 max-w-xs truncate">🌐 รันเว็บ Auto: ${escapeHtml(webUrl)}</span>`);
+        }
+
+        if (activeImg) {
+          imgEl.src = activeImg;
+          imgWrapEl.classList.remove('hidden');
+        } else {
+          imgWrapEl.classList.add('hidden');
+        }
+
+        badgesEl.innerHTML = badges.join('');
+        if (badges.length > 0 || activeImg) {
+          barEl.classList.remove('hidden');
+        } else {
+          barEl.classList.add('hidden');
+        }
+      }
+
       function openPostModal(existingPost = null) {
         editingPostId = existingPost ? existingPost.id : null;
-        document.getElementById('modalPostHeading').textContent = existingPost
-          ? 'แก้ไขความคิดเห็น & กล่องทำงานอัตโนมัติ'
-          : 'แสดงความคิดเห็น & สร้างกล่องทำงานอัตโนมัติ';
-        document.getElementById('inputNickname').value = existingPost ? existingPost.nickname : getSavedNickname();
-        document.getElementById('inputReviewerRole').value = existingPost && existingPost.role ? existingPost.role : getSavedRole();
-        document.getElementById('inputNoteText').value = existingPost ? existingPost.text || '' : '';
-        document.getElementById('inputImageUrl').value = existingPost && existingPost.image && existingPost.image.startsWith('http') ? existingPost.image : '';
-        document.getElementById('inputYoutubeUrl').value = existingPost ? existingPost.youtubeUrl || '' : '';
-        document.getElementById('inputExternalUrl').value = existingPost ? existingPost.externalUrl || '' : '';
-        document.getElementById('inputWebRunUrl').value = existingPost ? existingPost.webRunUrl || '' : '';
-        document.getElementById('inputWebAutoCmd').value = existingPost ? existingPost.webAutoCmd || '' : '';
+        const inlineInput = document.getElementById('inlinePostText');
+        const editBadge = document.getElementById('inlineEditModeBadge');
+        const cancelEditBtn = document.getElementById('btnInlineCancelEdit');
+        const submitBtn = document.getElementById('btnInlinePostSubmit');
+        const composerCard = document.getElementById('inlineComposerCard');
 
-        selectedRating = existingPost && typeof existingPost.rating === 'number' ? existingPost.rating : 5;
+        if (existingPost) {
+          const parts = [];
+          if (existingPost.text) parts.push(existingPost.text);
+          if (existingPost.youtubeUrl && (!existingPost.text || !existingPost.text.includes(existingPost.youtubeUrl))) {
+            parts.push(existingPost.youtubeUrl);
+          }
+          if (existingPost.webRunUrl && (!existingPost.text || !existingPost.text.includes(existingPost.webRunUrl))) {
+            parts.push(existingPost.webRunUrl);
+          }
+          if (existingPost.image && existingPost.image.startsWith('http') && (!existingPost.text || !existingPost.text.includes(existingPost.image))) {
+            parts.push(existingPost.image);
+          }
+          if (inlineInput) inlineInput.value = parts.join('\n');
+          pendingImageDataUrl = existingPost.image && existingPost.image.startsWith('data:')
+            ? existingPost.image
+            : (mediaCache.get(existingPost.id) && String(mediaCache.get(existingPost.id)).startsWith('data:') ? mediaCache.get(existingPost.id) : '');
+          selectedRating = typeof existingPost.rating === 'number' ? existingPost.rating : 5;
+          selectedColor = existingPost.color || 'green';
+          if (editBadge) editBadge.classList.remove('hidden');
+          if (cancelEditBtn) cancelEditBtn.classList.remove('hidden');
+          if (submitBtn) submitBtn.textContent = 'บันทึกโพสต์';
+        } else {
+          if (editBadge) editBadge.classList.add('hidden');
+          if (cancelEditBtn) cancelEditBtn.classList.add('hidden');
+          if (submitBtn) submitBtn.textContent = 'โพสต์';
+        }
+
         updateStarRatingUI();
-
-        selectedColor = existingPost ? existingPost.color || 'green' : 'green';
         updateColorSwatchUI();
-
-        pendingImageDataUrl = existingPost ? existingPost.image || mediaCache.get(existingPost.id) || '' : '';
         updateImagePreviewUI();
+        updateInlineAutoDetectUI();
 
-        document.getElementById('modalPost').classList.remove('hidden');
+        const sectionEl = document.getElementById('inlineComposerSection');
+        if (sectionEl) sectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (composerCard) {
+          composerCard.classList.add('ring-2', 'ring-sky-400');
+          setTimeout(() => composerCard.classList.remove('ring-2', 'ring-sky-400'), 1200);
+        }
+        if (inlineInput) {
+          setTimeout(() => inlineInput.focus(), 80);
+        }
       }
 
       function updateColorSwatchUI() {
@@ -2670,6 +2924,205 @@
 
         document.getElementById('btnOpenNewPostModal').addEventListener('click', () => openPostModal());
         document.getElementById('btnEmptyStateAdd').addEventListener('click', () => openPostModal());
+
+        const openAndFocus = (targetId) => {
+          openPostModal(null);
+          setTimeout(() => {
+            const el = document.getElementById(targetId);
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              if (typeof el.focus === 'function') el.focus();
+            }
+          }, 90);
+        };
+
+        document.getElementById('btnOpenComposerPrompt').addEventListener('click', () => openPostModal(null));
+        document.getElementById('btnQuickPostPhoto').addEventListener('click', () => openPostModal(null));
+        document.getElementById('btnQuickPostYoutube').addEventListener('click', () => openPostModal(null));
+        document.getElementById('btnQuickPostWebAuto').addEventListener('click', () => openPostModal(null));
+        document.getElementById('btnQuickPostRating').addEventListener('click', () => openPostModal(null));
+
+        const inlinePostText = document.getElementById('inlinePostText');
+        const resetInlineComposer = () => {
+          editingPostId = null;
+          pendingImageDataUrl = '';
+          if (inlinePostText) {
+            inlinePostText.value = '';
+            inlinePostText.style.height = 'auto';
+          }
+          const editBadge = document.getElementById('inlineEditModeBadge');
+          const cancelEditBtn = document.getElementById('btnInlineCancelEdit');
+          const submitBtn = document.getElementById('btnInlinePostSubmit');
+          if (editBadge) editBadge.classList.add('hidden');
+          if (cancelEditBtn) cancelEditBtn.classList.add('hidden');
+          if (submitBtn) submitBtn.textContent = 'โพสต์';
+          updateInlineAutoDetectUI();
+        };
+
+        document.getElementById('btnInlineCancelEdit').addEventListener('click', resetInlineComposer);
+        document.getElementById('inlineImageFileInput').addEventListener('change', async e => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          try {
+            pendingImageDataUrl = await compressImageFile(file);
+            updateInlineAutoDetectUI();
+            showToast('แนบรูปภาพเรียบร้อยแล้ว');
+          } catch (err) {
+            showToast('ไม่สามารถอ่านไฟล์รูปภาพนี้ได้');
+          }
+          e.target.value = '';
+        });
+
+        document.getElementById('btnClearInlineImage').addEventListener('click', () => {
+          pendingImageDataUrl = '';
+          if (inlinePostText) {
+            const imgInText = detectImageUrlInText(inlinePostText.value);
+            if (imgInText) inlinePostText.value = inlinePostText.value.replace(imgInText, '').trim();
+          }
+          updateInlineAutoDetectUI();
+        });
+
+        inlinePostText.addEventListener('input', () => {
+          inlinePostText.style.height = 'auto';
+          inlinePostText.style.height = Math.min(inlinePostText.scrollHeight, 180) + 'px';
+          updateInlineAutoDetectUI();
+        });
+
+        inlinePostText.addEventListener('keydown', e => {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('formInlineDirectPost').requestSubmit();
+          }
+        });
+
+        inlinePostText.addEventListener('paste', async e => {
+          const items = (e.clipboardData && e.clipboardData.items) || [];
+          for (const item of items) {
+            if (item.type && item.type.startsWith('image/')) {
+              e.preventDefault();
+              const file = item.getAsFile();
+              if (file) {
+                try {
+                  pendingImageDataUrl = await compressImageFile(file);
+                  updateInlineAutoDetectUI();
+                  showToast('🖼️ วางรูปภาพอัตโนมัติเรียบร้อยแล้ว');
+                } catch (err) {}
+              }
+              return;
+            }
+          }
+          setTimeout(updateInlineAutoDetectUI, 30);
+        });
+
+        const composerCardEl = document.getElementById('inlineComposerCard');
+        composerCardEl.addEventListener('dragover', e => {
+          e.preventDefault();
+          composerCardEl.classList.add('ring-2', 'ring-emerald-400');
+        });
+        composerCardEl.addEventListener('dragleave', () => {
+          composerCardEl.classList.remove('ring-2', 'ring-emerald-400');
+        });
+        composerCardEl.addEventListener('drop', async e => {
+          e.preventDefault();
+          composerCardEl.classList.remove('ring-2', 'ring-emerald-400');
+          const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+          if (file && file.type && file.type.startsWith('image/')) {
+            try {
+              pendingImageDataUrl = await compressImageFile(file);
+              updateInlineAutoDetectUI();
+              showToast('🖼️ แนบรูปภาพอัตโนมัติเรียบร้อยแล้ว');
+            } catch (err) {}
+          }
+        });
+
+        document.getElementById('formInlineDirectPost').addEventListener('submit', async e => {
+          e.preventDefault();
+          const rawInput = (inlinePostText.value || '').trim();
+          const nickname = getSavedNickname() || (document.getElementById('inputNickname').value || '').trim() || 'ผู้ใช้งาน';
+          const role = getSavedRole() || document.getElementById('inputReviewerRole').value || 'นักเรียน';
+
+          const detectedImgUrl = detectImageUrlInText(rawInput);
+          const finalImage = pendingImageDataUrl || (detectedImgUrl ? normalizeImageUrl(detectedImgUrl) : '');
+
+          const rawYoutube = detectYoutubeUrlInText(rawInput);
+          const finalYoutubeId = extractYoutubeId(rawYoutube);
+          const finalYoutubeUrl = finalYoutubeId ? `https://www.youtube.com/watch?v=${finalYoutubeId}` : '';
+
+          const finalWebRunUrl = detectWebsiteUrlInText(rawInput);
+          const cleanedText = stripAutoDetectedUrlsFromText(rawInput, detectedImgUrl, rawYoutube, finalWebRunUrl);
+
+          const finalWebAutoCmd = finalWebRunUrl
+            ? (cleanedText && (cleanedText.includes('เลื่อน') || cleanedText.includes('รีเฟรช') || cleanedText.includes('จอขาว') || cleanedText.toLowerCase().includes('auto'))
+                ? cleanedText
+                : 'ทำงานอัตโนมัติ (Auto-Run)')
+            : '';
+          const useProxyMode = Boolean(finalWebRunUrl && (rawInput.includes('จอขาว') || rawInput.toLowerCase().includes('proxy')));
+
+          if (!rawInput && !finalImage) {
+            showToast('กรุณาพิมพ์โพสต์ หรือวางลิงก์ / รูปภาพ');
+            return inlinePostText.focus();
+          }
+
+          const nowMs = Date.now();
+          let savedPost = null;
+
+          if (editingPostId) {
+            const target = state.posts.find(p => p.id === editingPostId);
+            if (target) {
+              target.nickname = nickname;
+              target.role = role;
+              target.rating = selectedRating;
+              target.text = cleanedText;
+              target.color = selectedColor;
+              target.image = finalImage;
+              target.youtubeUrl = finalYoutubeUrl;
+              target.youtubeId = finalYoutubeId;
+              target.externalUrl = '';
+              target.webRunUrl = finalWebRunUrl;
+              target.webAutoCmd = finalWebAutoCmd;
+              target.webProxyMode = useProxyMode;
+              target.updatedAtMs = nowMs;
+              if (finalImage) mediaCache.set(target.id, finalImage);
+              savedPost = target;
+            }
+          } else {
+            const newId = 'note-' + nowMs + '-' + Math.random().toString(36).slice(2, 6);
+            if (finalImage) mediaCache.set(newId, finalImage);
+            savedPost = {
+              id: newId,
+              nickname,
+              role,
+              rating: selectedRating,
+              text: cleanedText,
+              image: finalImage,
+              youtubeUrl: finalYoutubeUrl,
+              youtubeId: finalYoutubeId,
+              externalUrl: '',
+              webRunUrl: finalWebRunUrl,
+              webAutoCmd: finalWebAutoCmd,
+              webProxyMode: useProxyMode,
+              color: selectedColor,
+              likes: 0,
+              hearts: 0,
+              comments: [],
+              createdAtMs: nowMs,
+              updatedAtMs: nowMs,
+              time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.'
+            };
+            state.posts.push(savedPost);
+          }
+
+          resetInlineComposer();
+          renderBoard();
+          await persistStatePermanently(savedPost);
+          showToast('✨ โพสต์ลงกระดานเรียบร้อยแล้ว');
+        });
+
+        document.getElementById('inputNickname').addEventListener('input', e => {
+          const val = (e.target.value || '').trim();
+          const modalAvatarEl = document.getElementById('modalAuthorAvatarPreview');
+          if (modalAvatarEl) modalAvatarEl.textContent = (val || 'น').charAt(0).toUpperCase();
+        });
 
         document.getElementById('whiteboardSurface').addEventListener('dblclick', e => {
           if (e.target.closest('article') || e.target.closest('button') || e.target.closest('input') || e.target.closest('form')) return;
