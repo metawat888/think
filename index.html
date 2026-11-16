@@ -19,56 +19,42 @@
       100% { background-position: 0% 50%; }
     }
 
-    /* Clean White, Black, Orange & Gray Luxury Surface (Dot-Free) */
+    /* Ultra-Fast 60fps Hardware-Accelerated Surface (Zero Scroll Repaint Lag) */
     .whiteboard-canvas,
     .whiteboard-canvas.theme-dark,
     .whiteboard-canvas.theme-green,
     .whiteboard-canvas.theme-blue,
     .whiteboard-canvas.theme-orange,
     .whiteboard-canvas.theme-gray {
-      background-color: #ffffff;
-      background-image:
-        radial-gradient(at 12% 15%, rgba(249, 115, 22, 0.09) 0px, transparent 50%),
-        radial-gradient(at 88% 20%, rgba(23, 23, 23, 0.05) 0px, transparent 50%),
-        radial-gradient(at 50% 85%, rgba(249, 115, 22, 0.07) 0px, transparent 55%),
-        linear-gradient(135deg, #ffffff 0%, #f8fafc 48%, #f3f4f6 100%);
-      background-size: 220% 220%;
-      animation: ambientFlow 16s ease infinite;
-      transition: background 0.4s ease;
+      background-color: #f8fafc;
+      background-image: linear-gradient(180deg, #ffffff 0%, #f8fafc 45%, #f3f4f6 100%);
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      transform: translateZ(0);
     }
 
     .login-bg-surface {
-      background-color: #ffffff;
-      background-image:
-        radial-gradient(at 18% 20%, rgba(249, 115, 22, 0.12) 0px, transparent 50%),
-        radial-gradient(at 82% 80%, rgba(23, 23, 23, 0.06) 0px, transparent 50%),
-        linear-gradient(135deg, #ffffff 0%, #f5f5f5 55%, #e5e7eb 100%);
-      background-size: 220% 220%;
-      animation: ambientFlow 14s ease infinite;
+      background-color: #f8fafc;
+      background-image: linear-gradient(135deg, #ffffff 0%, #f5f5f5 55%, #e5e7eb 100%);
     }
     .login-card-surface {
       background: #ffffff;
       border: 1px solid #e5e7eb;
-      box-shadow: 0 24px 60px -15px rgba(23, 23, 23, 0.12), 0 4px 16px -2px rgba(23, 23, 23, 0.05);
+      box-shadow: 0 20px 45px -15px rgba(23, 23, 23, 0.12);
     }
 
-    /* Luxury White / Black / Orange / Gray Post Cards */
+    /* High-Performance Luxury Post Cards */
     .note-card {
       position: relative;
       overflow: hidden;
       background: #ffffff;
       border: 1px solid #e5e7eb;
-      box-shadow:
-        0 14px 32px -10px rgba(23, 23, 23, 0.08),
-        0 4px 12px -2px rgba(23, 23, 23, 0.04);
-      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+      box-shadow: 0 4px 14px -2px rgba(23, 23, 23, 0.06);
+      contain: layout style;
+      transition: border-color 0.15s ease;
     }
     .note-card:hover {
-      transform: translateY(-4px);
       border-color: #fdba74;
-      box-shadow:
-        0 22px 44px -12px rgba(23, 23, 23, 0.13),
-        0 8px 20px -6px rgba(249, 115, 22, 0.12);
     }
 
     
@@ -246,7 +232,7 @@
   </div>
 
   <!-- FIXED APP HEADER BAR (Never Scrolls With Board | Truncates Long Board Code with ...) -->
-  <header class="shrink-0 relative z-30 bg-white/95 backdrop-blur-xl border-b border-neutral-200 px-4 sm:px-7 py-2.5 shadow-sm">
+  <header class="shrink-0 relative z-30 bg-white border-b border-neutral-200 px-4 sm:px-7 py-2.5 shadow-sm">
     <div class="w-full flex items-center justify-between gap-2 sm:gap-3">
 
       <!-- Left: Bare Two-People Silhouette (No Box) + Think Board -->
@@ -1300,7 +1286,19 @@
         return baseState;
       }
 
+      let cachedDbInstance = null;
+      let hasHydratedCurrentRoom = false;
+      let localSaveTimer = null;
+      let cloudSyncTimer = null;
+      let lastUserActivityMs = 0;
+      const renderedCardMap = new Map();
+
+      ['scroll', 'keydown', 'pointerdown', 'touchstart'].forEach(evtName => {
+        window.addEventListener(evtName, () => { lastUserActivityMs = Date.now(); }, { passive: true, capture: true });
+      });
+
       function openIndexedDB() {
+        if (cachedDbInstance) return Promise.resolve(cachedDbInstance);
         return new Promise(resolve => {
           if (!window.indexedDB) return resolve(null);
           const req = indexedDB.open(IDB_NAME, 2);
@@ -1309,7 +1307,11 @@
             if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
             if (!db.objectStoreNames.contains(IDB_MEDIA_STORE)) db.createObjectStore(IDB_MEDIA_STORE);
           };
-          req.onsuccess = e => resolve(e.target.result);
+          req.onsuccess = e => {
+            cachedDbInstance = e.target.result;
+            cachedDbInstance.onclose = () => { cachedDbInstance = null; };
+            resolve(cachedDbInstance);
+          };
           req.onerror = () => resolve(null);
         });
       }
@@ -1523,86 +1525,59 @@
         return changed;
       }
 
-      async function saveLocalOnly(deletedIdToRemove = null) {
+      async function flushLocalSaveNow(deletedIdToRemove = null) {
         if (!syncConfig.roomCode) return;
-        const key = getRoomStorageKey(syncConfig.roomCode);
+        const activeRoom = syncConfig.roomCode;
+        const key = getRoomStorageKey(activeRoom);
 
-        // CRITICAL ANTI-DATA-LOSS GUARD: Read existing localStorage & MasterVault for this room first and merge any non-deleted posts before writing!
-        try {
-          const existingRaw = localStorage.getItem(key);
-          if (existingRaw) {
-            const existingParsed = JSON.parse(existingRaw);
-            if (existingParsed && Array.isArray(existingParsed.posts) && existingParsed.posts.length > 0) {
-              mergeIncomingState(existingParsed, state, true);
+        if (!hasHydratedCurrentRoom) {
+          try {
+            const existingRaw = localStorage.getItem(key);
+            if (existingRaw) {
+              const existingParsed = JSON.parse(existingRaw);
+              if (existingParsed && Array.isArray(existingParsed.posts) && existingParsed.posts.length > 0) {
+                mergeIncomingState(existingParsed, state, true);
+              }
             }
-          }
-          const vaultPosts = readMasterVaultRoomPosts(syncConfig.roomCode);
-          if (vaultPosts.length > 0) {
-            mergeIncomingState({ posts: vaultPosts }, state, true);
-          }
-        } catch (e) {}
+            const vaultPosts = readMasterVaultRoomPosts(activeRoom);
+            if (vaultPosts.length > 0) {
+              mergeIncomingState({ posts: vaultPosts }, state, true);
+            }
+          } catch (e) {}
+          hasHydratedCurrentRoom = true;
+        }
 
         state.deletedIds = Array.from(new Set([...globalDeletedSet, ...(state.deletedIds || [])]));
         state.posts = state.posts.filter(p => p && p.id && !isPermanentlyDeleted(p.id));
-        writeMasterVaultRoomPosts(syncConfig.roomCode, state.posts, deletedIdToRemove);
 
         state.posts.forEach(p => {
           if (p.image) mediaCache.set(p.id, p.image);
           else if (mediaCache.has(p.id)) p.image = mediaCache.get(p.id);
         });
 
+        // Fast lightweight localStorage write (strips heavy base64 images > 25KB into IndexedDB/CacheStorage so localStorage never stalls main thread!)
         try {
-          localStorage.setItem(key, JSON.stringify(state));
-        } catch (quotaErr) {
-          try {
-            const lightState = Object.assign({}, state, {
-              posts: state.posts.map(p => {
-                if (p.image && p.image.startsWith('data:') && p.image.length > 35000) {
-                  mediaCache.set(p.id, p.image);
-                  const copy = Object.assign({}, p);
-                  delete copy.image;
-                  return copy;
-                }
-                return p;
-              })
-            });
-            localStorage.setItem(key, JSON.stringify(lightState));
-          } catch (e2) {}
-        }
-
-        try {
-          const wn = window.name && window.name.startsWith('{') ? JSON.parse(window.name) : {};
-          wn[key] = state;
-          window.name = JSON.stringify(wn);
+          const lightState = Object.assign({}, state, {
+            posts: state.posts.map(p => {
+              if (p.image && p.image.startsWith('data:') && p.image.length > 25000) {
+                mediaCache.set(p.id, p.image);
+                const copy = Object.assign({}, p);
+                delete copy.image;
+                return copy;
+              }
+              return p;
+            })
+          });
+          localStorage.setItem(key, JSON.stringify(lightState));
         } catch (e) {}
 
-        try {
-          const cachedState = await loadFromImmortalCacheStorage(syncConfig.roomCode);
-          if (cachedState && Array.isArray(cachedState.posts) && cachedState.posts.length > 0) {
-            mergeIncomingState(cachedState, state, true);
-          }
-        } catch (e) {}
+        writeMasterVaultRoomPosts(activeRoom, state.posts, deletedIdToRemove);
 
         try {
           const db = await openIndexedDB();
           if (db) {
-            // Read existing IDB room state first so we NEVER overwrite surviving posts!
-            const existingIdbState = await new Promise(resolve => {
-              try {
-                const rTx = db.transaction([IDB_STORE], 'readonly');
-                const rReq = rTx.objectStore(IDB_STORE).get(key);
-                rReq.onsuccess = () => resolve(rReq.result || null);
-                rReq.onerror = () => resolve(null);
-              } catch (err) { resolve(null); }
-            });
-            if (existingIdbState && Array.isArray(existingIdbState.posts) && existingIdbState.posts.length > 0) {
-              mergeIncomingState(existingIdbState, state, true);
-            }
-            state.posts = state.posts.filter(p => p && p.id && !isPermanentlyDeleted(p.id));
-            writeMasterVaultRoomPosts(syncConfig.roomCode, state.posts, deletedIdToRemove);
-
             const tx = db.transaction([IDB_STORE, IDB_MEDIA_STORE], 'readwrite');
-            tx.objectStore(IDB_STORE).put(JSON.parse(JSON.stringify(state)), key);
+            tx.objectStore(IDB_STORE).put(state, key);
             const mStore = tx.objectStore(IDB_MEDIA_STORE);
             if (deletedIdToRemove) mStore.delete(deletedIdToRemove);
             state.posts.forEach(p => {
@@ -1612,16 +1587,33 @@
           }
         } catch (err) {}
 
-        await saveToImmortalCacheStorage(syncConfig.roomCode, state);
+        saveToImmortalCacheStorage(activeRoom, state);
       }
 
-      async function persistStatePermanently(changedPost) {
-        state.updatedAt = Date.now();
-        await saveLocalOnly();
-        if (changedPost && !isPermanentlyDeleted(changedPost.id)) {
-          pushPostToTurso(syncConfig.roomCode, changedPost, false);
+      function saveLocalOnly(deletedIdToRemove = null) {
+        if (deletedIdToRemove) {
+          return flushLocalSaveNow(deletedIdToRemove);
         }
-        broadcastStateToCloud(changedPost);
+        if (localSaveTimer) clearTimeout(localSaveTimer);
+        return new Promise(resolve => {
+          localSaveTimer = setTimeout(async () => {
+            await flushLocalSaveNow(null);
+            resolve();
+          }, 60);
+        });
+      }
+
+      function persistStatePermanently(changedPost) {
+        state.updatedAt = Date.now();
+        saveLocalOnly();
+        if (changedPost && !isPermanentlyDeleted(changedPost.id)) {
+          setTimeout(() => pushPostToTurso(syncConfig.roomCode, changedPost, false), 10);
+        }
+        if (cloudSyncTimer) clearTimeout(cloudSyncTimer);
+        cloudSyncTimer = setTimeout(() => {
+          broadcastStateToCloud(changedPost);
+        }, 180);
+        return Promise.resolve();
       }
 
       async function switchRoom(newRoomCode) {
@@ -1637,6 +1629,10 @@
         saveSyncConfig();
 
         activeDetailPostId = null;
+        hasHydratedCurrentRoom = false;
+        renderedCardMap.clear();
+        const nl = document.getElementById('notesLayer');
+        if (nl) nl.innerHTML = '';
         document.getElementById('modalNoteDetail').classList.add('hidden');
 
         state = loadRoomFromLocalStorage(cleanCode);
@@ -1710,8 +1706,10 @@
           pullFromCloudAllEngines(true);
         }
         setInterval(() => {
-          if (syncConfig.roomCode) pullFromCloudAllEngines(false);
-        }, 6000);
+          if (syncConfig.roomCode && (Date.now() - lastUserActivityMs > 3000)) {
+            pullFromCloudAllEngines(false);
+          }
+        }, 14000);
         setInterval(() => {
           if (syncConfig.roomCode && state.posts && state.posts.length > 0) {
             autoHealCloudState();
@@ -2345,26 +2343,40 @@
         if (modalAvatarEl) modalAvatarEl.textContent = initChar;
       }
 
+      function computePostRenderSignature(post) {
+        const lastCmtId = Array.isArray(post.comments) && post.comments.length > 0
+          ? post.comments[post.comments.length - 1].id
+          : '';
+        return [
+          post.id,
+          post.updatedAtMs || 0,
+          post.likes || 0,
+          post.hearts || 0,
+          Array.isArray(post.comments) ? post.comments.length : 0,
+          lastCmtId,
+          post.nickname || '',
+          post.role || '',
+          post.rating || 5,
+          (post.text || '').length,
+          post.image ? post.image.length : 0,
+          post.youtubeId || '',
+          post.webRunUrl || '',
+          post.webProxyMode ? 1 : 0
+        ].join('|');
+      }
+
       function renderBoard() {
         document.getElementById('emptyStateRoomLabel').textContent = syncConfig.roomCode || '-';
         updateLuxuryComposerHeader();
-
-        autoRunnerTimers.forEach(t => clearInterval(t));
-        autoRunnerTimers.clear();
 
         if (Array.isArray(state.posts)) {
           state.posts = state.posts.filter(p => p && p.id && !isPermanentlyDeleted(p.id));
         }
 
-        const surface = document.getElementById('whiteboardSurface');
-        surface.className = 'whiteboard-canvas flex-1 relative w-full overflow-y-auto';
-
         const emptyState = document.getElementById('emptyBoardState');
         if (emptyState) emptyState.classList.add('hidden');
 
         const notesLayer = document.getElementById('notesLayer');
-        notesLayer.innerHTML = '';
-
         const countBadge = document.getElementById('smartFeedCountBadge');
         const validPosts = Array.isArray(state.posts)
           ? state.posts.filter(p => p && p.id && !isPermanentlyDeleted(p.id))
@@ -2372,6 +2384,10 @@
         if (countBadge) countBadge.textContent = `${validPosts.length} โพสต์`;
 
         if (validPosts.length === 0) {
+          notesLayer.innerHTML = '';
+          renderedCardMap.clear();
+          autoRunnerTimers.forEach(t => clearInterval(t));
+          autoRunnerTimers.clear();
           return;
         }
 
@@ -2400,378 +2416,402 @@
           return (b.createdAtMs || b.updatedAtMs || 0) - (a.createdAtMs || a.updatedAtMs || 0);
         });
 
-        sortedPosts.forEach(post => {
+        const activeIds = new Set(sortedPosts.map(p => p.id));
+        // Remove deleted or filtered-out cards from DOM
+        for (const [id, cardEl] of renderedCardMap.entries()) {
+          if (!activeIds.has(id)) {
+            if (cardEl.parentNode === notesLayer) notesLayer.removeChild(cardEl);
+            renderedCardMap.delete(id);
+            if (autoRunnerTimers.has(id)) {
+              clearInterval(autoRunnerTimers.get(id));
+              autoRunnerTimers.delete(id);
+            }
+          }
+        }
+
+        sortedPosts.forEach((post, idx) => {
           if (isPermanentlyDeleted(post.id)) return;
           if (!Array.isArray(post.comments)) post.comments = [];
           post.comments = post.comments.filter(c => c && c.id && !isPermanentlyDeleted(c.id));
           if (!post.image && mediaCache.has(post.id)) post.image = mediaCache.get(post.id);
 
-          const card = document.createElement('article');
-          const colorCls = getCardStyle(post.color);
-          const teamBadge = getTeamBadge(post.color);
-          const starCount = typeof post.rating === 'number' ? Math.min(5, Math.max(1, post.rating)) : 5;
-          const starsStr = '⭐'.repeat(starCount);
-          const roleStr = post.role || 'นักเรียน';
-          const initial = (post.nickname || 'น').trim().charAt(0).toUpperCase();
-          const recentComments = post.comments.slice(-3);
-          const totalReactions = (post.likes || 0) + (post.hearts || 0);
-          const fullDateTimeStr = formatPostFullDateTime(post);
+          const sig = computePostRenderSignature(post);
+          let card = renderedCardMap.get(post.id);
 
-          const ytId = post.youtubeId || extractYoutubeId(post.youtubeUrl || post.externalUrl || detectYoutubeUrlInText(post.text));
-          const webRunUrl = post.webRunUrl ? normalizeWebUrl(post.webRunUrl) : '';
-          const webAutoCmd = post.webAutoCmd || 'ทำงานอัตโนมัติ (Auto-Run)';
-          const hasRichMedia = Boolean(post.image || ytId || webRunUrl);
-          const isShortHighlightText = Boolean(post.text && post.text.length <= 85 && !hasRichMedia);
-          const isLongText = Boolean(post.text && (post.text.length > 160 || (post.text.match(/\n/g) || []).length >= 4));
-
-          card.className = `note-card w-full rounded-[28px] border ${colorCls} pt-5 pb-4 px-5 flex flex-col animate-pop`;
-
-          card.innerHTML = `
-            <div class="absolute top-0 left-0 right-0 h-1.5 ${teamBadge.bar || 'bg-orange-500'}"></div>
-
-            <!-- Luxury Facebook-Style Author Header with Full Date (วัน เดือน ปี) -->
-            <div class="flex items-start justify-between gap-2 mb-3.5">
-              <div class="flex items-center gap-3 min-w-0">
-                <div class="relative shrink-0">
-                  <div class="w-11 h-11 rounded-full ${teamBadge.cls} font-bold text-sm flex items-center justify-center ring-2 ring-white shadow-md">
-                    ${escapeHtml(initial)}
-                  </div>
-                  <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-orange-500 ring-2 ring-white"></span>
-                </div>
-                <div class="min-w-0">
-                  <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="font-bold text-sm sm:text-[15px] text-neutral-900 truncate tracking-tight">${escapeHtml(post.nickname)}</span>
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 border border-neutral-200 text-neutral-700">${escapeHtml(roleStr)}</span>
-                    <span class="px-2 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-[10px] leading-none">${starsStr}</span>
-                  </div>
-                  <div class="flex items-center gap-1.5 mt-1 text-[11px] text-neutral-500 font-medium">
-                    <span>📅 ${escapeHtml(fullDateTimeStr)}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="flex items-center gap-1 shrink-0">
-                <button type="button" class="btn-edit-note px-2 py-1 rounded-full bg-neutral-100 hover:bg-neutral-900 text-neutral-700 hover:text-white text-[11px] font-bold flex items-center gap-1 transition" title="แก้ไขกล่อง (ใช้รหัสผ่าน)">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
-                  <span>แก้ไข</span>
-                </button>
-                <button type="button" class="btn-delete-note px-2.5 py-1 rounded-full bg-rose-500/10 hover:bg-rose-500/25 text-rose-600 text-[11px] font-bold flex items-center gap-0.5 transition" title="ลบกล่องถาวร">
-                  <span>🗑️</span>
-                  <span>ลบ</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Post Text & Media Showcase (Clamped if Long so Box Never Gets Too Tall; Click to Read Full) -->
-            <div class="note-clickable-body cursor-pointer group">
-              ${
-                post.text
-                  ? `<div class="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200/80 mb-3">
-                       <div class="${
-                         isShortHighlightText
-                           ? 'text-base sm:text-[17px] font-semibold text-neutral-900 leading-snug'
-                           : 'text-sm sm:text-[14.5px] text-neutral-800 leading-relaxed'
-                       } ${isLongText ? 'clamp-post-text' : ''} whitespace-pre-line break-words">${formatTextWithLinks(post.text)}</div>
-                       ${
-                         isLongText
-                           ? `<div class="mt-1.5 text-xs font-bold text-orange-600 group-hover:underline">คลิกเพื่ออ่านข้อความทั้งหมด...</div>`
-                           : ''
-                       }
-                     </div>`
-                  : ''
-              }
-              ${
-                post.image
-                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-100/70 shadow-sm relative">
-                       <img src="${escapeHtml(post.image)}" alt="รูปภาพประกอบ" class="note-image w-full max-h-[520px] object-contain mx-auto transition duration-300" onerror="this.style.display='none'" />
-                     </div>`
-                  : ''
-              }
-              ${
-                ytId
-                  ? `<div class="mb-3 rounded-2xl overflow-hidden border border-neutral-300 bg-neutral-950 shadow-md" onclick="event.stopPropagation()">
-                       <div class="w-full aspect-video max-h-[500px] bg-black">
-                         <iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${escapeHtml(ytId)}?rel=0" title="YouTube video" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                       </div>
-                       <div class="px-4 py-2 bg-neutral-900 text-white flex items-center justify-between text-xs">
-                         <span class="text-neutral-300 font-medium truncate">▶️ YouTube Video</span>
-                         <a href="https://www.youtube.com/watch?v=${escapeHtml(ytId)}" target="_blank" rel="noopener noreferrer" class="text-orange-400 hover:underline font-bold shrink-0">ดูบน YouTube ↗</a>
-                       </div>
-                     </div>`
-                  : ''
-              }
-              ${
-                post.externalUrl && !ytId
-                  ? `<a href="${escapeHtml(normalizeWebUrl(post.externalUrl))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="mb-3 p-3 rounded-2xl bg-white/90 hover:bg-white border border-black/10 flex items-center gap-2.5 text-xs font-semibold text-sky-700 transition shadow-sm">
-                       <span class="w-7 h-7 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center shrink-0">🔗</span>
-                       <span class="truncate flex-1">${escapeHtml(post.externalUrl)}</span>
-                       <span class="text-[10px] text-slate-400 shrink-0">เปิดลิงก์ ↗</span>
-                     </a>`
-                  : ''
-              }
-            </div>
-
-            <!-- Interactive Live Website Runner & Auto-Command Box -->
-            ${
-              webRunUrl
-                ? `<div class="mb-3 rounded-2xl overflow-hidden border-2 border-sky-600/40 bg-slate-950 text-white shadow-md" onclick="event.stopPropagation()">
-                     <div class="px-3 py-1.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-1.5">
-                       <div class="flex items-center gap-1.5 min-w-0">
-                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-                         <span class="text-[11px] font-mono text-sky-300 truncate">${escapeHtml(webRunUrl)}</span>
-                       </div>
-                       <div class="flex items-center gap-1 shrink-0">
-                         <button type="button" class="btn-card-proxy px-2 py-0.5 rounded bg-purple-600/40 hover:bg-purple-600/60 text-purple-200 text-[10px] font-bold transition" title="แก้หน้าจอขาวด้วย Proxy Render">
-                           🛡️ แก้จอขาว
-                         </button>
-                         <button type="button" class="btn-card-reload-web px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition" title="รีโหลดหน้าเว็บ">
-                           🔄
-                         </button>
-                         <button type="button" class="btn-open-comments px-2 py-0.5 rounded bg-sky-600 hover:bg-sky-500 text-white text-[10px] font-bold transition" title="ขยายเต็มจอ">
-                           ⛶
-                         </button>
-                       </div>
-                     </div>
-
-                     <div class="relative w-full h-80 sm:h-96 bg-white overflow-hidden">
-                       <div class="auto-run-scanline"></div>
-                       <iframe class="card-web-iframe w-full h-full border-0" src="${escapeHtml(webRunUrl)}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation" referrerpolicy="no-referrer-when-downgrade" loading="lazy"></iframe>
-                     </div>
-
-                     <div class="px-3 py-1.5 bg-slate-900/95 border-t border-slate-800 flex items-center justify-between gap-2 text-[11px]">
-                       <span class="card-auto-status text-emerald-400 font-semibold truncate">⚡ ${escapeHtml(webAutoCmd)}</span>
-                       <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold shrink-0">AUTO RUN</span>
-                     </div>
-                   </div>`
-                : ''
+          if (!card || card.dataset.renderSig !== sig) {
+            const isNewCard = !card;
+            if (isNewCard) {
+              card = document.createElement('article');
             }
+            card.dataset.postId = post.id;
+            card.dataset.renderSig = sig;
 
-            <!-- Facebook-Style Reaction & Comment Summary Row (White, Black, Orange, Gray) -->
-            <div class="mt-auto pt-1 flex items-center justify-between text-[11px] text-neutral-500 font-semibold px-1 mb-1.5">
-              <div class="flex items-center gap-1.5">
-                <span class="inline-flex items-center -space-x-1">
-                  <span class="w-4 h-4 rounded-full bg-neutral-900 text-white text-[9px] flex items-center justify-center ring-1 ring-white">👍</span>
-                  <span class="w-4 h-4 rounded-full bg-orange-500 text-white text-[9px] flex items-center justify-center ring-1 ring-white">❤️</span>
-                </span>
-                <span class="total-reactions-label">${totalReactions > 0 ? `${totalReactions} ความรู้สึก` : 'ร่วมส่งกำลังใจ'}</span>
-              </div>
-              <button type="button" class="btn-open-comments hover:underline text-neutral-500 font-semibold">
-                ${post.comments.length > 0 ? `${post.comments.length} ความคิดเห็น` : 'ยังไม่มีความคิดเห็น'}
-              </button>
-            </div>
+            const colorCls = getCardStyle(post.color);
+            const teamBadge = getTeamBadge(post.color);
+            const starCount = typeof post.rating === 'number' ? Math.min(5, Math.max(1, post.rating)) : 5;
+            const starsStr = '⭐'.repeat(starCount);
+            const roleStr = post.role || 'นักเรียน';
+            const initial = (post.nickname || 'น').trim().charAt(0).toUpperCase();
+            const recentComments = post.comments.slice(-3);
+            const totalReactions = (post.likes || 0) + (post.hearts || 0);
+            const fullDateTimeStr = formatPostFullDateTime(post);
 
-            <!-- Facebook-Style 3-Column Action Bar (Black, Orange, Gray) -->
-            <div class="grid grid-cols-3 gap-1 py-1 border-y border-neutral-200 mb-2.5">
-              <button type="button" class="btn-like-note fb-action-btn py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-neutral-800">
-                <span class="text-sm">👍</span>
-                <span>ถูกใจ</span>
-                <span class="like-count-span px-1.5 py-0.2 rounded-full bg-neutral-100 text-neutral-900 text-[11px]">${post.likes || 0}</span>
-              </button>
-              <button type="button" class="btn-heart-note fb-action-btn py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-orange-600">
-                <span class="text-sm">❤️</span>
-                <span>หัวใจ</span>
-                <span class="heart-count-span px-1.5 py-0.2 rounded-full bg-orange-50 text-orange-600 text-[11px]">${post.hearts || 0}</span>
-              </button>
-              <button type="button" class="btn-open-comments fb-action-btn py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-neutral-700">
-                <span class="text-sm">💬</span>
-                <span>${post.comments.length > 0 ? post.comments.length : 'ความคิดเห็น'}</span>
-              </button>
-            </div>
+            const ytId = post.youtubeId || extractYoutubeId(post.youtubeUrl || post.externalUrl || detectYoutubeUrlInText(post.text));
+            const webRunUrl = post.webRunUrl ? normalizeWebUrl(post.webRunUrl) : '';
+            const webAutoCmd = post.webAutoCmd || 'ทำงานอัตโนมัติ (Auto-Run)';
+            const hasRichMedia = Boolean(post.image || ytId || webRunUrl);
+            const isShortHighlightText = Boolean(post.text && post.text.length <= 85 && !hasRichMedia);
+            const isLongText = Boolean(post.text && (post.text.length > 160 || (post.text.match(/\n/g) || []).length >= 4));
 
-            <!-- Facebook-Style Inline Comment Bubbles (Shows Up to 3 Latest Comments) & Quick Comment Input -->
-            <div class="space-y-1.5" onclick="event.stopPropagation()">
-              ${
-                post.comments.length > 3
-                  ? `<button type="button" class="btn-open-comments text-[11px] font-bold text-orange-600 hover:underline px-1 flex items-center gap-1 transition">
-                       <span>ดูความคิดเห็นทั้งหมด ${post.comments.length} รายการ...</span>
-                     </button>`
-                  : ''
-              }
-              ${recentComments
-                .map(
-                  c => `
-                <div class="btn-open-comments flex items-start gap-2 cursor-pointer group/cmt">
-                  <div class="w-6 h-6 rounded-full bg-neutral-900 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                    ${escapeHtml((c.nickname || 'น').trim().charAt(0).toUpperCase())}
-                  </div>
-                  <div class="flex-1 min-w-0 px-3 py-1.5 rounded-2xl bg-neutral-100 group-hover/cmt:bg-orange-50/60 border border-neutral-200 group-hover/cmt:border-orange-200 text-xs transition">
-                    <div class="flex items-center justify-between gap-1.5">
-                      <span class="font-bold text-neutral-900 truncate">${escapeHtml(c.nickname)}</span>
-                      <span class="text-[9px] text-neutral-400 shrink-0">${escapeHtml(formatPostFullDateTime(c))}</span>
+            card.className = `note-card w-full rounded-[28px] border ${colorCls} pt-5 pb-4 px-5 flex flex-col`;
+
+            card.innerHTML = `
+              <div class="absolute top-0 left-0 right-0 h-1.5 ${teamBadge.bar || 'bg-orange-500'}"></div>
+
+              <!-- Author Header with Full Date (วัน เดือน ปี) -->
+              <div class="flex items-start justify-between gap-2 mb-3.5">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="relative shrink-0">
+                    <div class="w-11 h-11 rounded-full ${teamBadge.cls} font-bold text-sm flex items-center justify-center ring-2 ring-white shadow-sm">
+                      ${escapeHtml(initial)}
                     </div>
-                    <div class="text-neutral-700 break-words clamp-comment-text">${escapeHtml(c.text)}</div>
+                    <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-orange-500 ring-2 ring-white"></span>
                   </div>
-                </div>`
-                )
-                .join('')}
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="font-bold text-sm sm:text-[15px] text-neutral-900 truncate tracking-tight">${escapeHtml(post.nickname)}</span>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 border border-neutral-200 text-neutral-700">${escapeHtml(roleStr)}</span>
+                      <span class="px-2 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-[10px] leading-none">${starsStr}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 mt-1 text-[11px] text-neutral-500 font-medium">
+                      <span>📅 ${escapeHtml(fullDateTimeStr)}</span>
+                    </div>
+                  </div>
+                </div>
 
-              <form class="form-card-inline-comment flex items-center gap-1.5 pt-1">
-                <input type="text" class="input-card-inline-comment flex-1 px-3.5 py-1.5 rounded-full bg-neutral-100 focus:bg-white border border-neutral-200 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-orange-500 transition" placeholder="เขียนความคิดเห็น..." />
-                <button type="submit" class="px-3 py-1.5 rounded-full bg-neutral-900 hover:bg-orange-500 text-white text-[11px] font-bold shrink-0 transition">
-                  ส่ง
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" class="btn-edit-note px-2 py-1 rounded-full bg-neutral-100 hover:bg-neutral-900 text-neutral-700 hover:text-white text-[11px] font-bold flex items-center gap-1 transition" title="แก้ไขกล่อง (ใช้รหัสผ่าน)">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>แก้ไข</span>
+                  </button>
+                  <button type="button" class="btn-delete-note px-2.5 py-1 rounded-full bg-rose-500/10 hover:bg-rose-500/25 text-rose-600 text-[11px] font-bold flex items-center gap-0.5 transition" title="ลบกล่องถาวร">
+                    <span>🗑️</span>
+                    <span>ลบ</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Post Text & Media Showcase -->
+              <div class="note-clickable-body cursor-pointer group">
+                ${
+                  post.text
+                    ? `<div class="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200/80 mb-3">
+                         <div class="${
+                           isShortHighlightText
+                             ? 'text-base sm:text-[17px] font-semibold text-neutral-900 leading-snug'
+                             : 'text-sm sm:text-[14.5px] text-neutral-800 leading-relaxed'
+                         } ${isLongText ? 'clamp-post-text' : ''} whitespace-pre-line break-words">${formatTextWithLinks(post.text)}</div>
+                         ${
+                           isLongText
+                             ? `<div class="mt-1.5 text-xs font-bold text-orange-600 group-hover:underline">คลิกเพื่ออ่านข้อความทั้งหมด...</div>`
+                             : ''
+                         }
+                       </div>`
+                    : ''
+                }
+                ${
+                  post.image
+                    ? `<div class="mb-3 rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-100/70 relative">
+                         <img src="${escapeHtml(post.image)}" loading="lazy" decoding="async" alt="รูปภาพประกอบ" class="note-image w-full max-h-[520px] object-contain mx-auto" onerror="this.style.display='none'" />
+                       </div>`
+                    : ''
+                }
+                ${
+                  ytId
+                    ? `<div class="mb-3 rounded-2xl overflow-hidden border border-neutral-300 bg-neutral-950 shadow-sm" onclick="event.stopPropagation()">
+                         <div class="yt-facade-container relative w-full aspect-video max-h-[500px] bg-black cursor-pointer group/yt" data-ytid="${escapeHtml(ytId)}">
+                           <img src="https://i.ytimg.com/vi/${escapeHtml(ytId)}/hqdefault.jpg" loading="lazy" decoding="async" alt="YouTube thumbnail" class="w-full h-full object-cover opacity-90 group-hover/yt:opacity-100 transition" />
+                           <div class="absolute inset-0 flex items-center justify-center bg-black/25 group-hover/yt:bg-black/10 transition">
+                             <div class="w-16 h-11 rounded-2xl bg-red-600 group-hover/yt:scale-110 text-white flex items-center justify-center shadow-lg transition">
+                               <svg class="w-7 h-7 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                             </div>
+                           </div>
+                         </div>
+                         <div class="px-4 py-2 bg-neutral-900 text-white flex items-center justify-between text-xs">
+                           <span class="text-neutral-300 font-medium truncate">▶️ คลิกเล่นวิดีโอ YouTube</span>
+                           <a href="https://www.youtube.com/watch?v=${escapeHtml(ytId)}" target="_blank" rel="noopener noreferrer" class="text-orange-400 hover:underline font-bold shrink-0">ดูบน YouTube ↗</a>
+                         </div>
+                       </div>`
+                    : ''
+                }
+                ${
+                  post.externalUrl && !ytId
+                    ? `<a href="${escapeHtml(normalizeWebUrl(post.externalUrl))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="mb-3 p-3 rounded-2xl bg-white hover:bg-neutral-50 border border-neutral-200 flex items-center gap-2.5 text-xs font-semibold text-orange-600 transition">
+                         <span class="w-7 h-7 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">🔗</span>
+                         <span class="truncate flex-1">${escapeHtml(post.externalUrl)}</span>
+                         <span class="text-[10px] text-neutral-400 shrink-0">เปิดลิงก์ ↗</span>
+                       </a>`
+                    : ''
+                }
+              </div>
+
+              <!-- Interactive Live Website Runner & Auto-Command Box -->
+              ${
+                webRunUrl
+                  ? `<div class="mb-3 rounded-2xl overflow-hidden border-2 border-neutral-800 bg-neutral-950 text-white shadow-sm" onclick="event.stopPropagation()">
+                       <div class="px-3 py-1.5 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between gap-1.5">
+                         <div class="flex items-center gap-1.5 min-w-0">
+                           <span class="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span>
+                           <span class="text-[11px] font-mono text-orange-300 truncate">${escapeHtml(webRunUrl)}</span>
+                         </div>
+                         <div class="flex items-center gap-1 shrink-0">
+                           <button type="button" class="btn-card-proxy px-2 py-0.5 rounded bg-neutral-800 hover:bg-orange-500 text-neutral-200 hover:text-white text-[10px] font-bold transition" title="แก้หน้าจอขาวด้วย Proxy Render">
+                             🛡️ แก้จอขาว
+                           </button>
+                           <button type="button" class="btn-card-reload-web px-2 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[10px] font-bold transition" title="รีโหลดหน้าเว็บ">
+                             🔄
+                           </button>
+                           <button type="button" class="btn-open-comments px-2 py-0.5 rounded bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold transition" title="ขยายเต็มจอ">
+                             ⛶
+                           </button>
+                         </div>
+                       </div>
+
+                       <div class="relative w-full h-80 sm:h-96 bg-white overflow-hidden">
+                         <iframe class="card-web-iframe w-full h-full border-0" src="${escapeHtml(webRunUrl)}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation" referrerpolicy="no-referrer-when-downgrade" loading="lazy"></iframe>
+                       </div>
+
+                       <div class="px-3 py-1.5 bg-neutral-900 border-t border-neutral-800 flex items-center justify-between gap-2 text-[11px]">
+                         <span class="card-auto-status text-orange-400 font-semibold truncate">⚡ ${escapeHtml(webAutoCmd)}</span>
+                         <span class="px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 text-[9px] font-bold shrink-0">AUTO RUN</span>
+                       </div>
+                     </div>`
+                  : ''
+              }
+
+              <!-- Reaction & Comment Summary Row -->
+              <div class="mt-auto pt-1 flex items-center justify-between text-[11px] text-neutral-500 font-semibold px-1 mb-1.5">
+                <div class="flex items-center gap-1.5">
+                  <span class="inline-flex items-center -space-x-1">
+                    <span class="w-4 h-4 rounded-full bg-neutral-900 text-white text-[9px] flex items-center justify-center ring-1 ring-white">👍</span>
+                    <span class="w-4 h-4 rounded-full bg-orange-500 text-white text-[9px] flex items-center justify-center ring-1 ring-white">❤️</span>
+                  </span>
+                  <span class="total-reactions-label">${totalReactions > 0 ? `${totalReactions} ความรู้สึก` : 'ร่วมส่งกำลังใจ'}</span>
+                </div>
+                <button type="button" class="btn-open-comments hover:underline text-neutral-500 font-semibold">
+                  ${post.comments.length > 0 ? `${post.comments.length} ความคิดเห็น` : 'ยังไม่มีความคิดเห็น'}
                 </button>
-              </form>
-            </div>
-          `;
+              </div>
 
-          if (webRunUrl) {
-            const iframeEl = card.querySelector('.card-web-iframe');
-            const statusEl = card.querySelector('.card-auto-status');
-            const proxyBtn = card.querySelector('.btn-card-proxy');
-            const reloadBtn = card.querySelector('.btn-card-reload-web');
-            const autoForm = card.querySelector('.form-card-autocmd');
-            const autoInput = card.querySelector('.input-card-autocmd');
+              <!-- 3-Column Action Bar -->
+              <div class="grid grid-cols-3 gap-1 py-1 border-y border-neutral-200 mb-2.5">
+                <button type="button" class="btn-like-note fb-action-btn py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-neutral-800">
+                  <span class="text-sm">👍</span>
+                  <span>ถูกใจ</span>
+                  <span class="like-count-span px-1.5 py-0.2 rounded-full bg-neutral-100 text-neutral-900 text-[11px]">${post.likes || 0}</span>
+                </button>
+                <button type="button" class="btn-heart-note fb-action-btn py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-orange-600">
+                  <span class="text-sm">❤️</span>
+                  <span>หัวใจ</span>
+                  <span class="heart-count-span px-1.5 py-0.2 rounded-full bg-orange-50 text-orange-600 text-[11px]">${post.hearts || 0}</span>
+                </button>
+                <button type="button" class="btn-open-comments fb-action-btn py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-neutral-700">
+                  <span class="text-sm">💬</span>
+                  <span>${post.comments.length > 0 ? post.comments.length : 'ความคิดเห็น'}</span>
+                </button>
+              </div>
 
-            if (post.webProxyMode) {
-              loadWebsiteViaProxyIntoIframe(iframeEl, webRunUrl, webAutoCmd, statusEl);
+              <!-- Inline Comment Bubbles (Max 3 Latest Comments) & Quick Comment Input -->
+              <div class="space-y-1.5" onclick="event.stopPropagation()">
+                ${
+                  post.comments.length > 3
+                    ? `<button type="button" class="btn-open-comments text-[11px] font-bold text-orange-600 hover:underline px-1 flex items-center gap-1 transition">
+                         <span>ดูความคิดเห็นทั้งหมด ${post.comments.length} รายการ...</span>
+                       </button>`
+                    : ''
+                }
+                ${recentComments
+                  .map(
+                    c => `
+                  <div class="btn-open-comments flex items-start gap-2 cursor-pointer group/cmt">
+                    <div class="w-6 h-6 rounded-full bg-neutral-900 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                      ${escapeHtml((c.nickname || 'น').trim().charAt(0).toUpperCase())}
+                    </div>
+                    <div class="flex-1 min-w-0 px-3 py-1.5 rounded-2xl bg-neutral-100 group-hover/cmt:bg-orange-50/60 border border-neutral-200 group-hover/cmt:border-orange-200 text-xs transition">
+                      <div class="flex items-center justify-between gap-1.5">
+                        <span class="font-bold text-neutral-900 truncate">${escapeHtml(c.nickname)}</span>
+                        <span class="text-[9px] text-neutral-400 shrink-0">${escapeHtml(formatPostFullDateTime(c))}</span>
+                      </div>
+                      <div class="text-neutral-700 break-words clamp-comment-text">${escapeHtml(c.text)}</div>
+                    </div>
+                  </div>`
+                  )
+                  .join('')}
+
+                <form class="form-card-inline-comment flex items-center gap-1.5 pt-1">
+                  <input type="text" class="input-card-inline-comment flex-1 px-3.5 py-1.5 rounded-full bg-neutral-100 focus:bg-white border border-neutral-200 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-orange-500 transition" placeholder="เขียนความคิดเห็น..." />
+                  <button type="submit" class="px-3 py-1.5 rounded-full bg-neutral-900 hover:bg-orange-500 text-white text-[11px] font-bold shrink-0 transition">
+                    ส่ง
+                  </button>
+                </form>
+              </div>
+            `;
+
+            // Bind YouTube Click-to-Play Facade (Eliminates Heavy Iframe Lag During Scroll & Post!)
+            const ytFacade = card.querySelector('.yt-facade-container');
+            if (ytFacade) {
+              ytFacade.addEventListener('click', e => {
+                e.stopPropagation();
+                const vid = ytFacade.getAttribute('data-ytid');
+                if (!vid) return;
+                ytFacade.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${escapeHtml(vid)}?autoplay=1&rel=0" title="YouTube video" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+              });
             }
 
-            proxyBtn.addEventListener('click', e => {
-              e.stopPropagation();
-              post.webProxyMode = !post.webProxyMode;
-              post.updatedAtMs = Date.now();
+            if (webRunUrl) {
+              const iframeEl = card.querySelector('.card-web-iframe');
+              const statusEl = card.querySelector('.card-auto-status');
+              const proxyBtn = card.querySelector('.btn-card-proxy');
+              const reloadBtn = card.querySelector('.btn-card-reload-web');
+
               if (post.webProxyMode) {
-                loadWebsiteViaProxyIntoIframe(iframeEl, webRunUrl, post.webAutoCmd, statusEl);
-              } else {
-                iframeEl.removeAttribute('srcdoc');
-                iframeEl.src = webRunUrl;
-                statusEl.textContent = `⚡ Auto: ${post.webAutoCmd || 'ทำงานอัตโนมัติ'}`;
+                loadWebsiteViaProxyIntoIframe(iframeEl, webRunUrl, webAutoCmd, statusEl);
               }
-              persistStatePermanently(post);
-            });
 
-            reloadBtn.addEventListener('click', e => {
-              e.stopPropagation();
-              if (post.webProxyMode) {
-                loadWebsiteViaProxyIntoIframe(iframeEl, webRunUrl, post.webAutoCmd, statusEl);
-              } else {
-                iframeEl.src = webRunUrl + (webRunUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
-              }
-              showToast('🔄 รีโหลดกล่องเว็บไซต์แล้ว');
-            });
-
-            if (autoForm) autoForm.addEventListener('submit', e => {
-              e.preventDefault();
-              e.stopPropagation();
-              const newCmd = (autoInput.value || '').trim() || 'ทำงานอัตโนมัติ';
-              post.webAutoCmd = newCmd;
-              post.updatedAtMs = Date.now();
-              statusEl.textContent = `⚡ กำลังรันคำสั่ง: ${newCmd}`;
-              if (newCmd.includes('จอขาว') || newCmd.toLowerCase().includes('proxy')) {
-                post.webProxyMode = true;
-                loadWebsiteViaProxyIntoIframe(iframeEl, webRunUrl, newCmd, statusEl);
-              } else if (post.webProxyMode) {
-                loadWebsiteViaProxyIntoIframe(iframeEl, webRunUrl, newCmd, statusEl);
-              } else {
-                try {
-                  iframeEl.contentWindow.postMessage({ type: 'THINK_AUTO_CMD', command: newCmd }, '*');
-                } catch (err) {}
-              }
-              persistStatePermanently(post);
-              showToast(`⚡ ส่งคำสั่ง Auto "${newCmd}" ให้กล่องทำงานแล้ว`);
-            });
-
-            const timerId = setInterval(() => {
-              const cmd = (post.webAutoCmd || '').toLowerCase();
-              if (cmd.includes('รีเฟรช') || cmd.includes('refresh') || cmd.includes('reload')) {
-                if (!post.webProxyMode && iframeEl) {
-                  iframeEl.src = webRunUrl + (webRunUrl.includes('?') ? '&' : '?') + '_auto=' + Date.now();
+              proxyBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                post.webProxyMode = !post.webProxyMode;
+                post.updatedAtMs = Date.now();
+                if (post.webProxyMode) {
+                  loadWebsiteViaProxyIntoIframe(iframeEl, webRunUrl, post.webAutoCmd, statusEl);
+                } else {
+                  iframeEl.removeAttribute('srcdoc');
+                  iframeEl.src = webRunUrl;
+                  statusEl.textContent = `⚡ Auto: ${post.webAutoCmd || 'ทำงานอัตโนมัติ'}`;
                 }
-              }
-            }, 30000);
-            autoRunnerTimers.set(post.id, timerId);
-          }
-
-          const totalReactEl = card.querySelector('.total-reactions-label');
-          const updateCardReactionSummary = () => {
-            const tot = (post.likes || 0) + (post.hearts || 0);
-            if (totalReactEl) totalReactEl.textContent = tot > 0 ? `${tot} ความรู้สึก` : 'ร่วมส่งกำลังใจ';
-          };
-
-          const likeBtn = card.querySelector('.btn-like-note');
-          likeBtn.addEventListener('click', e => {
-            e.stopPropagation();
-            post.likes = (post.likes || 0) + 1;
-            post.updatedAtMs = Date.now();
-            likeBtn.querySelector('.like-count-span').textContent = post.likes;
-            updateCardReactionSummary();
-            triggerReactionAnimation(likeBtn, 'like');
-            persistStatePermanently(post);
-          });
-
-          const heartBtn = card.querySelector('.btn-heart-note');
-          heartBtn.addEventListener('click', e => {
-            e.stopPropagation();
-            post.hearts = (post.hearts || 0) + 1;
-            post.updatedAtMs = Date.now();
-            heartBtn.querySelector('.heart-count-span').textContent = post.hearts;
-            updateCardReactionSummary();
-            triggerReactionAnimation(heartBtn, 'heart');
-            persistStatePermanently(post);
-          });
-
-          const inlineCommentForm = card.querySelector('.form-card-inline-comment');
-          const inlineCommentInput = card.querySelector('.input-card-inline-comment');
-          if (inlineCommentForm && inlineCommentInput) {
-            inlineCommentForm.addEventListener('submit', e => {
-              e.preventDefault();
-              e.stopPropagation();
-              const textVal = (inlineCommentInput.value || '').trim();
-              if (!textVal) return;
-              const nickVal = getSavedNickname() || 'ผู้ใช้งาน';
-              if (!Array.isArray(post.comments)) post.comments = [];
-              const cNow = Date.now();
-              post.comments.push({
-                id: 'c-' + cNow + '-' + Math.random().toString(36).slice(2, 5),
-                nickname: nickVal,
-                text: textVal,
-                createdAtMs: cNow,
-                dateStr: formatThaiDateStr(cNow),
-                time: new Date(cNow).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.'
+                persistStatePermanently(post);
               });
+
+              reloadBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                if (post.webProxyMode) {
+                  loadWebsiteViaProxyIntoIframe(iframeEl, webRunUrl, post.webAutoCmd, statusEl);
+                } else {
+                  iframeEl.src = webRunUrl + (webRunUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+                }
+                showToast('🔄 รีโหลดกล่องเว็บไซต์แล้ว');
+              });
+
+              if (autoRunnerTimers.has(post.id)) clearInterval(autoRunnerTimers.get(post.id));
+              const timerId = setInterval(() => {
+                const cmd = (post.webAutoCmd || '').toLowerCase();
+                if (cmd.includes('รีเฟรช') || cmd.includes('refresh') || cmd.includes('reload')) {
+                  if (!post.webProxyMode && iframeEl) {
+                    iframeEl.src = webRunUrl + (webRunUrl.includes('?') ? '&' : '?') + '_auto=' + Date.now();
+                  }
+                }
+              }, 30000);
+              autoRunnerTimers.set(post.id, timerId);
+            }
+
+            const totalReactEl = card.querySelector('.total-reactions-label');
+            const updateCardReactionSummary = () => {
+              const tot = (post.likes || 0) + (post.hearts || 0);
+              if (totalReactEl) totalReactEl.textContent = tot > 0 ? `${tot} ความรู้สึก` : 'ร่วมส่งกำลังใจ';
+              card.dataset.renderSig = computePostRenderSignature(post);
+            };
+
+            const likeBtn = card.querySelector('.btn-like-note');
+            likeBtn.addEventListener('click', e => {
+              e.stopPropagation();
+              post.likes = (post.likes || 0) + 1;
               post.updatedAtMs = Date.now();
-              inlineCommentInput.value = '';
+              likeBtn.querySelector('.like-count-span').textContent = post.likes;
+              updateCardReactionSummary();
+              triggerReactionAnimation(likeBtn, 'like');
               persistStatePermanently(post);
-              renderBoard();
-              showToast('💬 ส่งความคิดเห็นเรียบร้อยแล้ว');
             });
+
+            const heartBtn = card.querySelector('.btn-heart-note');
+            heartBtn.addEventListener('click', e => {
+              e.stopPropagation();
+              post.hearts = (post.hearts || 0) + 1;
+              post.updatedAtMs = Date.now();
+              heartBtn.querySelector('.heart-count-span').textContent = post.hearts;
+              updateCardReactionSummary();
+              triggerReactionAnimation(heartBtn, 'heart');
+              persistStatePermanently(post);
+            });
+
+            const inlineCommentForm = card.querySelector('.form-card-inline-comment');
+            const inlineCommentInput = card.querySelector('.input-card-inline-comment');
+            if (inlineCommentForm && inlineCommentInput) {
+              inlineCommentForm.addEventListener('submit', e => {
+                e.preventDefault();
+                e.stopPropagation();
+                const textVal = (inlineCommentInput.value || '').trim();
+                if (!textVal) return;
+                const nickVal = getSavedNickname() || 'ผู้ใช้งาน';
+                if (!Array.isArray(post.comments)) post.comments = [];
+                const cNow = Date.now();
+                post.comments.push({
+                  id: 'c-' + cNow + '-' + Math.random().toString(36).slice(2, 5),
+                  nickname: nickVal,
+                  text: textVal,
+                  createdAtMs: cNow,
+                  dateStr: formatThaiDateStr(cNow),
+                  time: new Date(cNow).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.'
+                });
+                post.updatedAtMs = Date.now();
+                inlineCommentInput.value = '';
+                renderBoard();
+                persistStatePermanently(post);
+                showToast('💬 ส่งความคิดเห็นเรียบร้อยแล้ว');
+              });
+            }
+
+            card.querySelectorAll('.btn-open-comments').forEach(el => {
+              el.addEventListener('click', e => {
+                e.stopPropagation();
+                openNoteDetailModal(post.id);
+              });
+            });
+
+            card.querySelector('.btn-edit-note').addEventListener('click', e => {
+              e.stopPropagation();
+              requestPinProtectedDelete(
+                'ยืนยันรหัสผ่านเพื่อแก้ไขกล่อง',
+                `กรุณากรอกรหัสผ่านเพื่อแก้ไขข้อมูลกล่องของ "${post.nickname}"`,
+                () => {
+                  openPostModal(post);
+                },
+                'ยืนยันรหัสผ่าน'
+              );
+            });
+
+            card.querySelector('.btn-delete-note').addEventListener('click', e => {
+              e.stopPropagation();
+              requestPinProtectedDelete(
+                'ยืนยันรหัสผ่านเพื่อลบถาวร',
+                `ลบกล่องของ "${post.nickname}" ถาวรจากทุกอุปกรณ์`,
+                async () => {
+                  await purgeIdEverywhere(post.id, null);
+                  showToast('ลบกล่องนี้ถาวรจากทุกอุปกรณ์เรียบร้อยแล้ว');
+                }
+              );
+            });
+
+            card.querySelector('.note-clickable-body').addEventListener('click', () => openNoteDetailModal(post.id));
+            renderedCardMap.set(post.id, card);
           }
 
-          card.querySelectorAll('.btn-open-comments').forEach(el => {
-            el.addEventListener('click', e => {
-              e.stopPropagation();
-              openNoteDetailModal(post.id);
-            });
-          });
-
-          card.querySelector('.btn-edit-note').addEventListener('click', e => {
-            e.stopPropagation();
-            requestPinProtectedDelete(
-              'ยืนยันรหัสผ่านเพื่อแก้ไขกล่อง',
-              `กรุณากรอกรหัสผ่านเพื่อแก้ไขข้อมูลกล่องของ "${post.nickname}"`,
-              () => {
-                openPostModal(post);
-              },
-              'ยืนยันรหัสผ่าน'
-            );
-          });
-
-          card.querySelector('.btn-delete-note').addEventListener('click', e => {
-            e.stopPropagation();
-            requestPinProtectedDelete(
-              'ยืนยันรหัสผ่านเพื่อลบถาวร',
-              `ลบกล่องของ "${post.nickname}" ถาวรจากทุกอุปกรณ์`,
-              async () => {
-                await purgeIdEverywhere(post.id, null);
-                showToast('ลบกล่องนี้ถาวรจากทุกอุปกรณ์เรียบร้อยแล้ว');
-              }
-            );
-          });
-
-          card.querySelector('.note-clickable-body').addEventListener('click', () => openNoteDetailModal(post.id));
-          notesLayer.appendChild(card);
+          // Ensure DOM order matches sortedPosts without detaching unchanged nodes
+          const currentChildAtIdx = notesLayer.children[idx];
+          if (currentChildAtIdx !== card) {
+            notesLayer.insertBefore(card, currentChildAtIdx || null);
+          }
         });
       }
 
@@ -3288,7 +3328,7 @@
 
           resetInlineComposer();
           renderBoard();
-          await persistStatePermanently(savedPost);
+          persistStatePermanently(savedPost);
           showToast('✨ โพสต์ลงกระดานเรียบร้อยแล้ว');
         });
 
