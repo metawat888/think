@@ -208,7 +208,7 @@ export default async function handler(req, res) {
       } catch (e) {}
     }
 
-    // 3. Hydrate from Turso LibSQL
+    // 3. Hydrate from Turso LibSQL (including dedicated think_images table)
     await tursoPipeline([
       {
         sql: `CREATE TABLE IF NOT EXISTS think_posts (
@@ -225,23 +225,45 @@ export default async function handler(req, res) {
           room_code TEXT NOT NULL,
           deleted_at INTEGER NOT NULL
         )`
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS think_images (
+          post_id TEXT PRIMARY KEY,
+          room_code TEXT NOT NULL,
+          image_data TEXT NOT NULL,
+          image_blob_id TEXT DEFAULT '',
+          updated_at INTEGER NOT NULL
+        )`
       }
     ], clientToken);
 
     const dbRead = await tursoPipeline([
       { sql: `SELECT id FROM think_tombstones WHERE room_code = ?`, args: [room] },
-      { sql: `SELECT id, post_json, updated_at, deleted FROM think_posts WHERE room_code = ?`, args: [room] }
+      { sql: `SELECT id, post_json, updated_at, deleted FROM think_posts WHERE room_code = ?`, args: [room] },
+      { sql: `SELECT post_id, image_data, image_blob_id FROM think_images WHERE room_code = ?`, args: [room] }
     ], clientToken);
 
     if (dbRead && Array.isArray(dbRead.results)) {
       const dbPosts = [];
       const dbDeleted = [];
+      const dbImageMap = new Map();
+      const dbBlobMap = new Map();
       const tombRows = dbRead.results[0]?.response?.result?.rows || [];
       for (const r of tombRows) {
         if (r[0]?.value) {
           dbDeleted.push(String(r[0].value));
           globalTombstones.add(String(r[0].value));
         }
+      }
+      const imgRows = dbRead.results[2]?.response?.result?.rows || [];
+      for (const r of imgRows) {
+        const pId = r[0]?.value ? String(r[0].value) : '';
+        const imgVal = r[1]?.value || '';
+        const blobVal = r[2]?.value || '';
+        if (pId && imgVal && imgVal.length > 10 && !globalTombstones.has(pId)) {
+          dbImageMap.set(pId, imgVal);
+        }
+        if (pId && blobVal) dbBlobMap.set(pId, blobVal);
       }
       const postRows = dbRead.results[1]?.response?.result?.rows || [];
       for (const r of postRows) {
@@ -252,7 +274,17 @@ export default async function handler(req, res) {
           dbDeleted.push(idVal);
           globalTombstones.add(idVal);
         } else if (jsonVal && idVal && !globalTombstones.has(idVal)) {
-          try { dbPosts.push(JSON.parse(jsonVal)); } catch (e) {}
+          try {
+            const parsed = JSON.parse(jsonVal);
+            if (dbImageMap.has(idVal)) {
+              parsed.image = dbImageMap.get(idVal);
+              parsed.hasImage = true;
+            }
+            if (dbBlobMap.has(idVal) && !parsed.imageBlobId) {
+              parsed.imageBlobId = dbBlobMap.get(idVal);
+            }
+            dbPosts.push(parsed);
+          } catch (e) {}
         }
       }
       current = mergeRoomData(current, { posts: dbPosts, deletedIds: dbDeleted });
@@ -312,6 +344,17 @@ export default async function handler(req, res) {
                 WHERE think_posts.deleted = 0 AND excluded.updated_at >= think_posts.updated_at`,
           args: [p.id, room, JSON.stringify(p), p.updatedAtMs || Date.now()]
         });
+        if (p.image && p.image.length > 10) {
+          stmts.push({
+            sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
+                  VALUES (?, ?, ?, ?, ?)
+                  ON CONFLICT(post_id) DO UPDATE SET
+                    image_data = CASE WHEN LENGTH(excluded.image_data) > 10 THEN excluded.image_data ELSE think_images.image_data END,
+                    image_blob_id = CASE WHEN LENGTH(excluded.image_blob_id) > 3 THEN excluded.image_blob_id ELSE think_images.image_blob_id END,
+                    updated_at = excluded.updated_at`,
+            args: [p.id, room, p.image, p.imageBlobId || '', Date.now()]
+          });
+        }
       }
       if (stmts.length > 0) {
         await tursoPipeline(stmts, clientToken);

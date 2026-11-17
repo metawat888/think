@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Think Board</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/gun@0.2020.1240/gun.js"></script>
@@ -10,8 +10,46 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; font-family: 'Sarabun', 'Inter', sans-serif; }
-    body { margin: 0; background-color: #ffffff; color: #171717; overflow-x: hidden; }
+    * {
+      box-sizing: border-box;
+      font-family: 'Sarabun', 'Inter', sans-serif;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      max-height: 100dvh;
+      overflow: hidden;
+      position: fixed;
+      inset: 0;
+      background-color: #ffffff;
+      color: #171717;
+      -webkit-text-size-adjust: 100%;
+      overscroll-behavior: none;
+    }
+    /* Mobile Full-Width Header with Top Safe Clearance so Top Blur Never Covers Header */
+    .app-top-header {
+      width: 100%;
+      background-color: #ffffff;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 26px);
+      padding-bottom: 10px;
+    }
+    @media (min-width: 768px) {
+      .app-top-header {
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+    }
+    /* Prevent iOS Safari Auto-Zoom on Input Focus */
+    @media (max-width: 768px) {
+      input, textarea, select {
+        font-size: 16px !important;
+      }
+    }
 
     @keyframes ambientFlow {
       0% { background-position: 0% 50%; }
@@ -190,7 +228,7 @@
 <body class="h-screen overflow-hidden flex flex-col select-none bg-white">
 
   <!-- ENTRY OVERLAY (White, Black, Orange, Gray Theme | Bare Two-People Silhouette Logo Without Box) -->
-  <div id="loginScreenOverlay" class="fixed inset-0 z-50 login-bg-surface flex items-center justify-center p-4 overflow-y-auto">
+  <div id="loginScreenOverlay" class="fixed inset-0 z-50 login-bg-surface flex items-center justify-center px-4 pt-10 pb-6 overflow-y-auto">
     <div class="login-card-surface rounded-[28px] max-w-[420px] w-full p-7 sm:p-8 animate-pop my-auto">
       <!-- Bare Two-People Icon (No Box) -->
       <div class="flex items-center justify-center mx-auto mb-3">
@@ -255,24 +293,24 @@
     </div>
   </div>
 
-  <!-- FIXED APP HEADER BAR (Logo Left | Smart Search & Sort Center | Board Code, Name & Out Right) -->
-  <header class="shrink-0 relative z-30 bg-white border-b border-neutral-200 px-3 sm:px-6 py-2.5 shadow-sm">
-    <div class="w-full flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+  <!-- FIXED APP HEADER BAR (Full-Width Mobile Safe Top Clearance | Never Covered by Blur | Zoom Locked) -->
+  <header class="app-top-header shrink-0 relative z-40 bg-white border-b border-neutral-200 px-3 sm:px-6 shadow-xs">
+    <div class="w-full flex flex-wrap items-center justify-between gap-y-2 gap-x-2 sm:gap-x-3">
 
       <!-- Left: Bare Two-People Silhouette (No Box) + Think Board -->
-      <div class="flex items-center gap-2.5 shrink-0">
-        <svg class="w-8 h-8 text-neutral-900 shrink-0" viewBox="0 0 64 56" fill="currentColor" aria-hidden="true">
+      <div class="flex items-center gap-2 shrink-0">
+        <svg class="w-7 h-7 sm:w-8 sm:h-8 text-neutral-900 shrink-0" viewBox="0 0 64 56" fill="currentColor" aria-hidden="true">
           <circle cx="23" cy="14" r="10" />
           <path d="M5 48 C5 33 13 26 23 26 C33 26 41 33 41 48 Z" />
           <circle cx="46" cy="22" r="7.5" />
           <path d="M33 48 C33 37 39 32 46 32 C53 32 59 37 59 48 Z" />
         </svg>
-        <h1 class="font-bold text-base sm:text-lg text-neutral-900 tracking-tight">Think Board</h1>
+        <h1 class="font-bold text-base sm:text-lg text-neutral-900 tracking-tight whitespace-nowrap">Think Board</h1>
       </div>
 
-      <!-- Center: Smart Search Box & Quick Sort Toggle right in the Top Header -->
-      <div id="smartFeedToolbar" class="flex items-center gap-1.5 flex-1 max-w-xl mx-1 sm:mx-3 order-3 md:order-2 w-full md:w-auto">
-        <div class="relative flex-1 min-w-[140px]">
+      <!-- Center: Smart Search Box & Quick Sort Toggle (100% Full Width on Mobile, Centered on Desktop) -->
+      <div id="smartFeedToolbar" class="flex items-center gap-1.5 basis-full md:basis-auto md:flex-1 md:max-w-xl mx-0 md:mx-3 order-3 md:order-2 w-full">
+        <div class="relative flex-1 min-w-0">
           <svg class="w-3.5 h-3.5 text-neutral-900 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
             <circle cx="11" cy="11" r="7" />
             <path stroke-linecap="round" d="M20 20l-3.5-3.5" />
@@ -298,17 +336,17 @@
       </div>
 
       <!-- Right: Board Code (Truncated with ... if long) + User Name + Out Button -->
-      <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 order-2 md:order-3">
-        <div id="headerBoardCodePill" class="px-3 py-1.5 rounded-xl bg-orange-50 border border-orange-200 text-xs sm:text-sm font-bold text-orange-600 flex items-center gap-1 min-w-0 max-w-[125px] sm:max-w-[175px]" title="รหัส Board">
+      <div class="flex items-center justify-end gap-1.5 sm:gap-2 min-w-0 ml-auto md:ml-0 order-2 md:order-3">
+        <div id="headerBoardCodePill" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-orange-50 border border-orange-200 text-xs sm:text-sm font-bold text-orange-600 flex items-center gap-1 min-w-0 max-w-[105px] sm:max-w-[175px]" title="รหัส Board">
           <span class="text-neutral-500 font-semibold shrink-0">Board:</span>
           <span id="headerBoardCodeLabel" class="truncate block">-</span>
         </div>
 
-        <div id="headerUserNamePill" class="px-3 py-1.5 rounded-xl bg-neutral-100 border border-neutral-200 text-xs sm:text-sm font-bold text-neutral-900 flex items-center min-w-0 max-w-[100px] sm:max-w-[150px]" title="ชื่อผู้ใช้งาน">
+        <div id="headerUserNamePill" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-neutral-100 border border-neutral-200 text-xs sm:text-sm font-bold text-neutral-900 flex items-center min-w-0 max-w-[85px] sm:max-w-[150px]" title="ชื่อผู้ใช้งาน">
           <span id="headerUserNameLabel" class="truncate block">ผู้ใช้งาน</span>
         </div>
 
-        <button id="btnOutBoard" type="button" class="px-3.5 py-1.5 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 shrink-0 transition" title="ออกจาก Board">
+        <button id="btnOutBoard" type="button" class="px-3 sm:px-3.5 py-1.5 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white text-xs sm:text-sm font-bold flex items-center gap-1 shrink-0 transition" title="ออกจาก Board">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
           </svg>
@@ -769,6 +807,96 @@
         return datePart && timePart ? `${datePart} • ${timePart}` : (datePart || timePart || '');
       }
 
+      const LS_SINGLE_IMG_PREFIX = 'THINK_IMG_PERMANENT_';
+
+      function savePostImageLocallyAllLayers(postId, imgData) {
+        if (!postId || !imgData || typeof imgData !== 'string' || imgData.length < 10) return;
+        const sId = String(postId);
+        mediaCache.set(sId, imgData);
+        try {
+          localStorage.setItem(LS_SINGLE_IMG_PREFIX + sId, imgData);
+        } catch (e) {}
+        if (window.caches) {
+          caches.open(IMMORTAL_CACHE_NAME).then(cache => {
+            const urlKey = 'https://thinkboard.local/image/' + encodeURIComponent(sId);
+            cache.put(urlKey, new Response(imgData, {
+              headers: { 'Content-Type': 'text/plain', 'Cache-Control': 'max-age=315360000' }
+            })).catch(() => {});
+          }).catch(() => {});
+        }
+        openIndexedDB().then(db => {
+          if (!db) return;
+          try {
+            const tx = db.transaction([IDB_MEDIA_STORE], 'readwrite');
+            tx.objectStore(IDB_MEDIA_STORE).put(imgData, sId);
+          } catch (e) {}
+        }).catch(() => {});
+      }
+
+      function getSyncImageForPost(postId, postObj) {
+        if (!postId) return (postObj && postObj.image) || '';
+        const sId = String(postId);
+        if (postObj && postObj.image && postObj.image.length > 10) {
+          mediaCache.set(sId, postObj.image);
+          return postObj.image;
+        }
+        if (mediaCache.has(sId)) {
+          const cached = mediaCache.get(sId);
+          if (postObj) postObj.image = cached;
+          return cached;
+        }
+        try {
+          const fromLs = localStorage.getItem(LS_SINGLE_IMG_PREFIX + sId);
+          if (fromLs && fromLs.length > 10) {
+            mediaCache.set(sId, fromLs);
+            if (postObj) postObj.image = fromLs;
+            return fromLs;
+          }
+        } catch (e) {}
+        return '';
+      }
+
+      async function loadAsyncImageForPost(postId) {
+        if (!postId) return '';
+        const sId = String(postId);
+        const syncImg = getSyncImageForPost(sId, null);
+        if (syncImg) return syncImg;
+
+        if (window.caches) {
+          try {
+            const cache = await caches.open(IMMORTAL_CACHE_NAME);
+            const urlKey = 'https://thinkboard.local/image/' + encodeURIComponent(sId);
+            const res = await cache.match(urlKey);
+            if (res && res.ok) {
+              const txt = await res.text();
+              if (txt && txt.length > 10) {
+                savePostImageLocallyAllLayers(sId, txt);
+                return txt;
+              }
+            }
+          } catch (e) {}
+        }
+
+        try {
+          const db = await openIndexedDB();
+          if (db) {
+            const idbImg = await new Promise(resolve => {
+              try {
+                const tx = db.transaction([IDB_MEDIA_STORE], 'readonly');
+                const req = tx.objectStore(IDB_MEDIA_STORE).get(sId);
+                req.onsuccess = () => resolve(req.result || '');
+                req.onerror = () => resolve('');
+              } catch (err) { resolve(''); }
+            });
+            if (idbImg && idbImg.length > 10) {
+              savePostImageLocallyAllLayers(sId, idbImg);
+              return idbImg;
+            }
+          }
+        } catch (e) {}
+        return '';
+      }
+
       async function saveToImmortalCacheStorage(roomCode, stateObj) {
         if (!roomCode || !window.caches) return;
         try {
@@ -926,6 +1054,15 @@
               room_code TEXT NOT NULL,
               deleted_at INTEGER NOT NULL
             )`
+          },
+          {
+            sql: `CREATE TABLE IF NOT EXISTS think_images (
+              post_id TEXT PRIMARY KEY,
+              room_code TEXT NOT NULL,
+              image_data TEXT NOT NULL,
+              image_blob_id TEXT DEFAULT '',
+              updated_at INTEGER NOT NULL
+            )`
           }
         ]);
       }
@@ -950,10 +1087,23 @@
                       updated_at = excluded.updated_at,
                       deleted = 1`,
               args: [post.id, cleanRoom, updatedAt]
+            },
+            {
+              sql: `DELETE FROM think_images WHERE post_id = ?`,
+              args: [post.id]
             }
           ], true);
         } else {
-          await executeTursoPipeline([
+          const restoredImg = getSyncImageForPost(post.id, post);
+          if (restoredImg) {
+            post.image = restoredImg;
+            post.hasImage = true;
+          }
+          // CRITICAL GUARD: If this post is flagged as having an image (hasImage or imageBlobId) but this client hasn't downloaded the image bytes yet, do NOT overwrite Turso think_posts with an image-less JSON!
+          if ((post.hasImage || post.imageBlobId) && !post.image) {
+            return;
+          }
+          const stmts = [
             {
               sql: `INSERT INTO think_posts (id, room_code, post_json, updated_at, deleted)
                     VALUES (?, ?, ?, ?, 0)
@@ -963,9 +1113,22 @@
                     WHERE think_posts.deleted = 0 AND excluded.updated_at >= think_posts.updated_at`,
               args: [post.id, cleanRoom, JSON.stringify(post), post.updatedAtMs || updatedAt]
             }
-          ]);
+          ];
+          if (post.image && post.image.length > 10) {
+            stmts.push({
+              sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
+                    VALUES (?, ?, ?, ?, ?)
+                    ON CONFLICT(post_id) DO UPDATE SET
+                      image_data = CASE WHEN LENGTH(excluded.image_data) > 10 THEN excluded.image_data ELSE think_images.image_data END,
+                      image_blob_id = CASE WHEN LENGTH(excluded.image_blob_id) > 3 THEN excluded.image_blob_id ELSE think_images.image_blob_id END,
+                      updated_at = excluded.updated_at`,
+              args: [post.id, cleanRoom, post.image, post.imageBlobId || '', updatedAt]
+            });
+          }
+          await executeTursoPipeline(stmmts_fix(stmts));
         }
       }
+      function stmmts_fix(s) { return s; }
 
       async function pullRoomFromTurso(roomCode) {
         if (!roomCode) return false;
@@ -979,6 +1142,10 @@
           {
             sql: `SELECT id, post_json, updated_at, deleted FROM think_posts WHERE room_code = ?`,
             args: [cleanRoom]
+          },
+          {
+            sql: `SELECT post_id, image_data, image_blob_id FROM think_images WHERE room_code = ?`,
+            args: [cleanRoom]
           }
         ]);
         if (pullStartMs < lastDeleteEpochMs) return false;
@@ -986,6 +1153,8 @@
 
         const deletedIds = [];
         const incomingPosts = [];
+        const tursoImageMap = new Map();
+        const tursoBlobIdMap = new Map();
 
         // 1. Collect tombstones from think_tombstones
         const tombResp = data.results[0] && data.results[0].response;
@@ -996,7 +1165,22 @@
           }
         }
 
-        // 2. Collect posts and deleted=1 rows from think_posts
+        // 2. Collect dedicated permanent images from think_images
+        const imgResp = data.results[2] && data.results[2].response;
+        if (imgResp && imgResp.result && Array.isArray(imgResp.result.rows)) {
+          for (const row of imgResp.result.rows) {
+            const pId = row[0] && row[0].value;
+            const imgData = row[1] && row[1].value;
+            const bId = row[2] && row[2].value;
+            if (pId && imgData && imgData.length > 10 && !deletedIds.includes(pId)) {
+              tursoImageMap.set(String(pId), imgData);
+              savePostImageLocallyAllLayers(pId, imgData);
+            }
+            if (pId && bId) tursoBlobIdMap.set(String(pId), bId);
+          }
+        }
+
+        // 3. Collect posts from think_posts and re-attach any image from think_images
         const postResp = data.results[1] && data.results[1].response;
         if (postResp && postResp.result && Array.isArray(postResp.result.rows)) {
           for (const row of postResp.result.rows) {
@@ -1008,7 +1192,19 @@
             } else if (jsonVal && idVal && !deletedIds.includes(idVal) && !isPermanentlyDeleted(idVal)) {
               try {
                 const parsedPost = JSON.parse(jsonVal);
-                if (parsedPost && parsedPost.id) incomingPosts.push(parsedPost);
+                if (parsedPost && parsedPost.id) {
+                  const sId = String(parsedPost.id);
+                  if (tursoImageMap.has(sId)) {
+                    parsedPost.image = tursoImageMap.get(sId);
+                    parsedPost.hasImage = true;
+                  } else if (parsedPost.image && parsedPost.image.length > 10) {
+                    savePostImageLocallyAllLayers(sId, parsedPost.image);
+                  }
+                  if (tursoBlobIdMap.has(sId) && !parsedPost.imageBlobId) {
+                    parsedPost.imageBlobId = tursoBlobIdMap.get(sId);
+                  }
+                  incomingPosts.push(parsedPost);
+                }
               } catch (e) {}
             }
           }
@@ -1116,6 +1312,10 @@
         }
 
         mediaCache.delete(sId);
+        try { localStorage.removeItem(LS_SINGLE_IMG_PREFIX + sId); } catch (e) {}
+        if (window.caches) {
+          caches.open(IMMORTAL_CACHE_NAME).then(c => c.delete('https://thinkboard.local/image/' + encodeURIComponent(sId))).catch(() => {});
+        }
         state.posts = state.posts.filter(p => p && p.id && !isPermanentlyDeleted(p.id));
         state.posts.forEach(p => {
           if (Array.isArray(p.comments)) {
@@ -1330,8 +1530,12 @@
           if (Array.isArray(p.comments)) {
             p.comments = p.comments.filter(c => c && c.id && !globalDeletedSet.has(String(c.id)));
           }
-          if (p.image) mediaCache.set(p.id, p.image);
-          else if (mediaCache.has(p.id)) p.image = mediaCache.get(p.id);
+          if (p.image && p.image.length > 10) {
+            savePostImageLocallyAllLayers(p.id, p.image);
+          } else {
+            const restored = getSyncImageForPost(p.id, p);
+            if (restored) p.image = restored;
+          }
         });
         return baseState;
       }
@@ -1346,6 +1550,26 @@
       ['scroll', 'keydown', 'pointerdown', 'touchstart'].forEach(evtName => {
         window.addEventListener(evtName, () => { lastUserActivityMs = Date.now(); }, { passive: true, capture: true });
       });
+
+      // Strict Mobile & Desktop Zoom Lock (Prevents Pinch-Zoom, Gesture-Zoom, Double-Tap Zoom, and Viewport Shift)
+      ['gesturestart', 'gesturechange', 'gestureend'].forEach(evtName => {
+        document.addEventListener(evtName, e => { e.preventDefault(); }, { passive: false });
+      });
+      document.addEventListener('touchmove', e => {
+        if (e.touches && e.touches.length > 1) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+      document.addEventListener('wheel', e => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+      window.addEventListener('scroll', () => {
+        if (window.scrollY !== 0 || window.scrollX !== 0) {
+          window.scrollTo(0, 0);
+        }
+      }, { passive: true });
 
       function openIndexedDB() {
         if (cachedDbInstance) return Promise.resolve(cachedDbInstance);
@@ -1550,15 +1774,54 @@
       }
 
       async function fetchMissingPostImageFromCloud(post) {
-        if (!post || !post.id || post.image || isPermanentlyDeleted(post.id)) return false;
+        if (!post || !post.id || isPermanentlyDeleted(post.id)) return false;
         const sId = String(post.id);
-        if (mediaCache.has(sId)) {
-          post.image = mediaCache.get(sId);
-          return true;
-        }
+        const syncImg = getSyncImageForPost(sId, post);
+        if (syncImg) return true;
+
         if (inflightImageFetches.has(sId)) return false;
         inflightImageFetches.add(sId);
         try {
+          // 1. Check local async vaults (CacheStorage + IndexedDB mediaStore)
+          const localAsyncImg = await loadAsyncImageForPost(sId);
+          if (localAsyncImg && !isPermanentlyDeleted(sId)) {
+            post.image = localAsyncImg;
+            post.hasImage = true;
+            const target = state.posts.find(p => p.id === sId);
+            if (target) target.image = localAsyncImg;
+            renderBoard();
+            if (activeDetailPostId === sId) renderNoteDetailModal(sId);
+            return true;
+          }
+
+          // 2. Check Turso dedicated think_images table
+          const tursoRes = await executeTursoPipeline([
+            {
+              sql: `SELECT image_data, image_blob_id FROM think_images WHERE post_id = ?`,
+              args: [sId]
+            }
+          ]);
+          if (tursoRes && Array.isArray(tursoRes.results)) {
+            const rows = tursoRes.results[0]?.response?.result?.rows || [];
+            if (rows.length > 0) {
+              const tImg = rows[0][0]?.value;
+              const tBlob = rows[0][1]?.value;
+              if (tBlob && !post.imageBlobId) post.imageBlobId = tBlob;
+              if (tImg && tImg.length > 10 && !isPermanentlyDeleted(sId)) {
+                savePostImageLocallyAllLayers(sId, tImg);
+                post.image = tImg;
+                post.hasImage = true;
+                const target = state.posts.find(p => p.id === sId);
+                if (target) target.image = tImg;
+                saveLocalOnly();
+                renderBoard();
+                if (activeDetailPostId === sId) renderNoteDetailModal(sId);
+                return true;
+              }
+            }
+          }
+
+          // 3. Check Cloud Image Blob (JSONBlob + KeyValue Registry)
           let blobId = post.imageBlobId || '';
           if (!blobId) {
             const kvKey = getPostImageKvKey(sId);
@@ -1579,8 +1842,9 @@
             if (res.ok) {
               const data = await res.json();
               if (data && data.image && !isPermanentlyDeleted(sId)) {
+                savePostImageLocallyAllLayers(sId, data.image);
                 post.image = data.image;
-                mediaCache.set(sId, data.image);
+                post.hasImage = true;
                 const target = state.posts.find(p => p.id === sId);
                 if (target) {
                   target.image = data.image;
@@ -1607,8 +1871,12 @@
         const deletedSet = deletedSetInput || new Set([...globalDeletedSet, ...(Array.isArray(target.deletedIds) ? target.deletedIds : [])]);
         if (deletedSet.has(sId) || globalDeletedSet.has(sId)) return false;
 
-        if (rPost.image) mediaCache.set(sId, rPost.image);
-        else if (mediaCache.has(sId)) rPost.image = mediaCache.get(sId);
+        if (rPost.image && rPost.image.length > 10) {
+          savePostImageLocallyAllLayers(sId, rPost.image);
+        } else {
+          const localRestored = getSyncImageForPost(sId, rPost);
+          if (localRestored) rPost.image = localRestored;
+        }
 
         let changed = false;
         const lPost = target.posts.find(p => p.id === sId);
@@ -1708,8 +1976,16 @@
         state.posts = state.posts.filter(p => p && p.id && !isPermanentlyDeleted(p.id));
 
         state.posts.forEach(p => {
-          if (p.image) mediaCache.set(p.id, p.image);
-          else if (mediaCache.has(p.id)) p.image = mediaCache.get(p.id);
+          if (p.image && p.image.length > 10) {
+            p.hasImage = true;
+            savePostImageLocallyAllLayers(p.id, p.image);
+          } else {
+            const restored = getSyncImageForPost(p.id, p);
+            if (restored) {
+              p.image = restored;
+              p.hasImage = true;
+            }
+          }
         });
 
         // Always preserve p.image directly in localStorage so images NEVER disappear on refresh!
@@ -1989,6 +2265,37 @@
           if (!state.cloudBlobId && syncConfig.roomCode) {
             const discoveredId = await lookupCloudBlobIdFromRegistry(syncConfig.roomCode);
             if (discoveredId) state.cloudBlobId = discoveredId;
+          }
+          // Ensure every post has its image attached from local vaults before serializing
+          for (const p of state.posts) {
+            if (p && p.id && !p.image) {
+              const restored = getSyncImageForPost(p.id, p) || (await loadAsyncImageForPost(p.id));
+              if (restored) p.image = restored;
+            }
+          }
+          // If state.cloudBlobId exists, preserve any remote images that this client might not have downloaded yet
+          if (state.cloudBlobId) {
+            try {
+              const checkRes = await fetch(`https://jsonblob.com/api/jsonBlob/${state.cloudBlobId}`, {
+                method: 'GET',
+                headers: { Accept: 'application/json' }
+              });
+              if (checkRes.ok) {
+                const remoteSnap = await checkRes.json();
+                if (remoteSnap && Array.isArray(remoteSnap.posts)) {
+                  remoteSnap.posts.forEach(rp => {
+                    if (rp && rp.id && rp.image && !isPermanentlyDeleted(rp.id)) {
+                      savePostImageLocallyAllLayers(rp.id, rp.image);
+                      const lp = state.posts.find(x => x.id === rp.id);
+                      if (lp && !lp.image) {
+                        lp.image = rp.image;
+                        lp.hasImage = true;
+                      }
+                    }
+                  });
+                }
+              }
+            } catch (e) {}
           }
           const payload = JSON.stringify(state);
           if (state.cloudBlobId) {
@@ -2689,7 +2996,21 @@
           if (isPermanentlyDeleted(post.id)) return;
           if (!Array.isArray(post.comments)) post.comments = [];
           post.comments = post.comments.filter(c => c && c.id && !isPermanentlyDeleted(c.id));
-          if (!post.image && mediaCache.has(post.id)) post.image = mediaCache.get(post.id);
+          if (!post.image) {
+            const restored = getSyncImageForPost(post.id, post);
+            if (restored) {
+              post.image = restored;
+            } else {
+              loadAsyncImageForPost(post.id).then(asyncImg => {
+                if (asyncImg && !post.image) {
+                  post.image = asyncImg;
+                  renderBoard();
+                } else if (!post.image && (post.hasImage || post.imageBlobId)) {
+                  fetchMissingPostImageFromCloud(post);
+                }
+              });
+            }
+          }
 
           const sig = computePostRenderSignature(post);
           let card = renderedCardMap.get(post.id);
@@ -2780,7 +3101,7 @@
                 ${
                   post.image
                     ? `<div class="mb-3 rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-100/70 relative">
-                         <img src="${escapeHtml(post.image)}" loading="lazy" decoding="async" alt="รูปภาพประกอบ" referrerpolicy="no-referrer" class="note-image w-full max-h-[520px] object-contain mx-auto" onerror="this.style.display='none'" />
+                         <img src="${escapeHtml(post.image)}" loading="lazy" decoding="async" alt="รูปภาพประกอบ" referrerpolicy="no-referrer" class="note-image w-full max-h-[520px] object-contain mx-auto" />
                        </div>`
                     : ''
                 }
@@ -3509,7 +3830,8 @@
               target.rating = selectedRating;
               target.text = cleanedText;
               target.color = selectedColor;
-              target.image = finalImage;
+              target.image = finalImage || target.image || getSyncImageForPost(target.id, target);
+              target.hasImage = Boolean(target.image);
               target.youtubeUrl = finalYoutubeUrl;
               target.youtubeId = finalYoutubeId;
               target.externalUrl = '';
@@ -3517,12 +3839,12 @@
               target.webAutoCmd = finalWebAutoCmd;
               target.webProxyMode = useProxyMode;
               target.updatedAtMs = nowMs;
-              if (finalImage) mediaCache.set(target.id, finalImage);
+              if (target.image) savePostImageLocallyAllLayers(target.id, target.image);
               savedPost = target;
             }
           } else {
             const newId = 'note-' + nowMs + '-' + Math.random().toString(36).slice(2, 6);
-            if (finalImage) mediaCache.set(newId, finalImage);
+            if (finalImage) savePostImageLocallyAllLayers(newId, finalImage);
             savedPost = {
               id: newId,
               nickname,
@@ -3530,6 +3852,7 @@
               rating: selectedRating,
               text: cleanedText,
               image: finalImage,
+              hasImage: Boolean(finalImage),
               youtubeUrl: finalYoutubeUrl,
               youtubeId: finalYoutubeId,
               externalUrl: '',
