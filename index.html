@@ -295,9 +295,9 @@
     </div>
   </div>
 
-  <!-- FIXED SINGLE-LINE GRAY HEADER BAR (ส่วนหัวบรรทัดเดียว สีเทา | ไม่เลื่อนตาม) -->
+  <!-- FIXED SINGLE-LINE GRAY HEADER BAR (ส่วนหัวบรรทัดเดียว สีเทา | ความสูงและรูปแบบกล่องเท่ากันทั้งหมด) -->
   <header class="app-top-header shrink-0 relative z-40 bg-neutral-200 border-b border-neutral-300 px-2.5 sm:px-6 shadow-xs">
-    <div class="w-full flex flex-nowrap items-center justify-between gap-1.5 sm:gap-3">
+    <div class="w-full flex flex-nowrap items-center justify-between gap-1.5 sm:gap-2.5">
 
       <!-- Left: Bare Two-People Silhouette (No Box) + Think Board -->
       <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
@@ -310,8 +310,8 @@
         <h1 class="font-bold text-sm sm:text-lg text-neutral-900 tracking-tight whitespace-nowrap">Think Board</h1>
       </div>
 
-      <!-- Center: Smart Search Box & Quick Sort Toggle (Strictly Single Line) -->
-      <div id="smartFeedToolbar" class="flex items-center gap-1 sm:gap-1.5 flex-1 min-w-0 max-w-xl mx-1 sm:mx-3">
+      <!-- Center: Smart Search Box (No Placeholder Text) & Quick Sort Toggle (Identical Box Height & Style) -->
+      <div id="smartFeedToolbar" class="flex items-center gap-1.5 flex-1 min-w-0 max-w-xl mx-1 sm:mx-2">
         <div class="relative flex-1 min-w-0">
           <svg class="w-3.5 h-3.5 text-neutral-900 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
             <circle cx="11" cy="11" r="7" />
@@ -320,35 +320,36 @@
           <input
             id="inputSmartSearch"
             type="text"
-            placeholder="ค้นหาชื่อหรือข้อความ..."
-            class="w-full pl-7 sm:pl-8 pr-6 py-1 sm:py-1.5 rounded-full bg-white border border-neutral-300 focus:border-neutral-900 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none transition"
+            placeholder=""
+            aria-label="ค้นหา"
+            class="w-full h-8 sm:h-9 pl-7 sm:pl-8 pr-6 rounded-xl bg-white border border-neutral-300 focus:border-neutral-900 text-xs sm:text-sm font-semibold text-neutral-900 focus:outline-none transition"
           />
           <button id="btnClearSmartSearch" type="button" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-900 text-xs font-bold">✕</button>
         </div>
 
-        <div class="hidden sm:flex items-center gap-1 shrink-0">
-          <button id="btnSortLatest" type="button" class="px-2.5 py-1.5 rounded-full bg-neutral-900 text-white text-[11px] font-bold whitespace-nowrap transition" title="เรียงตามโพสต์ล่าสุด">
+        <div class="hidden sm:flex items-center gap-1.5 shrink-0">
+          <button id="btnSortLatest" type="button" class="h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-neutral-900 text-white border border-neutral-900 text-xs font-bold inline-flex items-center justify-center whitespace-nowrap transition" title="เรียงตามโพสต์ล่าสุด">
             🕒 ล่าสุด
           </button>
-          <button id="btnSortPopular" type="button" class="px-2.5 py-1.5 rounded-full bg-white hover:bg-neutral-100 text-neutral-700 border border-neutral-300 text-[11px] font-bold whitespace-nowrap transition" title="เรียงตามความนิยม">
+          <button id="btnSortPopular" type="button" class="h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-300 text-xs font-bold inline-flex items-center justify-center whitespace-nowrap transition" title="เรียงตามความนิยม">
             🔥 ยอดนิยม
           </button>
-          <span id="smartFeedCountBadge" class="hidden lg:inline-block px-2.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-600 text-[11px] font-bold whitespace-nowrap">0 โพสต์</span>
+          <span id="smartFeedCountBadge" class="hidden lg:inline-flex h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-white border border-neutral-300 text-orange-600 text-xs font-bold items-center justify-center whitespace-nowrap">0 โพสต์</span>
         </div>
       </div>
 
-      <!-- Right: Board Code (Truncated with ... if long) + User Name + Out Button -->
-      <div class="flex items-center justify-end gap-1 sm:gap-2 min-w-0 shrink-0">
-        <div id="headerBoardCodePill" class="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-white border border-neutral-300 text-xs sm:text-sm font-bold text-orange-600 flex items-center gap-1 min-w-0 max-w-[88px] sm:max-w-[175px]" title="รหัส Board">
+      <!-- Right: Board Code (Truncated with ... if long) + User Name + Out Button (Identical Box Height & Style) -->
+      <div class="flex items-center justify-end gap-1 sm:gap-1.5 min-w-0 shrink-0">
+        <div id="headerBoardCodePill" class="h-8 sm:h-9 px-2 sm:px-3 rounded-xl bg-white border border-neutral-300 text-xs font-bold text-orange-600 inline-flex items-center gap-1 min-w-0 max-w-[92px] sm:max-w-[170px]" title="รหัส Board">
           <span class="text-neutral-600 font-semibold shrink-0">Board:</span>
           <span id="headerBoardCodeLabel" class="truncate block">-</span>
         </div>
 
-        <div id="headerUserNamePill" class="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-white border border-neutral-300 text-xs sm:text-sm font-bold text-neutral-900 flex items-center min-w-0 max-w-[64px] sm:max-w-[150px]" title="ชื่อผู้ใช้งาน">
+        <div id="headerUserNamePill" class="h-8 sm:h-9 px-2 sm:px-3 rounded-xl bg-white border border-neutral-300 text-xs font-bold text-neutral-900 inline-flex items-center min-w-0 max-w-[68px] sm:max-w-[140px]" title="ชื่อผู้ใช้งาน">
           <span id="headerUserNameLabel" class="truncate block">ผู้ใช้งาน</span>
         </div>
 
-        <button id="btnOutBoard" type="button" class="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white text-xs sm:text-sm font-bold flex items-center gap-1 shrink-0 transition" title="ออกจาก Board">
+        <button id="btnOutBoard" type="button" class="h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white border border-neutral-900 hover:border-orange-500 text-xs font-bold inline-flex items-center justify-center gap-1 shrink-0 transition" title="ออกจาก Board">
           <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
           </svg>
@@ -391,14 +392,14 @@
         <form id="formInlineDirectPost" class="relative">
           <div class="rounded-2xl bg-neutral-50 border border-neutral-200 focus-within:border-orange-500 focus-within:bg-white transition p-2.5 sm:p-3 flex flex-col gap-2">
             <div class="flex items-center gap-2">
-              <!-- + Button Specifically for Adding Image -->
+              <!-- + Button for Adding Universal Files (Images, PPT, PDF, Word, Excel, Video, Audio, All Files) -->
               <label
                 for="inlineImageFileInput"
                 class="w-10 h-10 rounded-xl bg-neutral-200/80 hover:bg-orange-500 text-neutral-800 hover:text-white font-bold text-xl flex items-center justify-center shrink-0 cursor-pointer transition select-none"
-                title="เพิ่มรูปภาพ"
+                title="เพิ่มรูปภาพ ไฟล์ PDF, PPT, Word, Excel หรือไฟล์ทุกชนิด"
               >
                 +
-                <input id="inlineImageFileInput" type="file" accept="image/*" class="hidden" />
+                <input id="inlineImageFileInput" type="file" multiple class="hidden" />
               </label>
 
               <textarea
@@ -426,12 +427,20 @@
               </div>
             </div>
 
-            <!-- Live Smart Auto-Detection Preview Bar -->
+            <!-- Live Smart Auto-Detection & Universal File Preview Bar -->
             <div id="inlineAutoDetectBar" class="hidden pt-2 border-t border-neutral-200 flex flex-wrap items-center justify-between gap-2 text-xs">
               <div id="inlineAutoDetectBadges" class="flex flex-wrap items-center gap-2"></div>
-              <div id="inlinePastedImagePreviewWrap" class="hidden flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded-xl px-2.5 py-1">
-                <img id="inlinePastedImageEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="รูปที่แนบ" class="h-8 w-10 object-cover rounded-lg border border-neutral-300" />
-                <button id="btnClearInlineImage" type="button" class="text-neutral-600 hover:text-orange-600 font-bold text-xs px-1">✕</button>
+              <div class="flex flex-wrap items-center gap-2">
+                <div id="inlinePastedImagePreviewWrap" class="hidden flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded-xl px-2.5 py-1">
+                  <img id="inlinePastedImageEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="รูปที่แนบ" class="h-8 w-10 object-cover rounded-lg border border-neutral-300" />
+                  <button id="btnClearInlineImage" type="button" class="text-neutral-600 hover:text-orange-600 font-bold text-xs px-1">✕</button>
+                </div>
+                <div id="inlineAttachedFilePreviewWrap" class="hidden flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded-xl px-2.5 py-1.5 max-w-full">
+                  <span id="inlineAttachedFileExtBadge" class="px-2 py-0.5 rounded-lg bg-neutral-900 text-white text-[10px] font-extrabold uppercase shrink-0">FILE</span>
+                  <span id="inlineAttachedFileNameEl" class="text-xs font-bold text-neutral-900 truncate max-w-[180px] sm:max-w-[260px]">filename.pdf</span>
+                  <span id="inlineAttachedFileSizeEl" class="text-[10px] font-semibold text-neutral-500 shrink-0"></span>
+                  <button id="btnClearInlineFile" type="button" class="text-neutral-600 hover:text-orange-600 font-bold text-xs px-1 shrink-0">✕</button>
+                </div>
               </div>
             </div>
           </div>
@@ -561,7 +570,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <label for="inputImageFile" class="py-2.5 px-3 rounded-xl border border-dashed border-emerald-500/60 hover:border-emerald-400 bg-slate-900/90 text-xs font-semibold text-emerald-300 flex items-center justify-center gap-1.5 cursor-pointer transition">
               <span>🖼️ อัปโหลดรูปภาพ</span>
-              <input id="inputImageFile" type="file" accept="image/*" class="hidden" />
+              <input id="inputImageFile" type="file" multiple class="hidden" />
             </label>
             <input id="inputImageUrl" type="text" placeholder="หรือวางลิงก์รูปภาพ (https://...)" class="px-3 py-2 rounded-xl bg-slate-900/90 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400" />
           </div>
@@ -655,6 +664,8 @@
         <div id="detailImageWrapper" class="hidden rounded-2xl overflow-hidden border border-slate-200 bg-slate-50">
           <img id="detailImageEl" referrerpolicy="no-referrer" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="รูปภาพประกอบ" class="w-full max-h-80 object-contain cursor-zoom-in mx-auto" />
         </div>
+
+        <div id="detailUniversalFileWrapper" class="hidden"></div>
 
         <div id="detailYoutubeWrapper" class="hidden rounded-2xl overflow-hidden border border-slate-200 bg-black">
           <div class="aspect-video w-full">
@@ -803,8 +814,8 @@
 
       function formatPostFullDateTime(item) {
         if (!item) return '';
-        const datePart = item.dateStr || formatThaiDateStr(item.createdAtMs || item.updatedAtMs || Date.now());
-        const timePart = item.time || '';
+        const datePart = String(item.dateStr || formatThaiDateStr(item.createdAtMs || item.updatedAtMs || Date.now())).replace(/[📅🕒⏰]/g, '').trim();
+        const timePart = String(item.time || '').replace(/[📅🕒⏰]/g, '').trim();
         if (timePart && timePart.includes(datePart)) return timePart;
         return datePart && timePart ? `${datePart} • ${timePart}` : (datePart || timePart || '');
       }
@@ -1125,6 +1136,11 @@
               args: [post.id, cleanRoom, JSON.stringify(post), post.updatedAtMs || updatedAt]
             }
           ];
+          const restoredFileData = getSyncImageForPost(post.id + '__file', null);
+          if (restoredFileData && !post.fileDataUrl) {
+            post.fileDataUrl = restoredFileData;
+            post.hasFile = true;
+          }
           if (post.image && post.image.length > 15) {
             stmts.push({
               sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
@@ -1134,6 +1150,16 @@
                       image_blob_id = CASE WHEN LENGTH(excluded.image_blob_id) > 3 THEN excluded.image_blob_id ELSE think_images.image_blob_id END,
                       updated_at = excluded.updated_at`,
               args: [post.id, cleanRoom, post.image, post.imageBlobId || '', updatedAt]
+            });
+          }
+          if (post.fileDataUrl && post.fileDataUrl.length > 15) {
+            stmts.push({
+              sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
+                    VALUES (?, ?, ?, ?, ?)
+                    ON CONFLICT(post_id) DO UPDATE SET
+                      image_data = CASE WHEN LENGTH(excluded.image_data) >= LENGTH(think_images.image_data) THEN excluded.image_data ELSE think_images.image_data END,
+                      updated_at = excluded.updated_at`,
+              args: [post.id + '__file', cleanRoom, post.fileDataUrl, post.fileName || '', updatedAt]
             });
           }
           await executeTursoPipeline(stmmts_fix(stmts));
@@ -1210,6 +1236,12 @@
                     parsedPost.hasImage = true;
                   } else if (parsedPost.image && parsedPost.image.length > 10) {
                     savePostImageLocallyAllLayers(sId, parsedPost.image);
+                  }
+                  if (tursoImageMap.has(sId + '__file')) {
+                    parsedPost.fileDataUrl = tursoImageMap.get(sId + '__file');
+                    parsedPost.hasFile = true;
+                  } else if (parsedPost.fileDataUrl && parsedPost.fileDataUrl.length > 15) {
+                    savePostImageLocallyAllLayers(sId + '__file', parsedPost.fileDataUrl);
                   }
                   if (tursoBlobIdMap.has(sId) && !parsedPost.imageBlobId) {
                     parsedPost.imageBlobId = tursoBlobIdMap.get(sId);
@@ -1969,6 +2001,12 @@
           const localRestored = getSyncImageForPost(sId, rPost);
           if (localRestored) rPost.image = localRestored;
         }
+        if (rPost.fileDataUrl && rPost.fileDataUrl.length > 15) {
+          savePostImageLocallyAllLayers(sId + '__file', rPost.fileDataUrl);
+        } else if (rPost.hasFile || rPost.fileName) {
+          const localFileRestored = getSyncImageForPost(sId + '__file', null);
+          if (localFileRestored) rPost.fileDataUrl = localFileRestored;
+        }
 
         let changed = false;
         const lPost = target.posts.find(p => p.id === sId);
@@ -2012,6 +2050,20 @@
           if (!lPost.youtubeUrl && rPost.youtubeUrl) { lPost.youtubeUrl = rPost.youtubeUrl; changed = true; }
           if (!lPost.webRunUrl && rPost.webRunUrl) { lPost.webRunUrl = rPost.webRunUrl; changed = true; }
           if (!lPost.webAutoCmd && rPost.webAutoCmd) { lPost.webAutoCmd = rPost.webAutoCmd; changed = true; }
+          if (rPost.fileName && !lPost.fileName) {
+            lPost.fileName = rPost.fileName;
+            lPost.fileSize = rPost.fileSize || lPost.fileSize;
+            lPost.fileMime = rPost.fileMime || lPost.fileMime;
+            lPost.fileExt = rPost.fileExt || lPost.fileExt;
+            lPost.hasFile = true;
+            changed = true;
+          }
+          if (rPost.fileDataUrl && (!lPost.fileDataUrl || rPost.fileDataUrl.length > lPost.fileDataUrl.length)) {
+            lPost.fileDataUrl = rPost.fileDataUrl;
+            lPost.hasFile = true;
+            savePostImageLocallyAllLayers(sId + '__file', rPost.fileDataUrl);
+            changed = true;
+          }
 
           if ((rPost.updatedAtMs || 0) > (lPost.updatedAtMs || 0)) {
             lPost.nickname = rPost.nickname || lPost.nickname;
@@ -2030,6 +2082,15 @@
             if (rPost.webRunUrl !== undefined) lPost.webRunUrl = rPost.webRunUrl;
             if (rPost.webAutoCmd !== undefined) lPost.webAutoCmd = rPost.webAutoCmd;
             if (rPost.webProxyMode !== undefined) lPost.webProxyMode = rPost.webProxyMode;
+            if (rPost.fileName) lPost.fileName = rPost.fileName;
+            if (rPost.fileSize) lPost.fileSize = rPost.fileSize;
+            if (rPost.fileMime) lPost.fileMime = rPost.fileMime;
+            if (rPost.fileExt) lPost.fileExt = rPost.fileExt;
+            if (rPost.fileDataUrl && (!lPost.fileDataUrl || rPost.fileDataUrl.length >= lPost.fileDataUrl.length)) {
+              lPost.fileDataUrl = rPost.fileDataUrl;
+              lPost.hasFile = true;
+              savePostImageLocallyAllLayers(sId + '__file', rPost.fileDataUrl);
+            }
             lPost.updatedAtMs = rPost.updatedAtMs;
             changed = true;
           }
@@ -2086,6 +2147,16 @@
             if (restored) {
               p.image = restored;
               p.hasImage = true;
+            }
+          }
+          if (p.fileDataUrl && p.fileDataUrl.length > 15) {
+            p.hasFile = true;
+            savePostImageLocallyAllLayers(p.id + '__file', p.fileDataUrl);
+          } else if (p.hasFile || p.fileName) {
+            const restoredFile = getSyncImageForPost(p.id + '__file', null);
+            if (restoredFile) {
+              p.fileDataUrl = restoredFile;
+              p.hasFile = true;
             }
           }
         });
@@ -2647,6 +2718,11 @@
                 }
               }
             }
+            if (lightPost.fileDataUrl && lightPost.fileDataUrl.length > 2600) {
+              lightPost.hasFile = true;
+              pushFullImageToNtfyChunks({ id: changedPost.id + '__file', image: changedPost.fileDataUrl }).catch(() => {});
+              delete lightPost.fileDataUrl;
+            }
             await fetch(`https://ntfy.sh/${topic}`, {
               method: 'POST',
               body: JSON.stringify({
@@ -3033,6 +3109,170 @@
         return FEELING_DEFS.reduce((acc, f) => acc + (post[f.key] || 0), 0);
       }
 
+      let pendingFileAttachment = null;
+      const blobUrlCache = new Map();
+
+      function isImageFileObj(file) {
+        if (!file) return false;
+        if (file.type && file.type.startsWith('image/')) return true;
+        return /\.(png|jpe?g|webp|gif|svg|bmp|avif|ico)$/i.test(file.name || '');
+      }
+
+      function getUniversalFileExt(fileName, mimeType) {
+        const name = String(fileName || '').trim();
+        const m = name.match(/\.([a-zA-Z0-9]{1,8})$/);
+        if (m && m[1]) return m[1].toUpperCase();
+        const mime = String(mimeType || '').toLowerCase();
+        if (mime.includes('pdf')) return 'PDF';
+        if (mime.includes('presentation') || mime.includes('powerpoint')) return 'PPTX';
+        if (mime.includes('word')) return 'DOCX';
+        if (mime.includes('sheet') || mime.includes('excel')) return 'XLSX';
+        if (mime.includes('zip') || mime.includes('compressed')) return 'ZIP';
+        if (mime.includes('video')) return 'VIDEO';
+        if (mime.includes('audio')) return 'AUDIO';
+        return 'FILE';
+      }
+
+      function getUniversalFileBadgeStyle(extStr) {
+        const ext = String(extStr || 'FILE').toUpperCase();
+        if (ext === 'PDF') return { bg: 'bg-red-600 text-white', tint: 'bg-red-50 border-red-200 text-red-700', typeLabel: 'เอกสาร PDF' };
+        if (ext === 'PPT' || ext === 'PPTX' || ext === 'KEY') return { bg: 'bg-orange-500 text-white', tint: 'bg-orange-50 border-orange-200 text-orange-700', typeLabel: 'สไลด์นำเสนอ PowerPoint' };
+        if (ext === 'DOC' || ext === 'DOCX' || ext === 'RTF') return { bg: 'bg-blue-600 text-white', tint: 'bg-blue-50 border-blue-200 text-blue-700', typeLabel: 'เอกสาร Word' };
+        if (ext === 'XLS' || ext === 'XLSX' || ext === 'CSV') return { bg: 'bg-emerald-600 text-white', tint: 'bg-emerald-50 border-emerald-200 text-emerald-700', typeLabel: 'ตารางข้อมูล Excel / CSV' };
+        if (ext === 'MP4' || ext === 'WEBM' || ext === 'MOV' || ext === 'VIDEO') return { bg: 'bg-purple-600 text-white', tint: 'bg-purple-50 border-purple-200 text-purple-700', typeLabel: 'ไฟล์วิดีโอ' };
+        if (ext === 'MP3' || ext === 'WAV' || ext === 'M4A' || ext === 'AUDIO') return { bg: 'bg-pink-600 text-white', tint: 'bg-pink-50 border-pink-200 text-pink-700', typeLabel: 'ไฟล์เสียง' };
+        if (ext === 'ZIP' || ext === 'RAR' || ext === '7Z') return { bg: 'bg-amber-600 text-white', tint: 'bg-amber-50 border-amber-200 text-amber-800', typeLabel: 'ไฟล์บีบอัด (Archive)' };
+        return { bg: 'bg-neutral-900 text-white', tint: 'bg-neutral-100 border-neutral-300 text-neutral-800', typeLabel: 'ไฟล์แนบ (' + ext + ')' };
+      }
+
+      function formatUniversalFileSize(bytes) {
+        const b = Number(bytes) || 0;
+        if (b <= 0) return '';
+        if (b < 1024) return b + ' B';
+        if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+        return (b / (1024 * 1024)).toFixed(2) + ' MB';
+      }
+
+      function readUniversalFileAsAttachment(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = ev => {
+            const dataUrl = ev.target && ev.target.result;
+            if (!dataUrl || typeof dataUrl !== 'string') return reject(new Error('Read failed'));
+            const ext = getUniversalFileExt(file.name, file.type);
+            resolve({
+              fileName: file.name || ('attachment.' + ext.toLowerCase()),
+              fileSize: file.size || 0,
+              fileMime: file.type || 'application/octet-stream',
+              fileExt: ext,
+              fileDataUrl: dataUrl
+            });
+          };
+          reader.onerror = () => reject(new Error('File read error'));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function getOrCreateBlobUrlForDataUrl(cacheKey, dataUrl, fallbackMime) {
+        if (!dataUrl) return '';
+        if (!dataUrl.startsWith('data:')) return dataUrl;
+        if (cacheKey && blobUrlCache.has(cacheKey)) return blobUrlCache.get(cacheKey);
+        try {
+          const parts = dataUrl.split(',');
+          const header = parts[0] || '';
+          const b64 = parts[1] || '';
+          const mimeMatch = header.match(/data:([^;]+)/);
+          const mime = (mimeMatch && mimeMatch[1]) || fallbackMime || 'application/octet-stream';
+          const binStr = atob(b64);
+          const len = binStr.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i++) bytes[i] = binStr.charCodeAt(i);
+          const blob = new Blob([bytes], { type: mime });
+          const blobUrl = URL.createObjectURL(blob);
+          if (cacheKey) blobUrlCache.set(cacheKey, blobUrl);
+          return blobUrl;
+        } catch (e) {
+          return dataUrl;
+        }
+      }
+
+      function buildUniversalFileAttachmentHtml(post) {
+        if (!post || (!post.fileName && !post.fileDataUrl && !post.hasFile)) return '';
+        const ext = post.fileExt || getUniversalFileExt(post.fileName || '', post.fileMime || '');
+        const style = getUniversalFileBadgeStyle(ext);
+        const fName = post.fileName || ('ไฟล์แนบ.' + ext.toLowerCase());
+        const fSize = formatUniversalFileSize(post.fileSize);
+        const isPdf = ext === 'PDF' || (post.fileMime && post.fileMime.includes('pdf'));
+        const isVideo = ['MP4', 'WEBM', 'MOV', 'VIDEO'].includes(ext) || (post.fileMime && post.fileMime.startsWith('video/'));
+        const isAudio = ['MP3', 'WAV', 'M4A', 'AUDIO'].includes(ext) || (post.fileMime && post.fileMime.startsWith('audio/'));
+        const blobUrl = post.fileDataUrl ? getOrCreateBlobUrlForDataUrl(post.id + '_blob', post.fileDataUrl, post.fileMime) : '';
+
+        return `
+          <div class="universal-file-card mb-3 rounded-2xl border border-neutral-200 bg-neutral-50/90 overflow-hidden shadow-xs" onclick="event.stopPropagation()">
+            <div class="p-3 sm:p-3.5 flex items-center justify-between gap-2.5 flex-wrap">
+              <div class="flex items-center gap-3 min-w-0 flex-1">
+                <div class="w-11 h-11 rounded-xl ${style.bg} font-extrabold text-xs flex flex-col items-center justify-center shrink-0 shadow-xs">
+                  <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  <span class="text-[9px] leading-none tracking-tight">${escapeHtml(ext.slice(0, 5))}</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-xs sm:text-sm text-neutral-900 truncate" title="${escapeHtml(fName)}">${escapeHtml(fName)}</div>
+                  <div class="flex items-center gap-1.5 mt-0.5 text-[11px] text-neutral-500 font-medium">
+                    <span class="px-1.5 py-0.2 rounded border ${style.tint} text-[10px] font-bold">${escapeHtml(style.typeLabel)}</span>
+                    ${fSize ? `<span>• ${escapeHtml(fSize)}</span>` : ''}
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1.5 shrink-0">
+                ${
+                  isPdf && blobUrl
+                    ? `<button type="button" class="btn-toggle-pdf-preview px-3 py-1.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 border border-neutral-300 text-xs font-bold transition">
+                         เปิดดู PDF
+                       </button>`
+                    : (blobUrl
+                        ? `<a href="${escapeHtml(blobUrl)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 border border-neutral-300 text-xs font-bold transition">
+                             เปิดไฟล์ ↗
+                           </a>`
+                        : '')
+                }
+                ${
+                  blobUrl
+                    ? `<a href="${escapeHtml(blobUrl)}" download="${escapeHtml(fName)}" class="btn-download-universal-file px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white text-xs font-bold flex items-center gap-1 transition">
+                         <span>ดาวน์โหลด</span>
+                       </a>`
+                    : `<span class="px-2.5 py-1 rounded-xl bg-neutral-200 text-neutral-600 text-[11px] font-semibold">กำลังซิงค์ไฟล์...</span>`
+                }
+              </div>
+            </div>
+
+            ${
+              isPdf && blobUrl
+                ? `<div class="pdf-inline-preview-frame hidden border-t border-neutral-200 bg-neutral-900">
+                     <iframe src="${escapeHtml(blobUrl)}" class="w-full h-96 border-0 bg-white" title="${escapeHtml(fName)}"></iframe>
+                   </div>`
+                : ''
+            }
+            ${
+              isVideo && blobUrl
+                ? `<div class="border-t border-neutral-200 bg-black">
+                     <video src="${escapeHtml(blobUrl)}" controls playsinline class="w-full max-h-96 mx-auto"></video>
+                   </div>`
+                : ''
+            }
+            ${
+              isAudio && blobUrl
+                ? `<div class="p-3 border-t border-neutral-200 bg-white">
+                     <audio src="${escapeHtml(blobUrl)}" controls class="w-full"></audio>
+                   </div>`
+                : ''
+            }
+          </div>
+        `;
+      }
+
       function computePostRenderSignature(post) {
         const lastCmtId = Array.isArray(post.comments) && post.comments.length > 0
           ? post.comments[post.comments.length - 1].id
@@ -3048,6 +3288,8 @@
           post.rating || 5,
           (post.text || '').length,
           post.image ? (post.image.length + ':' + post.image.slice(-16)) : '0',
+          post.fileName || '',
+          post.fileDataUrl ? (post.fileDataUrl.length + ':' + post.fileDataUrl.slice(-12)) : '0',
           post.youtubeId || '',
           post.webRunUrl || '',
           post.webProxyMode ? 1 : 0
@@ -3137,6 +3379,27 @@
               });
             }
           }
+          if (!post.fileDataUrl && (post.hasFile || post.fileName)) {
+            const restoredFile = getSyncImageForPost(post.id + '__file', null);
+            if (restoredFile) {
+              post.fileDataUrl = restoredFile;
+            } else {
+              loadAsyncImageForPost(post.id + '__file').then(asyncFile => {
+                if (asyncFile && !post.fileDataUrl) {
+                  post.fileDataUrl = asyncFile;
+                  renderBoard();
+                } else if (!post.fileDataUrl && (post.hasFile || post.fileName)) {
+                  pullFullImageFromNtfyChunks(post.id + '__file').then(chunkFile => {
+                    if (chunkFile && !post.fileDataUrl) {
+                      post.fileDataUrl = chunkFile;
+                      savePostImageLocallyAllLayers(post.id + '__file', chunkFile);
+                      renderBoard();
+                    }
+                  }).catch(() => {});
+                }
+              });
+            }
+          }
 
           const sig = computePostRenderSignature(post);
           let card = renderedCardMap.get(post.id);
@@ -3187,7 +3450,7 @@
                       <span class="px-2 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-[10px] leading-none">${starsStr}</span>
                     </div>
                     <div class="flex items-center gap-1.5 mt-1 text-[11px] text-neutral-500 font-medium">
-                      <span>📅 ${escapeHtml(fullDateTimeStr)}</span>
+                      <span>${escapeHtml(fullDateTimeStr)}</span>
                     </div>
                   </div>
                 </div>
@@ -3231,6 +3494,7 @@
                        </div>`
                     : ''
                 }
+                ${buildUniversalFileAttachmentHtml(post)}
                 ${
                   ytId
                     ? `<div class="mb-3 rounded-2xl overflow-hidden border border-neutral-300 bg-neutral-950 shadow-sm" onclick="event.stopPropagation()">
@@ -3342,6 +3606,18 @@
                 </form>
               </div>
             `;
+
+            const pdfToggleBtn = card.querySelector('.btn-toggle-pdf-preview');
+            if (pdfToggleBtn) {
+              pdfToggleBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                const frameWrap = card.querySelector('.pdf-inline-preview-frame');
+                if (frameWrap) {
+                  frameWrap.classList.toggle('hidden');
+                  pdfToggleBtn.textContent = frameWrap.classList.contains('hidden') ? 'เปิดดู PDF' : 'ซ่อน PDF';
+                }
+              });
+            }
 
             // Bind YouTube Click-to-Play Facade (Eliminates Heavy Iframe Lag During Scroll & Post!)
             const ytFacade = card.querySelector('.yt-facade-container');
@@ -3510,12 +3786,35 @@
         document.getElementById('detailRoleBadge').textContent = post.role || 'นักเรียน';
         const r = typeof post.rating === 'number' ? Math.min(5, Math.max(1, post.rating)) : 5;
         document.getElementById('detailStarsBadge').textContent = '⭐'.repeat(r);
-        document.getElementById('detailPostTime').textContent = '📅 ' + formatPostFullDateTime(post);
+        document.getElementById('detailPostTime').textContent = formatPostFullDateTime(post);
 
         const imgWrap = document.getElementById('detailImageWrapper');
         const imgEl = document.getElementById('detailImageEl');
         if (post.image) { imgEl.src = post.image; imgWrap.classList.remove('hidden'); }
         else imgWrap.classList.add('hidden');
+
+        const detailFileWrap = document.getElementById('detailUniversalFileWrapper');
+        if (detailFileWrap) {
+          const fileHtml = buildUniversalFileAttachmentHtml(post);
+          if (fileHtml) {
+            detailFileWrap.innerHTML = fileHtml;
+            detailFileWrap.classList.remove('hidden');
+            const pdfBtn = detailFileWrap.querySelector('.btn-toggle-pdf-preview');
+            if (pdfBtn) {
+              pdfBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                const fw = detailFileWrap.querySelector('.pdf-inline-preview-frame');
+                if (fw) {
+                  fw.classList.toggle('hidden');
+                  pdfBtn.textContent = fw.classList.contains('hidden') ? 'เปิดดู PDF' : 'ซ่อน PDF';
+                }
+              });
+            }
+          } else {
+            detailFileWrap.innerHTML = '';
+            detailFileWrap.classList.add('hidden');
+          }
+        }
 
         const ytWrap = document.getElementById('detailYoutubeWrapper');
         const ytIframe = document.getElementById('detailYoutubeIframe');
@@ -3597,7 +3896,7 @@
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2">
                   <span class="font-bold text-xs text-slate-900">${escapeHtml(comment.nickname)}</span>
-                  <span class="text-[10px] text-neutral-400">📅 ${escapeHtml(formatPostFullDateTime(comment))}</span>
+                  <span class="text-[10px] text-neutral-400">${escapeHtml(formatPostFullDateTime(comment))}</span>
                 </div>
                 <div class="text-xs sm:text-sm text-slate-700 mt-0.5 break-words leading-relaxed select-text">${formatTextWithLinks(comment.text)}</div>
               </div>
@@ -3666,8 +3965,27 @@
           imgWrapEl.classList.add('hidden');
         }
 
+        const fileWrapEl = document.getElementById('inlineAttachedFilePreviewWrap');
+        const fileExtEl = document.getElementById('inlineAttachedFileExtBadge');
+        const fileNameEl = document.getElementById('inlineAttachedFileNameEl');
+        const fileSizeEl = document.getElementById('inlineAttachedFileSizeEl');
+        if (fileWrapEl) {
+          if (pendingFileAttachment && pendingFileAttachment.fileName) {
+            const st = getUniversalFileBadgeStyle(pendingFileAttachment.fileExt);
+            if (fileExtEl) {
+              fileExtEl.textContent = pendingFileAttachment.fileExt || 'FILE';
+              fileExtEl.className = `px-2 py-0.5 rounded-lg ${st.bg} text-[10px] font-extrabold uppercase shrink-0`;
+            }
+            if (fileNameEl) fileNameEl.textContent = pendingFileAttachment.fileName;
+            if (fileSizeEl) fileSizeEl.textContent = formatUniversalFileSize(pendingFileAttachment.fileSize);
+            fileWrapEl.classList.remove('hidden');
+          } else {
+            fileWrapEl.classList.add('hidden');
+          }
+        }
+
         badgesEl.innerHTML = badges.join('');
-        if (badges.length > 0 || activeImg) {
+        if (badges.length > 0 || activeImg || (pendingFileAttachment && pendingFileAttachment.fileName)) {
           barEl.classList.remove('hidden');
         } else {
           barEl.classList.add('hidden');
@@ -3698,6 +4016,15 @@
           pendingImageDataUrl = existingPost.image && existingPost.image.startsWith('data:')
             ? existingPost.image
             : (mediaCache.get(existingPost.id) && String(mediaCache.get(existingPost.id)).startsWith('data:') ? mediaCache.get(existingPost.id) : '');
+          pendingFileAttachment = (existingPost.fileName || existingPost.fileDataUrl)
+            ? {
+                fileName: existingPost.fileName || 'ไฟล์แนบ',
+                fileSize: existingPost.fileSize || 0,
+                fileMime: existingPost.fileMime || 'application/octet-stream',
+                fileExt: existingPost.fileExt || getUniversalFileExt(existingPost.fileName || '', existingPost.fileMime || ''),
+                fileDataUrl: existingPost.fileDataUrl || getSyncImageForPost(existingPost.id + '__file', null) || ''
+              }
+            : null;
           selectedRating = typeof existingPost.rating === 'number' ? existingPost.rating : 5;
           selectedColor = existingPost.color || 'green';
           if (editBadge) editBadge.classList.remove('hidden');
@@ -3828,6 +4155,7 @@
         const resetInlineComposer = () => {
           editingPostId = null;
           pendingImageDataUrl = '';
+          pendingFileAttachment = null;
           if (inlinePostText) {
             inlinePostText.value = '';
             inlinePostText.style.height = 'auto';
@@ -3842,16 +4170,36 @@
         };
 
         document.getElementById('btnInlineCancelEdit').addEventListener('click', resetInlineComposer);
-        document.getElementById('inlineImageFileInput').addEventListener('change', async e => {
-          const file = e.target.files && e.target.files[0];
-          if (!file) return;
-          try {
-            pendingImageDataUrl = await compressImageFile(file);
-            updateInlineAutoDetectUI();
-            showToast('แนบรูปภาพเรียบร้อยแล้ว');
-          } catch (err) {
-            showToast('ไม่สามารถอ่านไฟล์รูปภาพนี้ได้');
+        const handleUniversalFilesSelected = async (fileList) => {
+          if (!fileList || fileList.length === 0) return;
+          for (const file of Array.from(fileList)) {
+            if (isImageFileObj(file)) {
+              try {
+                pendingImageDataUrl = await compressImageFile(file);
+                showToast('แนบรูปภาพเรียบร้อยแล้ว');
+              } catch (err) {
+                try {
+                  pendingFileAttachment = await readUniversalFileAsAttachment(file);
+                  showToast('แนบไฟล์ ' + file.name + ' เรียบร้อยแล้ว');
+                } catch (e2) {
+                  showToast('ไม่สามารถอ่านไฟล์นี้ได้');
+                }
+              }
+            } else {
+              try {
+                pendingFileAttachment = await readUniversalFileAsAttachment(file);
+                showToast('แนบไฟล์ ' + file.name + ' เรียบร้อยแล้ว');
+              } catch (err) {
+                showToast('ไม่สามารถอ่านไฟล์นี้ได้');
+              }
+            }
           }
+          updateImagePreviewUI();
+          updateInlineAutoDetectUI();
+        };
+
+        document.getElementById('inlineImageFileInput').addEventListener('change', async e => {
+          await handleUniversalFilesSelected(e.target.files);
           e.target.value = '';
         });
 
@@ -3863,6 +4211,14 @@
           }
           updateInlineAutoDetectUI();
         });
+
+        const btnClearInlineFile = document.getElementById('btnClearInlineFile');
+        if (btnClearInlineFile) {
+          btnClearInlineFile.addEventListener('click', () => {
+            pendingFileAttachment = null;
+            updateInlineAutoDetectUI();
+          });
+        }
 
         inlinePostText.addEventListener('input', () => {
           inlinePostText.style.height = 'auto';
@@ -3907,13 +4263,8 @@
         composerCardEl.addEventListener('drop', async e => {
           e.preventDefault();
           composerCardEl.classList.remove('ring-2', 'ring-emerald-400');
-          const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-          if (file && file.type && file.type.startsWith('image/')) {
-            try {
-              pendingImageDataUrl = await compressImageFile(file);
-              updateInlineAutoDetectUI();
-              showToast('🖼️ แนบรูปภาพอัตโนมัติเรียบร้อยแล้ว');
-            } catch (err) {}
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            await handleUniversalFilesSelected(e.dataTransfer.files);
           }
         });
 
@@ -3940,8 +4291,9 @@
             : '';
           const useProxyMode = Boolean(finalWebRunUrl && (rawInput.includes('จอขาว') || rawInput.toLowerCase().includes('proxy')));
 
-          if (!rawInput && !finalImage) {
-            showToast('กรุณาพิมพ์โพสต์ หรือวางลิงก์ / รูปภาพ');
+          const finalFileObj = pendingFileAttachment;
+          if (!rawInput && !finalImage && !finalFileObj) {
+            showToast('กรุณาพิมพ์โพสต์ หรือแนบรูปภาพ / ไฟล์');
             return inlinePostText.focus();
           }
 
@@ -3959,6 +4311,22 @@
               target.image = finalImage || target.image || getSyncImageForPost(target.id, target);
               target.hasImage = Boolean(target.image);
               if (finalImage && window._lastInlinePreview) target.imageInline = window._lastInlinePreview;
+              if (finalFileObj && finalFileObj.fileName) {
+                target.fileName = finalFileObj.fileName;
+                target.fileSize = finalFileObj.fileSize;
+                target.fileMime = finalFileObj.fileMime;
+                target.fileExt = finalFileObj.fileExt;
+                target.fileDataUrl = finalFileObj.fileDataUrl;
+                target.hasFile = true;
+                if (target.fileDataUrl) savePostImageLocallyAllLayers(target.id + '__file', target.fileDataUrl);
+              } else if (!finalFileObj) {
+                target.fileName = '';
+                target.fileSize = 0;
+                target.fileMime = '';
+                target.fileExt = '';
+                target.fileDataUrl = '';
+                target.hasFile = false;
+              }
               target.youtubeUrl = finalYoutubeUrl;
               target.youtubeId = finalYoutubeId;
               target.externalUrl = '';
@@ -3972,6 +4340,9 @@
           } else {
             const newId = 'note-' + nowMs + '-' + Math.random().toString(36).slice(2, 6);
             if (finalImage) savePostImageLocallyAllLayers(newId, finalImage);
+            if (finalFileObj && finalFileObj.fileDataUrl) {
+              savePostImageLocallyAllLayers(newId + '__file', finalFileObj.fileDataUrl);
+            }
             savedPost = {
               id: newId,
               nickname,
@@ -3981,6 +4352,12 @@
               image: finalImage,
               hasImage: Boolean(finalImage),
               imageInline: (finalImage && window._lastInlinePreview) ? window._lastInlinePreview : "",
+              fileName: finalFileObj ? finalFileObj.fileName : '',
+              fileSize: finalFileObj ? finalFileObj.fileSize : 0,
+              fileMime: finalFileObj ? finalFileObj.fileMime : '',
+              fileExt: finalFileObj ? finalFileObj.fileExt : '',
+              fileDataUrl: finalFileObj ? finalFileObj.fileDataUrl : '',
+              hasFile: Boolean(finalFileObj && finalFileObj.fileDataUrl),
               youtubeUrl: finalYoutubeUrl,
               youtubeId: finalYoutubeId,
               externalUrl: '',
@@ -4028,15 +4405,8 @@
         });
 
         document.getElementById('inputImageFile').addEventListener('change', async e => {
-          const file = e.target.files && e.target.files[0];
-          if (!file) return;
-          try {
-            pendingImageDataUrl = await compressImageFile(file);
-            document.getElementById('inputImageUrl').value = '';
-            updateImagePreviewUI();
-          } catch (err) {
-            showToast('ไม่สามารถอ่านไฟล์รูปภาพนี้ได้');
-          }
+          await handleUniversalFilesSelected(e.target.files);
+          e.target.value = '';
         });
 
         document.getElementById('inputImageUrl').addEventListener('input', e => {
@@ -4316,11 +4686,11 @@
           const mode = window._thinkFeedSortMode || 'latest';
           if (btnSortLatest && btnSortPopular) {
             if (mode === 'latest') {
-              btnSortLatest.className = 'px-3 py-1 rounded-full bg-neutral-900 text-white text-xs font-bold transition';
-              btnSortPopular.className = 'px-3 py-1 rounded-full bg-white hover:bg-neutral-100 text-neutral-700 border border-neutral-200 text-xs font-bold transition';
+              btnSortLatest.className = 'h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-neutral-900 text-white border border-neutral-900 text-xs font-bold inline-flex items-center justify-center whitespace-nowrap transition';
+              btnSortPopular.className = 'h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-300 text-xs font-bold inline-flex items-center justify-center whitespace-nowrap transition';
             } else {
-              btnSortPopular.className = 'px-3 py-1 rounded-full bg-orange-500 text-white text-xs font-bold transition';
-              btnSortLatest.className = 'px-3 py-1 rounded-full bg-white hover:bg-neutral-100 text-neutral-700 border border-neutral-200 text-xs font-bold transition';
+              btnSortPopular.className = 'h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-orange-500 text-white border border-orange-500 text-xs font-bold inline-flex items-center justify-center whitespace-nowrap transition';
+              btnSortLatest.className = 'h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-300 text-xs font-bold inline-flex items-center justify-center whitespace-nowrap transition';
             }
           }
         };
