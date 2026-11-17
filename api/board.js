@@ -153,7 +153,8 @@ function mergeRoomData(existing, incoming) {
           angrys: Math.max(lp?.angrys || 0, rp.angrys || 0),
           imageBlobId: rp.imageBlobId || lp?.imageBlobId || '',
           hasImage: Boolean(rp.hasImage || lp?.hasImage || rp.image || lp?.image),
-          image: rp.image || lp?.image || '',
+          imageInline: rp.imageInline || lp?.imageInline || '',
+          image: (rp.image && (!lp?.image || rp.image.length >= lp.image.length)) ? rp.image : (lp?.image || rp.image || rp.imageInline || lp?.imageInline || ''),
           youtubeUrl: rp.youtubeUrl || lp?.youtubeUrl || '',
           youtubeId: rp.youtubeId || lp?.youtubeId || '',
           webRunUrl: rp.webRunUrl || lp?.webRunUrl || '',
@@ -349,7 +350,7 @@ export default async function handler(req, res) {
             sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
                   VALUES (?, ?, ?, ?, ?)
                   ON CONFLICT(post_id) DO UPDATE SET
-                    image_data = CASE WHEN LENGTH(excluded.image_data) > 10 THEN excluded.image_data ELSE think_images.image_data END,
+                    image_data = CASE WHEN LENGTH(excluded.image_data) >= LENGTH(think_images.image_data) THEN excluded.image_data ELSE think_images.image_data END,
                     image_blob_id = CASE WHEN LENGTH(excluded.image_blob_id) > 3 THEN excluded.image_blob_id ELSE think_images.image_blob_id END,
                     updated_at = excluded.updated_at`,
             args: [p.id, room, p.image, p.imageBlobId || '', Date.now()]

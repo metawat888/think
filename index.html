@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#e5e7eb" />
   <title>Think Board</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/gun@0.2020.1240/gun.js"></script>
@@ -31,12 +32,13 @@
       -webkit-text-size-adjust: 100%;
       overscroll-behavior: none;
     }
-    /* Mobile Full-Width Header with Top Safe Clearance so Top Blur Never Covers Header */
+    /* Single-Line Gray Header with Mobile Safe Top Clearance */
     .app-top-header {
       width: 100%;
-      background-color: #ffffff;
-      padding-top: calc(env(safe-area-inset-top, 0px) + 26px);
-      padding-bottom: 10px;
+      background-color: #e5e7eb;
+      background-image: linear-gradient(180deg, #d4d4d8 0%, #e5e7eb 100%);
+      padding-top: max(calc(env(safe-area-inset-top, 0px) + 28px), 34px);
+      padding-bottom: 8px;
     }
     @media (min-width: 768px) {
       .app-top-header {
@@ -293,25 +295,25 @@
     </div>
   </div>
 
-  <!-- FIXED APP HEADER BAR (Full-Width Mobile Safe Top Clearance | Never Covered by Blur | Zoom Locked) -->
-  <header class="app-top-header shrink-0 relative z-40 bg-white border-b border-neutral-200 px-3 sm:px-6 shadow-xs">
-    <div class="w-full flex flex-wrap items-center justify-between gap-y-2 gap-x-2 sm:gap-x-3">
+  <!-- FIXED SINGLE-LINE GRAY HEADER BAR (ส่วนหัวบรรทัดเดียว สีเทา | ไม่เลื่อนตาม) -->
+  <header class="app-top-header shrink-0 relative z-40 bg-neutral-200 border-b border-neutral-300 px-2.5 sm:px-6 shadow-xs">
+    <div class="w-full flex flex-nowrap items-center justify-between gap-1.5 sm:gap-3">
 
       <!-- Left: Bare Two-People Silhouette (No Box) + Think Board -->
-      <div class="flex items-center gap-2 shrink-0">
-        <svg class="w-7 h-7 sm:w-8 sm:h-8 text-neutral-900 shrink-0" viewBox="0 0 64 56" fill="currentColor" aria-hidden="true">
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-neutral-900 shrink-0" viewBox="0 0 64 56" fill="currentColor" aria-hidden="true">
           <circle cx="23" cy="14" r="10" />
           <path d="M5 48 C5 33 13 26 23 26 C33 26 41 33 41 48 Z" />
           <circle cx="46" cy="22" r="7.5" />
           <path d="M33 48 C33 37 39 32 46 32 C53 32 59 37 59 48 Z" />
         </svg>
-        <h1 class="font-bold text-base sm:text-lg text-neutral-900 tracking-tight whitespace-nowrap">Think Board</h1>
+        <h1 class="font-bold text-sm sm:text-lg text-neutral-900 tracking-tight whitespace-nowrap">Think Board</h1>
       </div>
 
-      <!-- Center: Smart Search Box & Quick Sort Toggle (100% Full Width on Mobile, Centered on Desktop) -->
-      <div id="smartFeedToolbar" class="flex items-center gap-1.5 basis-full md:basis-auto md:flex-1 md:max-w-xl mx-0 md:mx-3 order-3 md:order-2 w-full">
+      <!-- Center: Smart Search Box & Quick Sort Toggle (Strictly Single Line) -->
+      <div id="smartFeedToolbar" class="flex items-center gap-1 sm:gap-1.5 flex-1 min-w-0 max-w-xl mx-1 sm:mx-3">
         <div class="relative flex-1 min-w-0">
-          <svg class="w-3.5 h-3.5 text-neutral-900 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+          <svg class="w-3.5 h-3.5 text-neutral-900 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
             <circle cx="11" cy="11" r="7" />
             <path stroke-linecap="round" d="M20 20l-3.5-3.5" />
           </svg>
@@ -319,35 +321,35 @@
             id="inputSmartSearch"
             type="text"
             placeholder="ค้นหาชื่อหรือข้อความ..."
-            class="w-full pl-8 pr-7 py-1.5 rounded-full bg-neutral-100 focus:bg-white border border-neutral-200 focus:border-neutral-900 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none transition"
+            class="w-full pl-7 sm:pl-8 pr-6 py-1 sm:py-1.5 rounded-full bg-white border border-neutral-300 focus:border-neutral-900 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none transition"
           />
-          <button id="btnClearSmartSearch" type="button" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-900 text-xs font-bold">✕</button>
+          <button id="btnClearSmartSearch" type="button" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-900 text-xs font-bold">✕</button>
         </div>
 
-        <div class="flex items-center gap-1 shrink-0">
-          <button id="btnSortLatest" type="button" class="px-2.5 py-1.5 rounded-full bg-neutral-900 text-white text-[11px] font-bold transition" title="เรียงตามโพสต์ล่าสุด">
+        <div class="hidden sm:flex items-center gap-1 shrink-0">
+          <button id="btnSortLatest" type="button" class="px-2.5 py-1.5 rounded-full bg-neutral-900 text-white text-[11px] font-bold whitespace-nowrap transition" title="เรียงตามโพสต์ล่าสุด">
             🕒 ล่าสุด
           </button>
-          <button id="btnSortPopular" type="button" class="px-2.5 py-1.5 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border border-neutral-200 text-[11px] font-bold transition" title="เรียงตามความนิยม">
+          <button id="btnSortPopular" type="button" class="px-2.5 py-1.5 rounded-full bg-white hover:bg-neutral-100 text-neutral-700 border border-neutral-300 text-[11px] font-bold whitespace-nowrap transition" title="เรียงตามความนิยม">
             🔥 ยอดนิยม
           </button>
-          <span id="smartFeedCountBadge" class="hidden lg:inline-block px-2.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-600 text-[11px] font-bold">0 โพสต์</span>
+          <span id="smartFeedCountBadge" class="hidden lg:inline-block px-2.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-600 text-[11px] font-bold whitespace-nowrap">0 โพสต์</span>
         </div>
       </div>
 
       <!-- Right: Board Code (Truncated with ... if long) + User Name + Out Button -->
-      <div class="flex items-center justify-end gap-1.5 sm:gap-2 min-w-0 ml-auto md:ml-0 order-2 md:order-3">
-        <div id="headerBoardCodePill" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-orange-50 border border-orange-200 text-xs sm:text-sm font-bold text-orange-600 flex items-center gap-1 min-w-0 max-w-[105px] sm:max-w-[175px]" title="รหัส Board">
-          <span class="text-neutral-500 font-semibold shrink-0">Board:</span>
+      <div class="flex items-center justify-end gap-1 sm:gap-2 min-w-0 shrink-0">
+        <div id="headerBoardCodePill" class="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-white border border-neutral-300 text-xs sm:text-sm font-bold text-orange-600 flex items-center gap-1 min-w-0 max-w-[88px] sm:max-w-[175px]" title="รหัส Board">
+          <span class="text-neutral-600 font-semibold shrink-0">Board:</span>
           <span id="headerBoardCodeLabel" class="truncate block">-</span>
         </div>
 
-        <div id="headerUserNamePill" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-neutral-100 border border-neutral-200 text-xs sm:text-sm font-bold text-neutral-900 flex items-center min-w-0 max-w-[85px] sm:max-w-[150px]" title="ชื่อผู้ใช้งาน">
+        <div id="headerUserNamePill" class="px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-white border border-neutral-300 text-xs sm:text-sm font-bold text-neutral-900 flex items-center min-w-0 max-w-[64px] sm:max-w-[150px]" title="ชื่อผู้ใช้งาน">
           <span id="headerUserNameLabel" class="truncate block">ผู้ใช้งาน</span>
         </div>
 
-        <button id="btnOutBoard" type="button" class="px-3 sm:px-3.5 py-1.5 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white text-xs sm:text-sm font-bold flex items-center gap-1 shrink-0 transition" title="ออกจาก Board">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+        <button id="btnOutBoard" type="button" class="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white text-xs sm:text-sm font-bold flex items-center gap-1 shrink-0 transition" title="ออกจาก Board">
+          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
           </svg>
           <span>Out</span>
@@ -810,17 +812,25 @@
       const LS_SINGLE_IMG_PREFIX = 'THINK_IMG_PERMANENT_';
 
       function savePostImageLocallyAllLayers(postId, imgData) {
-        if (!postId || !imgData || typeof imgData !== 'string' || imgData.length < 10) return;
+        if (!postId || !imgData || typeof imgData !== 'string' || imgData.length < 15) return;
         const sId = String(postId);
+        const existingMem = mediaCache.get(sId) || '';
+        // Never overwrite a full-res data:image in cache with a shorter inline thumbnail!
+        if (existingMem && existingMem.startsWith('data:') && imgData.startsWith('data:') && imgData.length < existingMem.length) {
+          return;
+        }
         mediaCache.set(sId, imgData);
         try {
-          localStorage.setItem(LS_SINGLE_IMG_PREFIX + sId, imgData);
+          const existingLs = localStorage.getItem(LS_SINGLE_IMG_PREFIX + sId) || '';
+          if (!existingLs || imgData.length >= existingLs.length || !existingLs.startsWith('data:')) {
+            localStorage.setItem(LS_SINGLE_IMG_PREFIX + sId, imgData);
+          }
         } catch (e) {}
         if (window.caches) {
           caches.open(IMMORTAL_CACHE_NAME).then(cache => {
             const urlKey = 'https://thinkboard.local/image/' + encodeURIComponent(sId);
             cache.put(urlKey, new Response(imgData, {
-              headers: { 'Content-Type': 'text/plain', 'Cache-Control': 'max-age=315360000' }
+              headers: { 'Content-Type': 'text/plain', 'Cache-Control': 'immutable, max-age=315360000' }
             })).catch(() => {});
           }).catch(() => {});
         }
@@ -836,24 +846,25 @@
       function getSyncImageForPost(postId, postObj) {
         if (!postId) return (postObj && postObj.image) || '';
         const sId = String(postId);
-        if (postObj && postObj.image && postObj.image.length > 10) {
-          mediaCache.set(sId, postObj.image);
-          return postObj.image;
-        }
+        let bestImg = (postObj && postObj.image && postObj.image.length > 15) ? postObj.image : '';
         if (mediaCache.has(sId)) {
-          const cached = mediaCache.get(sId);
-          if (postObj) postObj.image = cached;
-          return cached;
+          const cached = mediaCache.get(sId) || '';
+          if (cached.length > bestImg.length) bestImg = cached;
         }
         try {
-          const fromLs = localStorage.getItem(LS_SINGLE_IMG_PREFIX + sId);
-          if (fromLs && fromLs.length > 10) {
-            mediaCache.set(sId, fromLs);
-            if (postObj) postObj.image = fromLs;
-            return fromLs;
+          const fromLs = localStorage.getItem(LS_SINGLE_IMG_PREFIX + sId) || '';
+          if (fromLs.length > bestImg.length) {
+            bestImg = fromLs;
           }
         } catch (e) {}
-        return '';
+        if (!bestImg && postObj && postObj.imageInline && postObj.imageInline.length > 15) {
+          bestImg = postObj.imageInline;
+        }
+        if (bestImg) {
+          mediaCache.set(sId, bestImg);
+          if (postObj) postObj.image = bestImg;
+        }
+        return bestImg;
       }
 
       async function loadAsyncImageForPost(postId) {
@@ -1114,12 +1125,12 @@
               args: [post.id, cleanRoom, JSON.stringify(post), post.updatedAtMs || updatedAt]
             }
           ];
-          if (post.image && post.image.length > 10) {
+          if (post.image && post.image.length > 15) {
             stmts.push({
               sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
                     VALUES (?, ?, ?, ?, ?)
                     ON CONFLICT(post_id) DO UPDATE SET
-                      image_data = CASE WHEN LENGTH(excluded.image_data) > 10 THEN excluded.image_data ELSE think_images.image_data END,
+                      image_data = CASE WHEN LENGTH(excluded.image_data) >= LENGTH(think_images.image_data) THEN excluded.image_data ELSE think_images.image_data END,
                       image_blob_id = CASE WHEN LENGTH(excluded.image_blob_id) > 3 THEN excluded.image_blob_id ELSE think_images.image_blob_id END,
                       updated_at = excluded.updated_at`,
               args: [post.id, cleanRoom, post.image, post.imageBlobId || '', updatedAt]
@@ -1747,8 +1758,75 @@
         return 'tbimg_' + clean.slice(-28);
       }
 
+      function getNtfyImageTopicForPost(postId) {
+        const clean = String(postId || '').replace(/[^a-zA-Z0-9_-]/g, '');
+        return 'cb_v5_img_' + clean.slice(-36);
+      }
+
+      const uploadedNtfyImgSet = new Set();
+
+      async function pushFullImageToNtfyChunks(post) {
+        if (!post || !post.id || !post.image || !post.image.startsWith('data:')) return;
+        const sId = String(post.id);
+        if (uploadedNtfyImgSet.has(sId)) return;
+        uploadedNtfyImgSet.add(sId);
+        try {
+          const topic = getNtfyImageTopicForPost(sId);
+          const raw = post.image;
+          const chunkSize = 2600;
+          const total = Math.ceil(raw.length / chunkSize);
+          if (total > 24) return;
+          for (let i = 0; i < total; i++) {
+            const slice = raw.slice(i * chunkSize, (i + 1) * chunkSize);
+            await fetch(`https://ntfy.sh/${topic}`, {
+              method: 'POST',
+              body: JSON.stringify({ id: sId, i, n: total, d: slice })
+            });
+          }
+        } catch (e) {
+          uploadedNtfyImgSet.delete(sId);
+        }
+      }
+
+      async function pullFullImageFromNtfyChunks(postId) {
+        if (!postId || isPermanentlyDeleted(postId)) return '';
+        const sId = String(postId);
+        try {
+          const topic = getNtfyImageTopicForPost(sId);
+          const res = await fetch(`https://ntfy.sh/${topic}/json?poll=1&since=all`);
+          if (!res.ok) return '';
+          const text = await res.text();
+          const lines = text.split('\n').filter(Boolean);
+          let total = 0;
+          const parts = new Map();
+          for (const line of lines) {
+            try {
+              const outer = JSON.parse(line);
+              if (outer && outer.event === 'message' && outer.message) {
+                const pkt = JSON.parse(outer.message);
+                if (pkt && pkt.id === sId && typeof pkt.i === 'number' && typeof pkt.n === 'number' && pkt.d) {
+                  total = pkt.n;
+                  parts.set(pkt.i, pkt.d);
+                }
+              }
+            } catch (err) {}
+          }
+          if (total > 0 && parts.size === total) {
+            let full = '';
+            for (let i = 0; i < total; i++) full += (parts.get(i) || '');
+            if (full.startsWith('data:image')) {
+              savePostImageLocallyAllLayers(sId, full);
+              return full;
+            }
+          }
+        } catch (e) {}
+        return '';
+      }
+
       async function uploadPostImageToCloud(post) {
         if (!post || !post.id || !post.image || !post.image.startsWith('data:')) return '';
+        // Always push full-res image to ntfy chunked stream (no CORS header issues!)
+        pushFullImageToNtfyChunks(post);
         if (post.imageBlobId) return post.imageBlobId;
         try {
           const createRes = await fetch('https://jsonblob.com/api/jsonBlob', {
@@ -1821,6 +1899,20 @@
             }
           }
 
+          // 2.5 Check ntfy.sh Chunked Full-Res Image Stream
+          const ntfyChunkedImg = await pullFullImageFromNtfyChunks(sId);
+          if (ntfyChunkedImg && ntfyChunkedImg.length > 20 && !isPermanentlyDeleted(sId)) {
+            savePostImageLocallyAllLayers(sId, ntfyChunkedImg);
+            post.image = ntfyChunkedImg;
+            post.hasImage = true;
+            const target = state.posts.find(p => p.id === sId);
+            if (target) target.image = ntfyChunkedImg;
+            saveLocalOnly();
+            renderBoard();
+            if (activeDetailPostId === sId) renderNoteDetailModal(sId);
+            return true;
+          }
+
           // 3. Check Cloud Image Blob (JSONBlob + KeyValue Registry)
           let blobId = post.imageBlobId || '';
           if (!blobId) {
@@ -1888,7 +1980,10 @@
           if (!clone.image && mediaCache.has(sId)) clone.image = mediaCache.get(sId);
           target.posts.push(clone);
           changed = true;
-          if (!clone.image && (clone.imageBlobId || clone.hasImage)) {
+          if (!clone.image && clone.imageInline) {
+            clone.image = clone.imageInline;
+          }
+          if ((!clone.image || (clone.image.startsWith('data:') && clone.image.length < 3200)) && (clone.imageBlobId || clone.hasImage)) {
             fetchMissingPostImageFromCloud(clone);
           }
         } else {
@@ -1896,9 +1991,15 @@
             if ((rPost[rk] || 0) > (lPost[rk] || 0)) { lPost[rk] = rPost[rk]; changed = true; }
           });
 
-          if (!lPost.image && rPost.image) {
+          if (rPost.imageInline && !lPost.imageInline) {
+            lPost.imageInline = rPost.imageInline;
+          }
+          if (rPost.image && (!lPost.image || rPost.image.length > lPost.image.length)) {
             lPost.image = rPost.image;
-            mediaCache.set(sId, rPost.image);
+            savePostImageLocallyAllLayers(sId, rPost.image);
+            changed = true;
+          } else if (!lPost.image && lPost.imageInline) {
+            lPost.image = lPost.imageInline;
             changed = true;
           }
           if (!lPost.imageBlobId && rPost.imageBlobId) {
@@ -1918,9 +2019,10 @@
             if (typeof rPost.rating === 'number') lPost.rating = rPost.rating;
             if (rPost.text !== undefined) lPost.text = rPost.text;
             lPost.color = rPost.color || lPost.color;
-            if (rPost.image) {
+            // NEVER overwrite a longer full-res image with a shorter thumbnail or empty string!
+            if (rPost.image && (!lPost.image || rPost.image.length >= lPost.image.length)) {
               lPost.image = rPost.image;
-              mediaCache.set(sId, rPost.image);
+              savePostImageLocallyAllLayers(sId, rPost.image);
             }
             if (rPost.imageBlobId) lPost.imageBlobId = rPost.imageBlobId;
             if (rPost.youtubeUrl) lPost.youtubeUrl = rPost.youtubeUrl;
@@ -1932,7 +2034,7 @@
             changed = true;
           }
 
-          if (!lPost.image && (lPost.imageBlobId || rPost.imageBlobId || lPost.hasImage || rPost.hasImage)) {
+          if ((!lPost.image || (lPost.image.startsWith('data:') && lPost.image.length < 3200)) && (lPost.imageBlobId || rPost.imageBlobId || lPost.hasImage || rPost.hasImage)) {
             fetchMissingPostImageFromCloud(lPost);
           }
 
@@ -2531,14 +2633,18 @@
           blobId = await pushToJsonBlob();
         } catch (e) {}
 
-        // 4. Push real-time notification via ntfy.sh (includes imageBlobId & hasImage so other devices fetch the image immediately if > 3KB)
+        // 4. Push real-time notification via ntfy.sh (NEVER leaves lightPost without an image — embeds inline preview <= 2.5KB while full-res chunks stream in parallel!)
         if (changedPost && changedPost.id && !isPermanentlyDeleted(changedPost.id)) {
           try {
             const lightPost = Object.assign({}, changedPost);
             if (lightPost.image && lightPost.image.startsWith('data:')) {
               lightPost.hasImage = true;
-              if (lightPost.image.length > 3000) {
-                delete lightPost.image;
+              if (lightPost.image.length > 2800) {
+                if (changedPost.imageInline && changedPost.imageInline.length <= 2600) {
+                  lightPost.image = changedPost.imageInline;
+                } else {
+                  delete lightPost.image;
+                }
               }
             }
             await fetch(`https://ntfy.sh/${topic}`, {
@@ -2822,10 +2928,30 @@
               ctx.fillStyle = '#ffffff';
               ctx.fillRect(0, 0, w, h);
               ctx.drawImage(img, 0, 0, w, h);
-              let dataUrl = canvas.toDataURL('image/jpeg', quality);
-              if (dataUrl.length > 42000) {
-                dataUrl = canvas.toDataURL('image/jpeg', 0.56);
+              let dataUrl = canvas.toDataURL('image/webp', 0.76);
+              if (!dataUrl.startsWith('data:image/webp') || dataUrl.length > 36000) {
+                dataUrl = canvas.toDataURL('image/jpeg', 0.68);
               }
+              if (dataUrl.length > 34000) {
+                dataUrl = canvas.toDataURL('image/jpeg', 0.54);
+              }
+              // Generate an indestructible <= 2.4KB inline preview so even 4KB ntfy packets carry the image inline!
+              try {
+                const tc = document.createElement('canvas');
+                const tw = Math.min(140, w);
+                const th = Math.max(1, Math.round((h * tw) / w));
+                tc.width = tw;
+                tc.height = th;
+                const tctx = tc.getContext('2d');
+                tctx.fillStyle = '#ffffff';
+                tctx.fillRect(0, 0, tw, th);
+                tctx.drawImage(img, 0, 0, tw, th);
+                let inlineUrl = tc.toDataURL('image/webp', 0.48);
+                if (!inlineUrl.startsWith('data:image/webp') || inlineUrl.length > 2400) {
+                  inlineUrl = tc.toDataURL('image/jpeg', 0.42);
+                }
+                window._lastInlinePreview = inlineUrl.length <= 2500 ? inlineUrl : '';
+              } catch (e) {}
               resolve(dataUrl);
             };
             img.onerror = reject;
@@ -3832,6 +3958,7 @@
               target.color = selectedColor;
               target.image = finalImage || target.image || getSyncImageForPost(target.id, target);
               target.hasImage = Boolean(target.image);
+              if (finalImage && window._lastInlinePreview) target.imageInline = window._lastInlinePreview;
               target.youtubeUrl = finalYoutubeUrl;
               target.youtubeId = finalYoutubeId;
               target.externalUrl = '';
@@ -3853,6 +3980,7 @@
               text: cleanedText,
               image: finalImage,
               hasImage: Boolean(finalImage),
+              imageInline: (finalImage && window._lastInlinePreview) ? window._lastInlinePreview : "",
               youtubeUrl: finalYoutubeUrl,
               youtubeId: finalYoutubeId,
               externalUrl: '',
