@@ -85,26 +85,50 @@
     }
     .animate-pop { animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
+    /* Tactile Press-Down Effect (Never Expands > 1.0; Sinks Down Like Pressing a Physical Button) */
     @keyframes reactionBounce {
-      0% { transform: scale(1); }
-      35% { transform: scale(1.35) rotate(-8deg); }
-      70% { transform: scale(0.94) rotate(4deg); }
-      100% { transform: scale(1) rotate(0deg); }
+      0% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 1px 2px rgba(23, 23, 23, 0.08);
+      }
+      40% {
+        transform: translateY(3px) scale(0.92);
+        box-shadow: inset 0 2.5px 6px rgba(23, 23, 23, 0.28);
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 1px 2px rgba(23, 23, 23, 0.05);
+      }
     }
-    .animate-reaction-pop { animation: reactionBounce 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .animate-reaction-pop { animation: reactionBounce 0.24s cubic-bezier(0.22, 1, 0.36, 1); }
+
+    .btn-feeling-react {
+      transform: translateY(0) scale(1);
+      box-shadow: 0 1.5px 0 rgba(23, 23, 23, 0.12);
+      transition: background-color 0.12s ease, color 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    .btn-feeling-react:active {
+      transform: translateY(2.5px) scale(0.93);
+      box-shadow: inset 0 2px 5px rgba(23, 23, 23, 0.28);
+    }
 
     @keyframes floatUpParticle {
-      0% { opacity: 1; transform: translate(0, 0) scale(0.6); }
-      45% { opacity: 1; transform: translate(var(--tx-mid, 10px), -45px) scale(1.3) rotate(var(--rot, 10deg)); }
-      100% { opacity: 0; transform: translate(var(--tx-end, -12px), -105px) scale(0.85) rotate(var(--rot-end, -12deg)); }
+      0% { opacity: 1; transform: translate(0, 0) scale(0.85); }
+      45% { opacity: 0.95; transform: translate(var(--tx-mid, 8px), -42px) scale(1) rotate(var(--rot, 6deg)); }
+      100% { opacity: 0; transform: translate(var(--tx-end, -10px), -92px) scale(0.75) rotate(var(--rot-end, -8deg)); }
     }
     .reaction-particle {
       position: fixed;
       pointer-events: none;
       z-index: 9999;
-      font-size: 1.4rem;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #171717;
       user-select: none;
-      animation: floatUpParticle 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: floatUpParticle 0.78s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     @keyframes ringRipple {
       0% { transform: scale(0.5); opacity: 0.85; }
@@ -135,14 +159,14 @@
         0 4px 12px -2px rgba(23, 23, 23, 0.04);
     }
     .fb-action-btn {
-      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: background-color 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease;
     }
     .fb-action-btn:hover {
       background: #f5f5f5;
-      transform: translateY(-1px);
     }
     .fb-action-btn:active {
-      transform: scale(0.96);
+      transform: translateY(2.5px) scale(0.94);
+      box-shadow: inset 0 2px 4px rgba(23, 23, 23, 0.2);
     }
     .luxury-modal-surface {
       background: #ffffff;
@@ -231,9 +255,9 @@
     </div>
   </div>
 
-  <!-- FIXED APP HEADER BAR (Never Scrolls With Board | Truncates Long Board Code with ...) -->
-  <header class="shrink-0 relative z-30 bg-white border-b border-neutral-200 px-4 sm:px-7 py-2.5 shadow-sm">
-    <div class="w-full flex items-center justify-between gap-2 sm:gap-3">
+  <!-- FIXED APP HEADER BAR (Logo Left | Smart Search & Sort Center | Board Code, Name & Out Right) -->
+  <header class="shrink-0 relative z-30 bg-white border-b border-neutral-200 px-3 sm:px-6 py-2.5 shadow-sm">
+    <div class="w-full flex flex-wrap items-center justify-between gap-2 sm:gap-3">
 
       <!-- Left: Bare Two-People Silhouette (No Box) + Think Board -->
       <div class="flex items-center gap-2.5 shrink-0">
@@ -246,14 +270,41 @@
         <h1 class="font-bold text-base sm:text-lg text-neutral-900 tracking-tight">Think Board</h1>
       </div>
 
+      <!-- Center: Smart Search Box & Quick Sort Toggle right in the Top Header -->
+      <div id="smartFeedToolbar" class="flex items-center gap-1.5 flex-1 max-w-xl mx-1 sm:mx-3 order-3 md:order-2 w-full md:w-auto">
+        <div class="relative flex-1 min-w-[140px]">
+          <svg class="w-3.5 h-3.5 text-neutral-900 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7" />
+            <path stroke-linecap="round" d="M20 20l-3.5-3.5" />
+          </svg>
+          <input
+            id="inputSmartSearch"
+            type="text"
+            placeholder="ค้นหาชื่อหรือข้อความ..."
+            class="w-full pl-8 pr-7 py-1.5 rounded-full bg-neutral-100 focus:bg-white border border-neutral-200 focus:border-neutral-900 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none transition"
+          />
+          <button id="btnClearSmartSearch" type="button" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-900 text-xs font-bold">✕</button>
+        </div>
+
+        <div class="flex items-center gap-1 shrink-0">
+          <button id="btnSortLatest" type="button" class="px-2.5 py-1.5 rounded-full bg-neutral-900 text-white text-[11px] font-bold transition" title="เรียงตามโพสต์ล่าสุด">
+            🕒 ล่าสุด
+          </button>
+          <button id="btnSortPopular" type="button" class="px-2.5 py-1.5 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border border-neutral-200 text-[11px] font-bold transition" title="เรียงตามความนิยม">
+            🔥 ยอดนิยม
+          </button>
+          <span id="smartFeedCountBadge" class="hidden lg:inline-block px-2.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-600 text-[11px] font-bold">0 โพสต์</span>
+        </div>
+      </div>
+
       <!-- Right: Board Code (Truncated with ... if long) + User Name + Out Button -->
-      <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
-        <div id="headerBoardCodePill" class="px-3 py-1.5 rounded-xl bg-orange-50 border border-orange-200 text-xs sm:text-sm font-bold text-orange-600 flex items-center gap-1 min-w-0 max-w-[135px] sm:max-w-[190px]" title="รหัส Board">
+      <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 order-2 md:order-3">
+        <div id="headerBoardCodePill" class="px-3 py-1.5 rounded-xl bg-orange-50 border border-orange-200 text-xs sm:text-sm font-bold text-orange-600 flex items-center gap-1 min-w-0 max-w-[125px] sm:max-w-[175px]" title="รหัส Board">
           <span class="text-neutral-500 font-semibold shrink-0">Board:</span>
           <span id="headerBoardCodeLabel" class="truncate block">-</span>
         </div>
 
-        <div id="headerUserNamePill" class="px-3 py-1.5 rounded-xl bg-neutral-100 border border-neutral-200 text-xs sm:text-sm font-bold text-neutral-900 flex items-center min-w-0 max-w-[110px] sm:max-w-[165px]" title="ชื่อผู้ใช้งาน">
+        <div id="headerUserNamePill" class="px-3 py-1.5 rounded-xl bg-neutral-100 border border-neutral-200 text-xs sm:text-sm font-bold text-neutral-900 flex items-center min-w-0 max-w-[100px] sm:max-w-[150px]" title="ชื่อผู้ใช้งาน">
           <span id="headerUserNameLabel" class="truncate block">ผู้ใช้งาน</span>
         </div>
 
@@ -288,11 +339,11 @@
           </div>
 
           <div id="inlineStarGroup" class="flex items-center gap-0.5 bg-neutral-100 border border-neutral-200 px-2.5 py-1 rounded-full ml-auto" title="ระดับความพึงพอใจ">
-            <button type="button" data-star="1" class="star-btn text-sm hover:scale-125 transition">⭐</button>
-            <button type="button" data-star="2" class="star-btn text-sm hover:scale-125 transition">⭐</button>
-            <button type="button" data-star="3" class="star-btn text-sm hover:scale-125 transition">⭐</button>
-            <button type="button" data-star="4" class="star-btn text-sm hover:scale-125 transition">⭐</button>
-            <button type="button" data-star="5" class="star-btn text-sm hover:scale-125 transition">⭐</button>
+            <button type="button" data-star="1" class="star-btn text-sm active:translate-y-0.5 active:scale-90 transition">⭐</button>
+            <button type="button" data-star="2" class="star-btn text-sm active:translate-y-0.5 active:scale-90 transition">⭐</button>
+            <button type="button" data-star="3" class="star-btn text-sm active:translate-y-0.5 active:scale-90 transition">⭐</button>
+            <button type="button" data-star="4" class="star-btn text-sm active:translate-y-0.5 active:scale-90 transition">⭐</button>
+            <button type="button" data-star="5" class="star-btn text-sm active:translate-y-0.5 active:scale-90 transition">⭐</button>
           </div>
         </div>
 
@@ -359,6 +410,10 @@
           <button type="button" data-color="blue" class="color-swatch">ฟ้า</button>
           <button type="button" data-color="orange" class="color-swatch">ส้ม</button>
           <button type="button" data-color="gray" class="color-swatch">เทา</button>
+          <button type="button" onclick="document.getElementById('btnDetailLike').click()">👍 ถูกใจ 0</button>
+          <button type="button" onclick="document.getElementById('btnDetailHeart').click()">❤️ หัวใจ 0</button>
+          <button type="button" onclick="document.getElementById('btnDetailLike').click()">ถูกใจ 0</button>
+          <button type="button" onclick="document.getElementById('btnDetailHeart').click()">หัวใจ 0</button>
         </div>
       </div>
     </section>
@@ -369,27 +424,7 @@
       <button id="btnEmptyStateAdd" type="button">+ เพิ่มความคิดเห็น</button>
     </div>
 
-    <!-- Smart Feed Filter & Search Bar -->
-    <div id="smartFeedToolbar" class="w-full px-3 sm:px-6 pt-3 pb-1 flex flex-wrap items-center justify-between gap-2">
-      <div class="flex items-center gap-1.5">
-        <button id="btnSortLatest" type="button" class="px-3 py-1 rounded-full bg-neutral-900 text-white text-xs font-bold transition">
-          🕒 ล่าสุด
-        </button>
-        <button id="btnSortPopular" type="button" class="px-3 py-1 rounded-full bg-white hover:bg-neutral-100 text-neutral-700 border border-neutral-200 text-xs font-bold transition">
-          🔥 ยอดนิยม
-        </button>
-        <span id="smartFeedCountBadge" class="ml-1 px-2.5 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-orange-600 text-[11px] font-bold">0 โพสต์</span>
-      </div>
 
-      <div class="relative w-full sm:w-64">
-        <input
-          id="inputSmartSearch"
-          type="text"
-          placeholder="🔍 ค้นหาชื่อหรือข้อความในบอร์ด..."
-          class="w-full px-3.5 py-1.5 rounded-full bg-white border border-neutral-200 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-orange-500 shadow-sm transition"
-        />
-      </div>
-    </div>
 
     <!-- Auto-Arranged Responsive Social Feed Grid -->
     <div id="notesLayer" class="relative w-full min-h-[calc(100vh-230px)] px-3 sm:px-6 pt-3 pb-28 notes-grid-mode"></div>
@@ -631,20 +666,16 @@
 
         <div id="detailTextContent" class="text-sm sm:text-base text-slate-800 whitespace-pre-line leading-relaxed select-text"></div>
 
-        <div class="flex items-center justify-between gap-2 pt-3 border-t border-slate-100">
-          <div class="flex items-center gap-2">
-            <button id="btnDetailLike" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold transition">
-              <span>👍</span>
-              <span>ถูกใจ</span>
-              <span id="detailLikeCount" class="px-1.5 py-0.5 rounded-full bg-sky-600 text-white text-[11px]">0</span>
-            </button>
-            <button id="btnDetailHeart" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 text-xs font-bold transition">
-              <span>❤️</span>
-              <span>หัวใจ</span>
-              <span id="detailHeartCount" class="px-1.5 py-0.5 rounded-full bg-orange-500 text-white text-[11px]">0</span>
-            </button>
-          </div>
-          <span id="detailCommentsCounter" class="text-xs font-semibold text-slate-500">0 ความคิดเห็น</span>
+        <div class="flex flex-wrap items-center justify-start gap-2 pt-3 border-t border-neutral-200">
+          <button id="btnDetailLike" type="button" title="ถูกใจ" aria-label="ถูกใจ" class="btn-feeling-react inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-100 hover:bg-neutral-900 text-neutral-900 hover:text-white border border-neutral-200 text-xs font-bold">
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M2 20h2c.55 0 1-.45 1-1v-9c0-.55-.45-1-1-1H2v11zm19.83-7.12c.11-.25.17-.52.17-.8V11c0-1.1-.9-2-2-2h-5.5l.92-4.65c.05-.22.02-.46-.08-.66-.23-.45-.52-.86-.88-1.22L14 2 7.59 8.41C7.21 8.79 7 9.3 7 9.83v7.84C7 18.95 8.05 20 9.34 20h8.11c.7 0 1.36-.37 1.72-.97l2.66-6.15z"/></svg>
+            <span id="detailLikeCount" class="px-1.5 py-0.2 rounded-full bg-white text-neutral-900 border border-neutral-200 text-[11px] font-extrabold">0</span>
+          </button>
+          <button id="btnDetailHeart" type="button" title="หัวใจ" aria-label="หัวใจ" class="btn-feeling-react inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-100 hover:bg-neutral-900 text-neutral-900 hover:text-white border border-neutral-200 text-xs font-bold">
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span id="detailHeartCount" class="px-1.5 py-0.2 rounded-full bg-white text-neutral-900 border border-neutral-200 text-[11px] font-extrabold">0</span>
+          </button>
+          <span id="detailCommentsCounter" class="ml-auto text-xs font-semibold text-neutral-500">0 ความคิดเห็น</span>
         </div>
 
         <div class="space-y-2.5 pt-2" id="detailCommentsList"></div>
@@ -1593,8 +1624,9 @@
             fetchMissingPostImageFromCloud(clone);
           }
         } else {
-          if ((rPost.likes || 0) > (lPost.likes || 0)) { lPost.likes = rPost.likes; changed = true; }
-          if ((rPost.hearts || 0) > (lPost.hearts || 0)) { lPost.hearts = rPost.hearts; changed = true; }
+          ['likes', 'hearts', 'cares', 'hahas', 'wows', 'sads', 'angrys'].forEach(rk => {
+            if ((rPost[rk] || 0) > (lPost[rk] || 0)) { lPost[rk] = rPost[rk]; changed = true; }
+          });
 
           if (!lPost.image && rPost.image) {
             lPost.image = rPost.image;
@@ -2388,6 +2420,24 @@
         if (statusLabelEl) statusLabelEl.textContent = `🟢 กำลังรันเว็บไซต์ • คำสั่ง: ${autoCmdText || 'Auto Run'}`;
       }
 
+      function getReactionIconSvgHtml(btnEl, type) {
+        if (btnEl) {
+          const svgInBtn = btnEl.querySelector('svg');
+          if (svgInBtn) {
+            const clone = svgInBtn.cloneNode(true);
+            clone.setAttribute('class', 'w-5 h-5 fill-current text-neutral-900');
+            return clone.outerHTML;
+          }
+        }
+        const keyMap = { like: 'likes', heart: 'hearts' };
+        const lookupKey = keyMap[type] || type || 'likes';
+        const found = (typeof FEELING_DEFS !== 'undefined' ? FEELING_DEFS : []).find(f => f.key === lookupKey);
+        if (found && found.svg) {
+          return found.svg.replace('w-4 h-4', 'w-5 h-5').replace('group-hover/rbtn:text-white', '');
+        }
+        return '<svg class="w-5 h-5 fill-current text-neutral-900" viewBox="0 0 24 24"><path d="M2 20h2c.55 0 1-.45 1-1v-9c0-.55-.45-1-1-1H2v11zm19.83-7.12c.11-.25.17-.52.17-.8V11c0-1.1-.9-2-2-2h-5.5l.92-4.65c.05-.22.02-.46-.08-.66-.23-.45-.52-.86-.88-1.22L14 2 7.59 8.41C7.21 8.79 7 9.3 7 9.83v7.84C7 18.95 8.05 20 9.34 20h8.11c.7 0 1.36-.37 1.72-.97l2.66-6.15z"/></svg>';
+      }
+
       function triggerReactionAnimation(btnEl, type) {
         if (!btnEl) return;
         btnEl.classList.remove('animate-reaction-pop');
@@ -2397,29 +2447,21 @@
         const rect = btnEl.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
+        const iconSvgHtml = getReactionIconSvgHtml(btnEl, type);
 
-        const ripple = document.createElement('div');
-        ripple.className = 'reaction-ripple';
-        ripple.style.left = `${centerX - 14}px`;
-        ripple.style.top = `${centerY - 14}px`;
-        ripple.style.border = type === 'heart' ? '2.5px solid #f97316' : '2.5px solid #0ea5e9';
-        document.body.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 550);
-
-        const emojis = type === 'heart' ? ['❤️', '🧡', '✨', '🔥', '🌟'] : ['👍', '💙', '✨', '💚', '⭐'];
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 4; i++) {
           const p = document.createElement('div');
-          p.className = 'reaction-particle';
-          p.textContent = emojis[i % emojis.length];
-          p.style.left = `${centerX + (Math.random() - 0.5) * 30 - 12}px`;
-          p.style.top = `${centerY - 14}px`;
-          p.style.setProperty('--tx-mid', `${(Math.random() - 0.5) * 55}px`);
-          p.style.setProperty('--tx-end', `${(Math.random() - 0.5) * 75}px`);
-          p.style.setProperty('--rot', `${(Math.random() - 0.5) * 35}deg`);
-          p.style.setProperty('--rot-end', `${(Math.random() - 0.5) * 65}deg`);
-          p.style.animationDelay = `${i * 0.04}s`;
+          p.className = 'reaction-particle text-neutral-900';
+          p.innerHTML = iconSvgHtml;
+          p.style.left = `${centerX + (Math.random() - 0.5) * 26 - 11}px`;
+          p.style.top = `${centerY - 11}px`;
+          p.style.setProperty('--tx-mid', `${(Math.random() - 0.5) * 44}px`);
+          p.style.setProperty('--tx-end', `${(Math.random() - 0.5) * 60}px`);
+          p.style.setProperty('--rot', `${(Math.random() - 0.5) * 24}deg`);
+          p.style.setProperty('--rot-end', `${(Math.random() - 0.5) * 40}deg`);
+          p.style.animationDelay = `${i * 0.045}s`;
           document.body.appendChild(p);
-          setTimeout(() => p.remove(), 950);
+          setTimeout(() => p.remove(), 820);
         }
       }
 
@@ -2523,6 +2565,62 @@
         if (modalAvatarEl) modalAvatarEl.textContent = initChar;
       }
 
+      const FEELING_DEFS = [
+        {
+          key: 'likes',
+          btnCls: 'btn-like-note',
+          countCls: 'like-count-span',
+          label: 'ถูกใจ',
+          svg: '<svg class="w-4 h-4 fill-current text-neutral-900 group-hover/rbtn:text-white shrink-0 transition" viewBox="0 0 24 24"><path d="M2 20h2c.55 0 1-.45 1-1v-9c0-.55-.45-1-1-1H2v11zm19.83-7.12c.11-.25.17-.52.17-.8V11c0-1.1-.9-2-2-2h-5.5l.92-4.65c.05-.22.02-.46-.08-.66-.23-.45-.52-.86-.88-1.22L14 2 7.59 8.41C7.21 8.79 7 9.3 7 9.83v7.84C7 18.95 8.05 20 9.34 20h8.11c.7 0 1.36-.37 1.72-.97l2.66-6.15z"/></svg>'
+        },
+        {
+          key: 'hearts',
+          btnCls: 'btn-heart-note',
+          countCls: 'heart-count-span',
+          label: 'หัวใจ',
+          svg: '<svg class="w-4 h-4 fill-current text-neutral-900 group-hover/rbtn:text-white shrink-0 transition" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
+        },
+        {
+          key: 'cares',
+          btnCls: 'btn-care-note',
+          countCls: 'care-count-span',
+          label: 'ห่วงใย',
+          svg: '<svg class="w-4 h-4 fill-current text-neutral-900 group-hover/rbtn:text-white shrink-0 transition" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 17.5c-.83 0-1.5-.45-2.73-1.57C7.3 16.14 6 14.66 6 12.95 6 11.54 7.12 10.5 8.5 10.5c.88 0 1.7.44 2.22 1.15L12 13.3l1.28-1.65c.52-.71 1.34-1.15 2.22-1.15 1.38 0 2.5 1.04 2.5 2.45 0 1.71-1.3 3.19-3.27 4.98-1.23 1.12-1.9 1.57-2.73 1.57zm-3.5-11c.83 0 1.5.67 1.5 1.5S9.33 11.5 8.5 11.5 7 10.83 7 10s.67-1.5 1.5-1.5zm7 0c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5S14 10.83 14 10s.67-1.5 1.5-1.5z"/></svg>'
+        },
+        {
+          key: 'hahas',
+          btnCls: 'btn-haha-note',
+          countCls: 'haha-count-span',
+          label: 'ฮ่าๆ',
+          svg: '<svg class="w-4 h-4 fill-current text-neutral-900 group-hover/rbtn:text-white shrink-0 transition" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 6L17 9.5 15.5 11 14 9.5 15.5 8zm-7 0L10 9.5 8.5 11 7 9.5 8.5 8zm3.5 10c-2.76 0-5.08-1.87-5.78-4.41h11.56c-.7 2.54-3.02 4.41-5.78 4.41z"/></svg>'
+        },
+        {
+          key: 'wows',
+          btnCls: 'btn-wow-note',
+          countCls: 'wow-count-span',
+          label: 'ว้าว',
+          svg: '<svg class="w-4 h-4 fill-current text-neutral-900 group-hover/rbtn:text-white shrink-0 transition" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-3.5 6.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5S7 10.83 7 10s.67-1.5 1.5-1.5zm7 0c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5S14 10.83 14 10s.67-1.5 1.5-1.5zM12 18.5c-1.66 0-3-1.57-3-3.5s1.34-3.5 3-3.5 3 1.57 3 3.5-1.34 3.5-3 3.5z"/></svg>'
+        },
+        {
+          key: 'sads',
+          btnCls: 'btn-sad-note',
+          countCls: 'sad-count-span',
+          label: 'เศร้า',
+          svg: '<svg class="w-4 h-4 fill-current text-neutral-900 group-hover/rbtn:text-white shrink-0 transition" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-3.5 7c.83 0 1.5.67 1.5 1.5S9.33 12 8.5 12 7 11.33 7 10.5 7.67 9 8.5 9zm7 0c.83 0 1.5.67 1.5 1.5S16.33 12 15.5 12 14 11.33 14 10.5 14.67 9 15.5 9zm-3.5 4.5c2.33 0 4.32 1.45 5.12 3.5H6.88c.8-2.05 2.79-3.5 5.12-3.5z"/></svg>'
+        },
+        {
+          key: 'angrys',
+          btnCls: 'btn-angry-note',
+          countCls: 'angry-count-span',
+          label: 'โกรธ',
+          svg: '<svg class="w-4 h-4 fill-current text-neutral-900 group-hover/rbtn:text-white shrink-0 transition" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-5.2 6.2l3.8 1.5-.6 1.4-3.8-1.5.6-1.4zm10.4 1.4l-3.8 1.5-.6-1.4 3.8-1.5.6 1.4zM12 14c2.33 0 4.32 1.45 5.12 3.5H6.88c.8-2.05 2.79-3.5 5.12-3.5z"/></svg>'
+        }
+      ];
+
+      function computeTotalPostReactions(post) {
+        return FEELING_DEFS.reduce((acc, f) => acc + (post[f.key] || 0), 0);
+      }
+
       function computePostRenderSignature(post) {
         const lastCmtId = Array.isArray(post.comments) && post.comments.length > 0
           ? post.comments[post.comments.length - 1].id
@@ -2530,8 +2628,7 @@
         return [
           post.id,
           post.updatedAtMs || 0,
-          post.likes || 0,
-          post.hearts || 0,
+          computeTotalPostReactions(post),
           Array.isArray(post.comments) ? post.comments.length : 0,
           lastCmtId,
           post.nickname || '',
@@ -2771,68 +2868,49 @@
                   : ''
               }
 
-              <!-- Reaction & Comment Summary Row -->
-              <div class="mt-auto pt-1 flex items-center justify-between text-[11px] text-neutral-500 font-semibold px-1 mb-1.5">
-                <div class="flex items-center gap-1.5">
-                  <span class="inline-flex items-center -space-x-1">
-                    <span class="w-4 h-4 rounded-full bg-neutral-900 text-white text-[9px] flex items-center justify-center ring-1 ring-white">👍</span>
-                    <span class="w-4 h-4 rounded-full bg-orange-500 text-white text-[9px] flex items-center justify-center ring-1 ring-white">❤️</span>
-                  </span>
-                  <span class="total-reactions-label">${totalReactions > 0 ? `${totalReactions} ความรู้สึก` : 'ร่วมส่งกำลังใจ'}</span>
-                </div>
-                <button type="button" class="btn-open-comments hover:underline text-neutral-500 font-semibold">
-                  ${post.comments.length > 0 ? `${post.comments.length} ความคิดเห็น` : 'ยังไม่มีความคิดเห็น'}
-                </button>
-              </div>
-
-              <!-- 3-Column Action Bar -->
-              <div class="grid grid-cols-3 gap-1 py-1 border-y border-neutral-200 mb-2.5">
-                <button type="button" class="btn-like-note fb-action-btn py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-neutral-800">
-                  <span class="text-sm">👍</span>
-                  <span>ถูกใจ</span>
-                  <span class="like-count-span px-1.5 py-0.2 rounded-full bg-neutral-100 text-neutral-900 text-[11px]">${post.likes || 0}</span>
-                </button>
-                <button type="button" class="btn-heart-note fb-action-btn py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-orange-600">
-                  <span class="text-sm">❤️</span>
-                  <span>หัวใจ</span>
-                  <span class="heart-count-span px-1.5 py-0.2 rounded-full bg-orange-50 text-orange-600 text-[11px]">${post.hearts || 0}</span>
-                </button>
-                <button type="button" class="btn-open-comments fb-action-btn py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-neutral-700">
-                  <span class="text-sm">💬</span>
-                  <span>${post.comments.length > 0 ? post.comments.length : 'ความคิดเห็น'}</span>
-                </button>
+              <!-- Left-Aligned Black SVG Full-Feelings Reaction Bar (No Redundant Comment Button) -->
+              <div class="mt-auto pt-2.5 pb-2 border-y border-neutral-200/90 mb-2.5 flex flex-wrap items-center justify-start gap-1.5" onclick="event.stopPropagation()">
+                ${FEELING_DEFS.map(
+                  f => `
+                  <button type="button" data-feeling="${f.key}" title="${f.label}" aria-label="${f.label}" class="${f.btnCls} btn-feeling-react group/rbtn py-1.5 px-2.5 rounded-full bg-neutral-100 hover:bg-neutral-900 text-neutral-900 hover:text-white border border-neutral-200 hover:border-neutral-900 flex items-center justify-start gap-1.5 text-xs font-bold">
+                    ${f.svg}
+                    <span class="${f.countCls} feeling-count-span px-1.5 py-0.2 rounded-full bg-white text-neutral-900 text-[11px] font-extrabold border border-neutral-200/80">${post[f.key] || 0}</span>
+                  </button>`
+                ).join('')}
               </div>
 
               <!-- Inline Comment Bubbles (Max 3 Latest Comments) & Quick Comment Input -->
               <div class="space-y-1.5" onclick="event.stopPropagation()">
-                ${
-                  post.comments.length > 3
-                    ? `<button type="button" class="btn-open-comments text-[11px] font-bold text-orange-600 hover:underline px-1 flex items-center gap-1 transition">
-                         <span>ดูความคิดเห็นทั้งหมด ${post.comments.length} รายการ...</span>
-                       </button>`
-                    : ''
-                }
-                ${recentComments
-                  .map(
-                    c => `
-                  <div class="btn-open-comments flex items-start gap-2 cursor-pointer group/cmt">
-                    <div class="w-6 h-6 rounded-full bg-neutral-900 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                      ${escapeHtml((c.nickname || 'น').trim().charAt(0).toUpperCase())}
-                    </div>
-                    <div class="flex-1 min-w-0 px-3 py-1.5 rounded-2xl bg-neutral-100 group-hover/cmt:bg-orange-50/60 border border-neutral-200 group-hover/cmt:border-orange-200 text-xs transition">
-                      <div class="flex items-center justify-between gap-1.5">
-                        <span class="font-bold text-neutral-900 truncate">${escapeHtml(c.nickname)}</span>
-                        <span class="text-[9px] text-neutral-400 shrink-0">${escapeHtml(formatPostFullDateTime(c))}</span>
+                <div class="card-comments-list-wrap space-y-1.5">
+                  ${
+                    post.comments.length > 3
+                      ? `<button type="button" class="btn-open-comments text-[11px] font-bold text-orange-600 hover:underline px-1 flex items-center gap-1 transition">
+                           <span>ดูความคิดเห็นทั้งหมด ${post.comments.length} รายการ...</span>
+                         </button>`
+                      : ''
+                  }
+                  ${recentComments
+                    .map(
+                      c => `
+                    <div class="btn-open-comments flex items-start gap-2 cursor-pointer group/cmt">
+                      <div class="w-6 h-6 rounded-full bg-neutral-900 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                        ${escapeHtml((c.nickname || 'น').trim().charAt(0).toUpperCase())}
                       </div>
-                      <div class="text-neutral-700 break-words clamp-comment-text">${escapeHtml(c.text)}</div>
-                    </div>
-                  </div>`
-                  )
-                  .join('')}
+                      <div class="flex-1 min-w-0 px-3 py-1.5 rounded-2xl bg-neutral-100 group-hover/cmt:bg-orange-50/60 border border-neutral-200 group-hover/cmt:border-orange-200 text-xs transition">
+                        <div class="flex items-center justify-between gap-1.5">
+                          <span class="font-bold text-neutral-900 truncate">${escapeHtml(c.nickname)}</span>
+                          <span class="text-[9px] text-neutral-400 shrink-0">${escapeHtml(formatPostFullDateTime(c))}</span>
+                        </div>
+                        <div class="text-neutral-700 break-words clamp-comment-text">${escapeHtml(c.text)}</div>
+                      </div>
+                    </div>`
+                    )
+                    .join('')}
+                </div>
 
                 <form class="form-card-inline-comment flex items-center gap-1.5 pt-1">
-                  <input type="text" class="input-card-inline-comment flex-1 px-3.5 py-1.5 rounded-full bg-neutral-100 focus:bg-white border border-neutral-200 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-orange-500 transition" placeholder="เขียนความคิดเห็น..." />
-                  <button type="submit" class="px-3 py-1.5 rounded-full bg-neutral-900 hover:bg-orange-500 text-white text-[11px] font-bold shrink-0 transition">
+                  <input type="text" class="input-card-inline-comment flex-1 px-3.5 py-1.5 rounded-full bg-neutral-100 focus:bg-white border border-neutral-200 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-neutral-900 transition" placeholder="เขียนความคิดเห็น..." />
+                  <button type="submit" class="px-3.5 py-1.5 rounded-full bg-neutral-900 hover:bg-orange-500 text-white text-[11px] font-bold shrink-0 transition">
                     ส่ง
                   </button>
                 </form>
@@ -2896,33 +2974,18 @@
               autoRunnerTimers.set(post.id, timerId);
             }
 
-            const totalReactEl = card.querySelector('.total-reactions-label');
-            const updateCardReactionSummary = () => {
-              const tot = (post.likes || 0) + (post.hearts || 0);
-              if (totalReactEl) totalReactEl.textContent = tot > 0 ? `${tot} ความรู้สึก` : 'ร่วมส่งกำลังใจ';
-              card.dataset.renderSig = computePostRenderSignature(post);
-            };
-
-            const likeBtn = card.querySelector('.btn-like-note');
-            likeBtn.addEventListener('click', e => {
-              e.stopPropagation();
-              post.likes = (post.likes || 0) + 1;
-              post.updatedAtMs = Date.now();
-              likeBtn.querySelector('.like-count-span').textContent = post.likes;
-              updateCardReactionSummary();
-              triggerReactionAnimation(likeBtn, 'like');
-              persistStatePermanently(post);
-            });
-
-            const heartBtn = card.querySelector('.btn-heart-note');
-            heartBtn.addEventListener('click', e => {
-              e.stopPropagation();
-              post.hearts = (post.hearts || 0) + 1;
-              post.updatedAtMs = Date.now();
-              heartBtn.querySelector('.heart-count-span').textContent = post.hearts;
-              updateCardReactionSummary();
-              triggerReactionAnimation(heartBtn, 'heart');
-              persistStatePermanently(post);
+            card.querySelectorAll('.btn-feeling-react').forEach(btnEl => {
+              btnEl.addEventListener('click', e => {
+                e.stopPropagation();
+                const fKey = btnEl.getAttribute('data-feeling') || 'likes';
+                post[fKey] = (post[fKey] || 0) + 1;
+                post.updatedAtMs = Date.now();
+                const countSpan = btnEl.querySelector('.feeling-count-span');
+                if (countSpan) countSpan.textContent = post[fKey];
+                card.dataset.renderSig = computePostRenderSignature(post);
+                triggerReactionAnimation(btnEl, fKey);
+                persistStatePermanently(post);
+              });
             });
 
             const inlineCommentForm = card.querySelector('.form-card-inline-comment');
@@ -3846,8 +3909,20 @@
             renderBoard();
           });
         }
+        const btnClearSmartSearch = document.getElementById('btnClearSmartSearch');
         if (inputSmartSearch) {
           inputSmartSearch.addEventListener('input', () => {
+            if (btnClearSmartSearch) {
+              if (inputSmartSearch.value.trim()) btnClearSmartSearch.classList.remove('hidden');
+              else btnClearSmartSearch.classList.add('hidden');
+            }
+            renderBoard();
+          });
+        }
+        if (btnClearSmartSearch && inputSmartSearch) {
+          btnClearSmartSearch.addEventListener('click', () => {
+            inputSmartSearch.value = '';
+            btnClearSmartSearch.classList.add('hidden');
             renderBoard();
           });
         }
