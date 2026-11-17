@@ -578,7 +578,7 @@
 
       <div class="p-6 overflow-y-auto flex-1 space-y-4">
         <div id="detailImageWrapper" class="hidden rounded-2xl overflow-hidden border border-slate-200 bg-slate-50">
-          <img id="detailImageEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="รูปภาพประกอบ" class="w-full max-h-80 object-contain cursor-zoom-in mx-auto" />
+          <img id="detailImageEl" referrerpolicy="no-referrer" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="รูปภาพประกอบ" class="w-full max-h-80 object-contain cursor-zoom-in mx-auto" />
         </div>
 
         <div id="detailYoutubeWrapper" class="hidden rounded-2xl overflow-hidden border border-slate-200 bg-black">
@@ -1227,15 +1227,27 @@
             postsArray.forEach(p => {
               if (p && p.id && !globalDeletedSet.has(String(p.id))) {
                 const copy = Object.assign({}, p);
-                if (copy.image && copy.image.startsWith('data:') && copy.image.length > 25000) {
-                  mediaCache.set(copy.id, copy.image);
-                  delete copy.image;
+                if (!copy.image && mediaCache.has(copy.id)) {
+                  copy.image = mediaCache.get(copy.id);
                 }
+                if (copy.image) mediaCache.set(copy.id, copy.image);
                 vault[cleanRoom][String(p.id)] = copy;
               }
             });
           }
-          localStorage.setItem(LS_MASTER_VAULT_KEY, JSON.stringify(vault));
+          try {
+            localStorage.setItem(LS_MASTER_VAULT_KEY, JSON.stringify(vault));
+          } catch (quotaErr) {
+            // Only strip huge data URLs in vault if localStorage 5MB quota is actually exceeded
+            Object.keys(vault[cleanRoom]).forEach(k => {
+              const item = vault[cleanRoom][k];
+              if (item && item.image && item.image.startsWith('data:') && item.image.length > 90000) {
+                mediaCache.set(item.id, item.image);
+                delete item.image;
+              }
+            });
+            try { localStorage.setItem(LS_MASTER_VAULT_KEY, JSON.stringify(vault)); } catch (e2) {}
+          }
         } catch (e) {}
       }
 
@@ -1270,8 +1282,15 @@
           if (p && p.id && !globalDeletedSet.has(String(p.id))) postMap.set(String(p.id), p);
         });
         vaultPosts.forEach(vp => {
-          if (vp && vp.id && !globalDeletedSet.has(String(vp.id)) && !postMap.has(String(vp.id))) {
-            postMap.set(String(vp.id), vp);
+          if (vp && vp.id && !globalDeletedSet.has(String(vp.id))) {
+            const sId = String(vp.id);
+            if (!postMap.has(sId)) {
+              postMap.set(sId, vp);
+            } else {
+              const existing = postMap.get(sId);
+              if (!existing.image && vp.image) existing.image = vp.image;
+              if (!existing.imageBlobId && vp.imageBlobId) existing.imageBlobId = vp.imageBlobId;
+            }
           }
         });
 
@@ -1466,6 +1485,90 @@
         return changed;
       }
 
+      const inflightImageFetches = new Set();
+
+      function getPostImageKvKey(postId) {
+        const clean = String(postId || '').replace(/[^a-zA-Z0-9_-]/g, '');
+        return 'tbimg_' + clean.slice(-28);
+      }
+
+      async function uploadPostImageToCloud(post) {
+        if (!post || !post.id || !post.image || !post.image.startsWith('data:')) return '';
+        if (post.imageBlobId) return post.imageBlobId;
+        try {
+          const createRes = await fetch('https://jsonblob.com/api/jsonBlob', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ id: post.id, image: post.image })
+          });
+          if (createRes.ok) {
+            const loc = createRes.headers.get('Location') || createRes.headers.get('location') || createRes.headers.get('X-jsonblob') || '';
+            const idMatch = loc.match(/\/([^\/]+)$/) || [null, loc];
+            if (idMatch && idMatch[1]) {
+              const imgBlobId = idMatch[1].trim();
+              post.imageBlobId = imgBlobId;
+              const kvKey = getPostImageKvKey(post.id);
+              fetch(`https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/${KV_APP_KEY}/${kvKey}/${encodeURIComponent(imgBlobId)}`, {
+                method: 'POST'
+              }).catch(() => {});
+              return imgBlobId;
+            }
+          }
+        } catch (e) {}
+        return '';
+      }
+
+      async function fetchMissingPostImageFromCloud(post) {
+        if (!post || !post.id || post.image || isPermanentlyDeleted(post.id)) return false;
+        const sId = String(post.id);
+        if (mediaCache.has(sId)) {
+          post.image = mediaCache.get(sId);
+          return true;
+        }
+        if (inflightImageFetches.has(sId)) return false;
+        inflightImageFetches.add(sId);
+        try {
+          let blobId = post.imageBlobId || '';
+          if (!blobId) {
+            const kvKey = getPostImageKvKey(sId);
+            const kvRes = await fetch(`https://keyvalue.immanuel.co/api/KeyVal/GetValue/${KV_APP_KEY}/${kvKey}`);
+            if (kvRes.ok) {
+              const val = (await kvRes.text()).replace(/^"+|"+$/g, '').trim();
+              if (val && val !== 'null' && val.length > 5) {
+                blobId = val;
+                post.imageBlobId = blobId;
+              }
+            }
+          }
+          if (blobId) {
+            const res = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, {
+              method: 'GET',
+              headers: { Accept: 'application/json' }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.image && !isPermanentlyDeleted(sId)) {
+                post.image = data.image;
+                mediaCache.set(sId, data.image);
+                const target = state.posts.find(p => p.id === sId);
+                if (target) {
+                  target.image = data.image;
+                  target.imageBlobId = blobId;
+                }
+                saveLocalOnly();
+                renderBoard();
+                if (activeDetailPostId === sId) renderNoteDetailModal(sId);
+                return true;
+              }
+            }
+          }
+        } catch (e) {
+        } finally {
+          inflightImageFetches.delete(sId);
+        }
+        return false;
+      }
+
       function mergeSinglePost(rPost, deletedSetInput, targetStateObj) {
         const target = targetStateObj || state;
         if (!rPost || !rPost.id) return false;
@@ -1486,11 +1589,25 @@
           if (!clone.image && mediaCache.has(sId)) clone.image = mediaCache.get(sId);
           target.posts.push(clone);
           changed = true;
+          if (!clone.image && (clone.imageBlobId || clone.hasImage)) {
+            fetchMissingPostImageFromCloud(clone);
+          }
         } else {
           if ((rPost.likes || 0) > (lPost.likes || 0)) { lPost.likes = rPost.likes; changed = true; }
           if ((rPost.hearts || 0) > (lPost.hearts || 0)) { lPost.hearts = rPost.hearts; changed = true; }
 
-          if (!lPost.image && rPost.image) { lPost.image = rPost.image; changed = true; }
+          if (!lPost.image && rPost.image) {
+            lPost.image = rPost.image;
+            mediaCache.set(sId, rPost.image);
+            changed = true;
+          }
+          if (!lPost.imageBlobId && rPost.imageBlobId) {
+            lPost.imageBlobId = rPost.imageBlobId;
+            changed = true;
+          }
+          if (rPost.hasImage && !lPost.hasImage) {
+            lPost.hasImage = true;
+          }
           if (!lPost.youtubeUrl && rPost.youtubeUrl) { lPost.youtubeUrl = rPost.youtubeUrl; changed = true; }
           if (!lPost.webRunUrl && rPost.webRunUrl) { lPost.webRunUrl = rPost.webRunUrl; changed = true; }
           if (!lPost.webAutoCmd && rPost.webAutoCmd) { lPost.webAutoCmd = rPost.webAutoCmd; changed = true; }
@@ -1501,7 +1618,11 @@
             if (typeof rPost.rating === 'number') lPost.rating = rPost.rating;
             if (rPost.text !== undefined) lPost.text = rPost.text;
             lPost.color = rPost.color || lPost.color;
-            if (rPost.image) lPost.image = rPost.image;
+            if (rPost.image) {
+              lPost.image = rPost.image;
+              mediaCache.set(sId, rPost.image);
+            }
+            if (rPost.imageBlobId) lPost.imageBlobId = rPost.imageBlobId;
             if (rPost.youtubeUrl) lPost.youtubeUrl = rPost.youtubeUrl;
             if (rPost.externalUrl !== undefined) lPost.externalUrl = rPost.externalUrl;
             if (rPost.webRunUrl !== undefined) lPost.webRunUrl = rPost.webRunUrl;
@@ -1509,6 +1630,10 @@
             if (rPost.webProxyMode !== undefined) lPost.webProxyMode = rPost.webProxyMode;
             lPost.updatedAtMs = rPost.updatedAtMs;
             changed = true;
+          }
+
+          if (!lPost.image && (lPost.imageBlobId || rPost.imageBlobId || lPost.hasImage || rPost.hasImage)) {
+            fetchMissingPostImageFromCloud(lPost);
           }
 
           const lComments = Array.isArray(lPost.comments) ? lPost.comments : [];
@@ -1555,21 +1680,25 @@
           else if (mediaCache.has(p.id)) p.image = mediaCache.get(p.id);
         });
 
-        // Fast lightweight localStorage write (strips heavy base64 images > 25KB into IndexedDB/CacheStorage so localStorage never stalls main thread!)
+        // Always preserve p.image directly in localStorage so images NEVER disappear on refresh!
         try {
-          const lightState = Object.assign({}, state, {
-            posts: state.posts.map(p => {
-              if (p.image && p.image.startsWith('data:') && p.image.length > 25000) {
-                mediaCache.set(p.id, p.image);
-                const copy = Object.assign({}, p);
-                delete copy.image;
-                return copy;
-              }
-              return p;
-            })
-          });
-          localStorage.setItem(key, JSON.stringify(lightState));
-        } catch (e) {}
+          localStorage.setItem(key, JSON.stringify(state));
+        } catch (quotaErr) {
+          try {
+            const lightState = Object.assign({}, state, {
+              posts: state.posts.map(p => {
+                if (p.image && p.image.startsWith('data:') && p.image.length > 90000) {
+                  mediaCache.set(p.id, p.image);
+                  const copy = Object.assign({}, p);
+                  delete copy.image;
+                  return copy;
+                }
+                return p;
+              })
+            });
+            localStorage.setItem(key, JSON.stringify(lightState));
+          } catch (e2) {}
+        }
 
         writeMasterVaultRoomPosts(activeRoom, state.posts, deletedIdToRemove);
 
@@ -1881,6 +2010,21 @@
           }
         });
 
+        gunRoomNode.get('images').map().on((imgData, postId) => {
+          if (!imgData || !postId || isPermanentlyDeleted(postId)) return;
+          const sId = String(postId);
+          if (typeof imgData === 'string' && (imgData.startsWith('data:image') || imgData.startsWith('http'))) {
+            mediaCache.set(sId, imgData);
+            const target = state.posts.find(p => p.id === sId);
+            if (target && target.image !== imgData) {
+              target.image = imgData;
+              saveLocalOnly();
+              renderBoard();
+              if (activeDetailPostId === sId) renderNoteDetailModal(sId);
+            }
+          }
+        });
+
         gunRoomNode.get('posts').map().on((postJson, postId) => {
           if (activeRoom !== (syncConfig.roomCode || '').trim().toUpperCase() || !postJson) return;
           if (postJson === 'DELETED') {
@@ -2006,14 +2150,31 @@
         const topic = getNtfyTopicForRoom(syncConfig.roomCode);
         const roomSafe = encodeURIComponent(syncConfig.roomCode.trim().toUpperCase());
 
-        // 1. Push to Vercel /api/board immediately
+        // 0. If changedPost has a data:image, upload it to dedicated Cloud Image Blob & Gun.js Image Node first!
+        if (changedPost && changedPost.id && !isPermanentlyDeleted(changedPost.id) && changedPost.image) {
+          changedPost.hasImage = true;
+          if (changedPost.image.startsWith('data:')) {
+            try {
+              if (gunRoomNode) {
+                gunRoomNode.get('images').get(changedPost.id).put(changedPost.image);
+              }
+            } catch (e) {}
+            const imgBlobId = await uploadPostImageToCloud(changedPost);
+            if (imgBlobId) {
+              changedPost.imageBlobId = imgBlobId;
+              saveLocalOnly();
+              pushPostToTurso(syncConfig.roomCode, changedPost, false);
+            }
+          }
+        }
+
+        // 1. Push to Vercel /api/board (NO keepalive: true so payloads > 64KB with images NEVER fail!)
         if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('googleusercontent')) {
           const headers = { 'Content-Type': 'application/json' };
           if (tursoConfig.authToken) headers['x-turso-token'] = tursoConfig.authToken;
           fetch(window.location.origin + '/api/' + 'board?room=' + roomSafe, {
             method: 'POST',
             headers,
-            keepalive: true,
             body: JSON.stringify(state)
           }).catch(() => {});
         }
@@ -2025,21 +2186,24 @@
           }
         } catch (e) {}
 
-        // 3. Push to ntfy & JSONBlob
+        // 3. Push full room state (including images) to JSONBlob
         let blobId = '';
         try {
           blobId = await pushToJsonBlob();
         } catch (e) {}
 
+        // 4. Push real-time notification via ntfy.sh (includes imageBlobId & hasImage so other devices fetch the image immediately if > 3KB)
         if (changedPost && changedPost.id && !isPermanentlyDeleted(changedPost.id)) {
           try {
             const lightPost = Object.assign({}, changedPost);
-            if (lightPost.image && lightPost.image.startsWith('data:') && lightPost.image.length > 2500) {
-              delete lightPost.image;
+            if (lightPost.image && lightPost.image.startsWith('data:')) {
+              lightPost.hasImage = true;
+              if (lightPost.image.length > 3000) {
+                delete lightPost.image;
+              }
             }
             await fetch(`https://ntfy.sh/${topic}`, {
               method: 'POST',
-              keepalive: true,
               body: JSON.stringify({
                 type: 'POST_UPSERT',
                 post: lightPost,
@@ -2058,7 +2222,6 @@
           try {
             await fetch(`https://ntfy.sh/${topic}`, {
               method: 'POST',
-              keepalive: true,
               body: JSON.stringify({
                 type: 'BLOB_SYNC',
                 blobId: blobId,
@@ -2286,18 +2449,35 @@
         setTimeout(() => pinInput.focus(), 60);
       }
 
-      function compressImageFile(file, maxWidth = 520, quality = 0.7) {
+      function compressImageFile(file, maxWidth = 600, quality = 0.72) {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = ev => {
             const img = new Image();
             img.onload = () => {
               let w = img.width, h = img.height;
-              if (w > maxWidth) { h = Math.round((h * maxWidth) / w); w = maxWidth; }
+              const maxDim = maxWidth;
+              if (w > maxDim || h > maxDim) {
+                if (w >= h) {
+                  h = Math.round((h * maxDim) / w);
+                  w = maxDim;
+                } else {
+                  w = Math.round((w * maxDim) / h);
+                  h = maxDim;
+                }
+              }
               const canvas = document.createElement('canvas');
-              canvas.width = w; canvas.height = h;
-              canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-              resolve(canvas.toDataURL('image/jpeg', quality));
+              canvas.width = w;
+              canvas.height = h;
+              const ctx = canvas.getContext('2d');
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, w, h);
+              ctx.drawImage(img, 0, 0, w, h);
+              let dataUrl = canvas.toDataURL('image/jpeg', quality);
+              if (dataUrl.length > 42000) {
+                dataUrl = canvas.toDataURL('image/jpeg', 0.56);
+              }
+              resolve(dataUrl);
             };
             img.onerror = reject;
             img.src = ev.target.result;
@@ -2358,7 +2538,7 @@
           post.role || '',
           post.rating || 5,
           (post.text || '').length,
-          post.image ? post.image.length : 0,
+          post.image ? (post.image.length + ':' + post.image.slice(-16)) : '0',
           post.youtubeId || '',
           post.webRunUrl || '',
           post.webProxyMode ? 1 : 0
@@ -2524,7 +2704,7 @@
                 ${
                   post.image
                     ? `<div class="mb-3 rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-100/70 relative">
-                         <img src="${escapeHtml(post.image)}" loading="lazy" decoding="async" alt="รูปภาพประกอบ" class="note-image w-full max-h-[520px] object-contain mx-auto" onerror="this.style.display='none'" />
+                         <img src="${escapeHtml(post.image)}" loading="lazy" decoding="async" alt="รูปภาพประกอบ" referrerpolicy="no-referrer" class="note-image w-full max-h-[520px] object-contain mx-auto" onerror="this.style.display='none'" />
                        </div>`
                     : ''
                 }
