@@ -7,6 +7,8 @@
   <title>Think Board</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/gun@0.2020.1240/gun.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -431,9 +433,11 @@
             <div id="inlineAutoDetectBar" class="hidden pt-2 border-t border-neutral-200 flex flex-wrap items-center justify-between gap-2 text-xs">
               <div id="inlineAutoDetectBadges" class="flex flex-wrap items-center gap-2"></div>
               <div class="flex flex-wrap items-center gap-2">
-                <div id="inlinePastedImagePreviewWrap" class="hidden flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded-xl px-2.5 py-1">
-                  <img id="inlinePastedImageEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="รูปที่แนบ" class="h-8 w-10 object-cover rounded-lg border border-neutral-300" />
-                  <button id="btnClearInlineImage" type="button" class="text-neutral-600 hover:text-orange-600 font-bold text-xs px-1">✕</button>
+                <div id="inlinePastedImagePreviewWrap" class="hidden flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded-xl px-2.5 py-1.5 max-w-full overflow-x-auto">
+                  <img id="inlinePastedImageEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="รูปที่แนบ" class="hidden h-8 w-10 object-cover rounded-lg border border-neutral-300" />
+                  <div id="inlineMultiImageListEl" class="flex items-center gap-1.5"></div>
+                  <span id="inlineMultiImageCountBadge" class="px-2 py-0.5 rounded-lg bg-neutral-900 text-white text-[10px] font-bold shrink-0">1 รูป</span>
+                  <button id="btnClearInlineImage" type="button" class="text-neutral-600 hover:text-orange-600 font-bold text-xs px-1 shrink-0" title="ลบรูปทั้งหมด">✕</button>
                 </div>
                 <div id="inlineAttachedFilePreviewWrap" class="hidden flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded-xl px-2.5 py-1.5 max-w-full">
                   <span id="inlineAttachedFileExtBadge" class="px-2 py-0.5 rounded-lg bg-neutral-900 text-white text-[10px] font-extrabold uppercase shrink-0">FILE</span>
@@ -744,13 +748,50 @@
     </div>
   </div>
 
-  <!-- MODAL 3: IMAGE LIGHTBOX -->
-  <div id="modalLightbox" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
-      <button id="btnCloseLightbox" type="button" class="absolute -top-10 right-0 px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-semibold transition">
-        ปิดรูปภาพ ✕
-      </button>
-      <img id="lightboxImage" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="ภาพขยาย" class="max-w-full max-h-[82vh] rounded-2xl shadow-2xl object-contain bg-white" />
+  <!-- MODAL 3: MULTI-IMAGE LIGHTBOX WITH SWIPE & AUTO-LOOP -->
+  <div id="modalLightbox" class="fixed inset-0 z-50 hidden bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+    <div class="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center justify-center">
+      <div class="w-full flex items-center justify-between mb-2.5 px-1">
+        <span id="lightboxCounterBadge" class="px-3 py-1 rounded-xl bg-white/15 text-white text-xs font-bold">1 / 1</span>
+        <div class="flex items-center gap-2">
+          <button id="btnLightboxToggleAuto" type="button" class="px-3 py-1 rounded-xl bg-white/15 hover:bg-orange-500 text-white text-xs font-bold transition">
+            ↻ ไหลวน
+          </button>
+          <button id="btnCloseLightbox" type="button" class="px-3 py-1 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition">
+            ปิดรูปภาพ ✕
+          </button>
+        </div>
+      </div>
+      <div id="lightboxTouchArea" class="relative w-full flex items-center justify-center">
+        <button id="btnLightboxPrev" type="button" class="hidden absolute left-2 z-10 w-10 h-10 rounded-full bg-black/65 hover:bg-orange-500 text-white font-bold text-xl flex items-center justify-center shadow-lg transition">
+          ‹
+        </button>
+        <img id="lightboxImage" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="ภาพขยาย" class="max-w-full max-h-[78vh] rounded-2xl shadow-2xl object-contain bg-white select-none" />
+        <button id="btnLightboxNext" type="button" class="hidden absolute right-2 z-10 w-10 h-10 rounded-full bg-black/65 hover:bg-orange-500 text-white font-bold text-xl flex items-center justify-center shadow-lg transition">
+          ›
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3B: FULL-SCREEN MULTI-PAGE DOCUMENT PREVIEWER -->
+  <div id="modalDocPreview" class="fixed inset-0 z-50 hidden bg-neutral-950/90 backdrop-blur-sm flex items-center justify-center p-2 sm:p-5">
+    <div class="bg-white rounded-3xl max-w-4xl w-full h-[90vh] flex flex-col shadow-2xl border border-neutral-300 overflow-hidden animate-pop">
+      <div class="px-4 py-3 bg-neutral-900 text-white flex items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2 min-w-0">
+          <span id="docModalExtBadge" class="px-2 py-0.5 rounded-lg bg-orange-500 text-white text-xs font-extrabold uppercase shrink-0">PDF</span>
+          <span id="docModalTitle" class="font-bold text-xs sm:text-sm truncate">ตัวอย่างเอกสาร</span>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button id="btnDocModalPrev" type="button" class="px-2.5 py-1 rounded-xl bg-white/15 hover:bg-orange-500 text-white text-xs font-bold transition">‹ หน้าก่อน</button>
+          <span id="docModalPageBadge" class="px-2.5 py-1 rounded-xl bg-white/10 text-white text-xs font-bold whitespace-nowrap">หน้า 1 / 1</span>
+          <button id="btnDocModalNext" type="button" class="px-2.5 py-1 rounded-xl bg-white/15 hover:bg-orange-500 text-white text-xs font-bold transition">หน้าถัดไป ›</button>
+          <button id="btnDocModalAutoFlip" type="button" class="px-2.5 py-1 rounded-xl bg-white/15 hover:bg-orange-500 text-white text-xs font-bold transition">↻ ไหลวน</button>
+          <a id="btnDocModalDownload" href="#" download="document" class="px-3 py-1 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition">ดาวน์โหลด</a>
+          <button id="btnCloseDocModal" type="button" class="px-2.5 py-1 rounded-xl bg-white/20 hover:bg-rose-600 text-white text-xs font-bold transition">✕</button>
+        </div>
+      </div>
+      <div id="docModalStage" class="flex-1 bg-neutral-100 overflow-auto flex items-center justify-center p-3 sm:p-6 select-text"></div>
     </div>
   </div>
 
@@ -826,17 +867,20 @@
         if (!postId || !imgData || typeof imgData !== 'string' || imgData.length < 15) return;
         const sId = String(postId);
         const existingMem = mediaCache.get(sId) || '';
-        // Never overwrite a full-res data:image in cache with a shorter inline thumbnail!
-        if (existingMem && existingMem.startsWith('data:') && imgData.startsWith('data:') && imgData.length < existingMem.length) {
+        // Never overwrite a longer payload in cache with a shorter inline thumbnail!
+        if (existingMem && imgData.length < existingMem.length && (existingMem.startsWith('data:') || existingMem.startsWith('['))) {
           return;
         }
         mediaCache.set(sId, imgData);
-        try {
-          const existingLs = localStorage.getItem(LS_SINGLE_IMG_PREFIX + sId) || '';
-          if (!existingLs || imgData.length >= existingLs.length || !existingLs.startsWith('data:')) {
-            localStorage.setItem(LS_SINGLE_IMG_PREFIX + sId, imgData);
-          }
-        } catch (e) {}
+        // Only write to synchronous localStorage if payload <= 120KB; larger galleries/files go to async IndexedDB & CacheStorage to prevent main-thread lag & QuotaExceeded crashes!
+        if (imgData.length <= 120000) {
+          try {
+            const existingLs = localStorage.getItem(LS_SINGLE_IMG_PREFIX + sId) || '';
+            if (!existingLs || imgData.length >= existingLs.length) {
+              localStorage.setItem(LS_SINGLE_IMG_PREFIX + sId, imgData);
+            }
+          } catch (e) {}
+        }
         if (window.caches) {
           caches.open(IMMORTAL_CACHE_NAME).then(cache => {
             const urlKey = 'https://thinkboard.local/image/' + encodeURIComponent(sId);
@@ -1152,6 +1196,18 @@
               args: [post.id, cleanRoom, post.image, post.imageBlobId || '', updatedAt]
             });
           }
+          if (Array.isArray(post.images) && post.images.length > 1) {
+            const galJson = JSON.stringify(post.images);
+            savePostImageLocallyAllLayers(post.id + '__gallery', galJson);
+            stmts.push({
+              sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
+                    VALUES (?, ?, ?, ?, ?)
+                    ON CONFLICT(post_id) DO UPDATE SET
+                      image_data = CASE WHEN LENGTH(excluded.image_data) >= LENGTH(think_images.image_data) THEN excluded.image_data ELSE think_images.image_data END,
+                      updated_at = excluded.updated_at`,
+              args: [post.id + '__gallery', cleanRoom, galJson, String(post.images.length), updatedAt]
+            });
+          }
           if (post.fileDataUrl && post.fileDataUrl.length > 15) {
             stmts.push({
               sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
@@ -1236,6 +1292,18 @@
                     parsedPost.hasImage = true;
                   } else if (parsedPost.image && parsedPost.image.length > 10) {
                     savePostImageLocallyAllLayers(sId, parsedPost.image);
+                  }
+                  if (tursoImageMap.has(sId + '__gallery')) {
+                    try {
+                      const galArr = JSON.parse(tursoImageMap.get(sId + '__gallery'));
+                      if (Array.isArray(galArr) && galArr.length > 0) {
+                        parsedPost.images = galArr;
+                        parsedPost.image = galArr[0];
+                        parsedPost.hasImage = true;
+                      }
+                    } catch (e) {}
+                  } else if (Array.isArray(parsedPost.images) && parsedPost.images.length > 1) {
+                    savePostImageLocallyAllLayers(sId + '__gallery', JSON.stringify(parsedPost.images));
                   }
                   if (tursoImageMap.has(sId + '__file')) {
                     parsedPost.fileDataUrl = tursoImageMap.get(sId + '__file');
@@ -2001,6 +2069,23 @@
           const localRestored = getSyncImageForPost(sId, rPost);
           if (localRestored) rPost.image = localRestored;
         }
+        if (Array.isArray(rPost.images) && rPost.images.length > 0) {
+          rPost.image = rPost.images[0];
+          if (rPost.images.length > 1) {
+            savePostImageLocallyAllLayers(sId + '__gallery', JSON.stringify(rPost.images));
+          }
+        } else {
+          const localGalRestored = getSyncImageForPost(sId + '__gallery', null);
+          if (localGalRestored) {
+            try {
+              const gArr = JSON.parse(localGalRestored);
+              if (Array.isArray(gArr) && gArr.length > 0) {
+                rPost.images = gArr;
+                if (!rPost.image) rPost.image = gArr[0];
+              }
+            } catch (e) {}
+          }
+        }
         if (rPost.fileDataUrl && rPost.fileDataUrl.length > 15) {
           savePostImageLocallyAllLayers(sId + '__file', rPost.fileDataUrl);
         } else if (rPost.hasFile || rPost.fileName) {
@@ -2057,6 +2142,15 @@
             lPost.fileExt = rPost.fileExt || lPost.fileExt;
             lPost.hasFile = true;
             changed = true;
+          }
+          if (Array.isArray(rPost.images) && rPost.images.length > (Array.isArray(lPost.images) ? lPost.images.length : 0)) {
+            lPost.images = rPost.images;
+            lPost.image = rPost.images[0] || lPost.image;
+            if (rPost.images.length > 1) savePostImageLocallyAllLayers(sId + '__gallery', JSON.stringify(rPost.images));
+            changed = true;
+          }
+          if (rPost.imageCount && (!lPost.imageCount || rPost.imageCount > lPost.imageCount)) {
+            lPost.imageCount = rPost.imageCount;
           }
           if (rPost.fileDataUrl && (!lPost.fileDataUrl || rPost.fileDataUrl.length > lPost.fileDataUrl.length)) {
             lPost.fileDataUrl = rPost.fileDataUrl;
@@ -2161,23 +2255,41 @@
           }
         });
 
-        // Always preserve p.image directly in localStorage so images NEVER disappear on refresh!
+        state.posts.forEach(p => {
+          if (Array.isArray(p.images) && p.images.length > 1) {
+            p.imageCount = p.images.length;
+            savePostImageLocallyAllLayers(p.id + '__gallery', JSON.stringify(p.images));
+          }
+        });
+        // Quota-safe localStorage write: strip heavy fileDataUrl & multi-image arrays if total size is large (full data is safely in IndexedDB, CacheStorage & mediaCache)
         try {
-          localStorage.setItem(key, JSON.stringify(state));
+          const compactForLs = Object.assign({}, state, {
+            posts: state.posts.map(p => {
+              const copy = Object.assign({}, p);
+              if (copy.fileDataUrl && copy.fileDataUrl.length > 45000) {
+                copy.hasFile = true;
+                delete copy.fileDataUrl;
+              }
+              if (Array.isArray(copy.images) && copy.images.length > 2) {
+                copy.imageCount = copy.images.length;
+                delete copy.images;
+              }
+              return copy;
+            })
+          });
+          localStorage.setItem(key, JSON.stringify(compactForLs));
         } catch (quotaErr) {
           try {
-            const lightState = Object.assign({}, state, {
+            const ultraLight = Object.assign({}, state, {
               posts: state.posts.map(p => {
-                if (p.image && p.image.startsWith('data:') && p.image.length > 90000) {
-                  mediaCache.set(p.id, p.image);
-                  const copy = Object.assign({}, p);
-                  delete copy.image;
-                  return copy;
-                }
-                return p;
+                const copy = Object.assign({}, p);
+                delete copy.fileDataUrl;
+                delete copy.images;
+                if (copy.image && copy.image.length > 30000) delete copy.image;
+                return copy;
               })
             });
-            localStorage.setItem(key, JSON.stringify(lightState));
+            localStorage.setItem(key, JSON.stringify(ultraLight));
           } catch (e2) {}
         }
 
@@ -2718,6 +2830,11 @@
                 }
               }
             }
+            if (Array.isArray(lightPost.images) && lightPost.images.length > 1) {
+              lightPost.imageCount = lightPost.images.length;
+              pushFullImageToNtfyChunks({ id: changedPost.id + '__gallery', image: JSON.stringify(changedPost.images) }).catch(() => {});
+              delete lightPost.images;
+            }
             if (lightPost.fileDataUrl && lightPost.fileDataUrl.length > 2600) {
               lightPost.hasFile = true;
               pushFullImageToNtfyChunks({ id: changedPost.id + '__file', image: changedPost.fileDataUrl }).catch(() => {});
@@ -2980,12 +3097,13 @@
         setTimeout(() => pinInput.focus(), 60);
       }
 
-      function compressImageFile(file, maxWidth = 600, quality = 0.72) {
+      function compressImageFile(file, maxWidth = 560, quality = 0.70) {
         return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = ev => {
-            const img = new Image();
-            img.onload = () => {
+          const objUrl = URL.createObjectURL(file);
+          const img = new Image();
+          img.onload = () => {
+            try { URL.revokeObjectURL(objUrl); } catch (e) {}
+            try {
               let w = img.width, h = img.height;
               const maxDim = maxWidth;
               if (w > maxDim || h > maxDim) {
@@ -3028,13 +3146,19 @@
                 }
                 window._lastInlinePreview = inlineUrl.length <= 2500 ? inlineUrl : '';
               } catch (e) {}
+              // Release canvas GPU backing store immediately to prevent iOS/Android crash when adding many images
+              canvas.width = 1;
+              canvas.height = 1;
               resolve(dataUrl);
-            };
-            img.onerror = reject;
-            img.src = ev.target.result;
+            } catch (err) {
+              reject(err);
+            }
           };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
+          img.onerror = err => {
+            try { URL.revokeObjectURL(objUrl); } catch (e) {}
+            reject(err);
+          };
+          img.src = objUrl;
         });
       }
 
@@ -3110,7 +3234,17 @@
       }
 
       let pendingFileAttachment = null;
+      let pendingImagesList = [];
       const blobUrlCache = new Map();
+      const parsedDocPagesCache = new Map();
+      const activeCarouselStateMap = new Map();
+      const visibleCardIds = new Set();
+      let lightboxGalleryState = { images: [], index: 0, autoTimer: null };
+      let docModalState = { post: null, pages: [], pageIndex: 0, autoTimer: null };
+
+      if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
 
       function isImageFileObj(file) {
         if (!file) return false;
@@ -3196,22 +3330,562 @@
         }
       }
 
+      function dataUrlToUint8Array(dataUrl) {
+        if (!dataUrl || !dataUrl.startsWith('data:')) return null;
+        try {
+          const b64 = dataUrl.split(',')[1] || '';
+          const bin = atob(b64);
+          const arr = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+          return arr;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      async function parseUniversalDocumentPages(post) {
+        if (!post || !post.fileDataUrl) return [];
+        const cacheKey = post.id + ':' + post.fileDataUrl.length;
+        if (parsedDocPagesCache.has(cacheKey)) return parsedDocPagesCache.get(cacheKey);
+
+        const ext = String(post.fileExt || getUniversalFileExt(post.fileName || '', post.fileMime || '')).toUpperCase();
+        const bytes = dataUrlToUint8Array(post.fileDataUrl);
+        const pages = [];
+
+        try {
+          // 1. PDF Multi-Page Canvas Renderer via PDF.js
+          if ((ext === 'PDF' || (post.fileMime && post.fileMime.includes('pdf'))) && window.pdfjsLib && bytes) {
+            const pdfDoc = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+            const total = pdfDoc.numPages || 1;
+            for (let pNum = 1; pNum <= total; pNum++) {
+              pages.push({ type: 'pdf-page', pdfDoc, pageNumber: pNum, totalPages: total });
+            }
+            parsedDocPagesCache.set(cacheKey, pages);
+            return pages;
+          }
+
+          // 2. PowerPoint (.pptx) Multi-Slide Extractor via JSZip
+          if (ext === 'PPTX' && window.JSZip && bytes) {
+            const zip = await window.JSZip.loadAsync(bytes);
+            const slideFiles = Object.keys(zip.files)
+              .filter(k => /^ppt\/slides\/slide\d+\.xml$/i.test(k))
+              .sort((a, b) => {
+                const na = parseInt((a.match(/slide(\d+)\.xml/i) || [0, 0])[1], 10);
+                const nb = parseInt((b.match(/slide(\d+)\.xml/i) || [0, 0])[1], 10);
+                return na - nb;
+              });
+
+            const mediaDataUrls = new Map();
+            const mediaKeys = Object.keys(zip.files).filter(k => /^ppt\/media\/.+\.(png|jpe?g|gif|webp|svg)$/i.test(k));
+            for (const mk of mediaKeys.slice(0, 40)) {
+              try {
+                const b64 = await zip.files[mk].async('base64');
+                const mExt = (mk.split('.').pop() || 'png').toLowerCase();
+                const mime = mExt === 'svg' ? 'image/svg+xml' : (mExt === 'jpg' ? 'image/jpeg' : 'image/' + mExt);
+                const fname = mk.split('/').pop();
+                mediaDataUrls.set(fname, getOrCreateBlobUrlForDataUrl(post.id + '_ppt_' + fname, `data:${mime};base64,${b64}`, mime));
+              } catch (e) {}
+            }
+
+            for (let i = 0; i < slideFiles.length; i++) {
+              const sPath = slideFiles[i];
+              const xmlStr = await zip.files[sPath].async('string');
+              const parser = new DOMParser();
+              const xmlDoc = parser.parseFromString(xmlStr, 'application/xml');
+              const paragraphs = [];
+              const pNodes = xmlDoc.getElementsByTagName('a:p');
+              for (let j = 0; j < pNodes.length; j++) {
+                const tNodes = pNodes[j].getElementsByTagName('a:t');
+                let line = '';
+                for (let k = 0; k < tNodes.length; k++) line += tNodes[k].textContent || '';
+                if (line.trim()) paragraphs.push(line.trim());
+              }
+              // Check slide rels for images on this slide
+              const slideNum = (sPath.match(/slide(\d+)\.xml/i) || [0, i + 1])[1];
+              const relPath = `ppt/slides/_rels/slide${slideNum}.xml.rels`;
+              const slideImgs = [];
+              if (zip.files[relPath]) {
+                try {
+                  const relXml = await zip.files[relPath].async('string');
+                  const matches = relXml.match(/media\/[^"'\s>]+/gi) || [];
+                  matches.forEach(m => {
+                    const fn = m.split('/').pop();
+                    if (mediaDataUrls.has(fn) && !slideImgs.includes(mediaDataUrls.get(fn))) {
+                      slideImgs.push(mediaDataUrls.get(fn));
+                    }
+                  });
+                } catch (e) {}
+              }
+              const title = paragraphs[0] || `สไลด์ที่ ${i + 1}`;
+              const bullets = paragraphs.slice(1);
+              pages.push({
+                type: 'html-page',
+                html: `
+                  <div class="w-full max-w-2xl mx-auto aspect-video rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 text-white p-5 sm:p-8 shadow-xl border border-neutral-700 flex flex-col justify-between overflow-y-auto">
+                    <div>
+                      <div class="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-white/15">
+                        <span class="px-2.5 py-0.5 rounded-lg bg-orange-500 text-white text-[11px] font-extrabold">SLIDE ${i + 1} / ${slideFiles.length}</span>
+                        <span class="text-[11px] text-neutral-400 truncate">${escapeHtml(post.fileName || 'Presentation.pptx')}</span>
+                      </div>
+                      <h4 class="text-base sm:text-xl font-bold text-orange-400 leading-snug mb-3">${escapeHtml(title)}</h4>
+                      ${
+                        bullets.length > 0
+                          ? `<ul class="space-y-1.5 text-xs sm:text-sm text-neutral-100 list-disc pl-5 leading-relaxed">
+                               ${bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}
+                             </ul>`
+                          : (slideImgs.length === 0 ? `<p class="text-xs text-neutral-400 italic">(สไลด์กราฟิก)</p>` : '')
+                      }
+                      ${
+                        slideImgs.length > 0
+                          ? `<div class="mt-3 grid grid-cols-${Math.min(slideImgs.length, 2)} gap-2">
+                               ${slideImgs.map(u => `<img src="${escapeHtml(u)}" class="max-h-44 w-full object-contain rounded-xl bg-white/95 p-1 mx-auto" alt="Slide Image" />`).join('')}
+                             </div>`
+                          : ''
+                      }
+                    </div>
+                  </div>
+                `
+              });
+            }
+            if (pages.length > 0) {
+              parsedDocPagesCache.set(cacheKey, pages);
+              return pages;
+            }
+          }
+
+          // 3. Word (.docx) Multi-Page Extractor via JSZip
+          if (ext === 'DOCX' && window.JSZip && bytes) {
+            const zip = await window.JSZip.loadAsync(bytes);
+            if (zip.files['word/document.xml']) {
+              const xmlStr = await zip.files['word/document.xml'].async('string');
+              const parser = new DOMParser();
+              const xmlDoc = parser.parseFromString(xmlStr, 'application/xml');
+              const pNodes = xmlDoc.getElementsByTagName('w:p');
+              const lines = [];
+              for (let i = 0; i < pNodes.length; i++) {
+                const tNodes = pNodes[i].getElementsByTagName('w:t');
+                let pText = '';
+                for (let j = 0; j < tNodes.length; j++) pText += tNodes[j].textContent || '';
+                if (pText.trim()) lines.push(pText.trim());
+              }
+              const chunkSize = 14;
+              const totalP = Math.max(1, Math.ceil(lines.length / chunkSize));
+              for (let p = 0; p < totalP; p++) {
+                const slice = lines.slice(p * chunkSize, (p + 1) * chunkSize);
+                pages.push({
+                  type: 'html-page',
+                  html: `
+                    <div class="w-full max-w-2xl mx-auto min-h-[340px] rounded-2xl bg-white text-neutral-900 p-5 sm:p-8 shadow-md border border-neutral-200">
+                      <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-neutral-200 text-xs text-neutral-400 font-semibold">
+                        <span class="truncate">${escapeHtml(post.fileName || 'Document.docx')}</span>
+                        <span class="shrink-0">หน้า ${p + 1} / ${totalP}</span>
+                      </div>
+                      <div class="space-y-2.5 text-xs sm:text-sm text-neutral-800 leading-relaxed">
+                        ${slice.length > 0 ? slice.map((l, idx) => `<p class="${p === 0 && idx === 0 ? 'font-bold text-base text-neutral-900' : ''}">${escapeHtml(l)}</p>`).join('') : '<p class="text-neutral-400 italic">(เอกสารไม่มีข้อความ)</p>'}
+                      </div>
+                    </div>
+                  `
+                });
+              }
+              parsedDocPagesCache.set(cacheKey, pages);
+              return pages;
+            }
+          }
+
+          // 4. Excel (.xlsx) Multi-Sheet Preview via JSZip
+          if (ext === 'XLSX' && window.JSZip && bytes) {
+            const zip = await window.JSZip.loadAsync(bytes);
+            const sharedStrings = [];
+            if (zip.files['xl/sharedStrings.xml']) {
+              const ssXml = await zip.files['xl/sharedStrings.xml'].async('string');
+              const ssDoc = new DOMParser().parseFromString(ssXml, 'application/xml');
+              const siNodes = ssDoc.getElementsByTagName('si');
+              for (let i = 0; i < siNodes.length; i++) {
+                const tNodes = siNodes[i].getElementsByTagName('t');
+                let s = '';
+                for (let j = 0; j < tNodes.length; j++) s += tNodes[j].textContent || '';
+                sharedStrings.push(s);
+              }
+            }
+            const sheetFiles = Object.keys(zip.files).filter(k => /^xl\/worksheets\/sheet\d+\.xml$/i.test(k)).sort();
+            for (let sIdx = 0; sIdx < sheetFiles.length; sIdx++) {
+              const shXml = await zip.files[sheetFiles[sIdx]].async('string');
+              const shDoc = new DOMParser().parseFromString(shXml, 'application/xml');
+              const rowNodes = shDoc.getElementsByTagName('row');
+              const rowsHtml = [];
+              for (let r = 0; r < Math.min(rowNodes.length, 40); r++) {
+                const cNodes = rowNodes[r].getElementsByTagName('c');
+                const cells = [];
+                for (let c = 0; c < Math.min(cNodes.length, 12); c++) {
+                  const tAttr = cNodes[c].getAttribute('t');
+                  const vNode = cNodes[c].getElementsByTagName('v')[0];
+                  let val = vNode ? vNode.textContent : '';
+                  if (tAttr === 's' && sharedStrings[Number(val)] !== undefined) val = sharedStrings[Number(val)];
+                  cells.push(`<td class="border border-neutral-200 px-2.5 py-1.5 text-xs ${r === 0 ? 'font-bold bg-neutral-100 text-neutral-900' : 'text-neutral-700'}">${escapeHtml(val)}</td>`);
+                }
+                if (cells.length > 0) rowsHtml.push(`<tr>${cells.join('')}</tr>`);
+              }
+              pages.push({
+                type: 'html-page',
+                html: `
+                  <div class="w-full max-w-2xl mx-auto rounded-2xl bg-white p-4 shadow-md border border-neutral-200 overflow-x-auto">
+                    <div class="text-xs font-bold text-emerald-700 mb-2">ตารางแผ่นงานที่ ${sIdx + 1} / ${sheetFiles.length}</div>
+                    <table class="w-full border-collapse text-left">${rowsHtml.join('')}</table>
+                  </div>
+                `
+              });
+            }
+            if (pages.length > 0) {
+              parsedDocPagesCache.set(cacheKey, pages);
+              return pages;
+            }
+          }
+
+          // 5. Plain Text / CSV / Code / Markdown / JSON
+          if (['TXT', 'CSV', 'MD', 'JSON', 'JS', 'PY', 'HTML', 'CSS', 'XML'].includes(ext) && bytes) {
+            const textStr = new TextDecoder('utf-8').decode(bytes);
+            const allLines = textStr.split(/\r?\n/);
+            const perPage = 24;
+            const totalP = Math.max(1, Math.ceil(allLines.length / perPage));
+            for (let p = 0; p < totalP; p++) {
+              const chunk = allLines.slice(p * perPage, (p + 1) * perPage).join('\n');
+              pages.push({
+                type: 'html-page',
+                html: `
+                  <div class="w-full max-w-2xl mx-auto rounded-2xl bg-neutral-900 text-neutral-100 p-4 sm:p-5 shadow-md border border-neutral-700 overflow-x-auto">
+                    <div class="flex items-center justify-between text-[11px] text-neutral-400 pb-2 mb-2 border-b border-neutral-800">
+                      <span>${escapeHtml(post.fileName || 'file')}</span>
+                      <span>หน้า ${p + 1} / ${totalP}</span>
+                    </div>
+                    <pre class="text-xs font-mono whitespace-pre-wrap leading-relaxed">${escapeHtml(chunk)}</pre>
+                  </div>
+                `
+              });
+            }
+            parsedDocPagesCache.set(cacheKey, pages);
+            return pages;
+          }
+        } catch (err) {}
+
+        // Universal Fallback Preview Page (with native PDF/Blob embed if PDF, or rich summary card)
+        const blobUrl = getOrCreateBlobUrlForDataUrl(post.id + '_blob', post.fileDataUrl, post.fileMime);
+        if (ext === 'PDF' && blobUrl) {
+          pages.push({
+            type: 'html-page',
+            html: `<iframe src="${escapeHtml(blobUrl)}" class="w-full h-96 rounded-xl border border-neutral-200 bg-white" title="${escapeHtml(post.fileName || 'PDF')}"></iframe>`
+          });
+        } else {
+          const style = getUniversalFileBadgeStyle(ext);
+          pages.push({
+            type: 'html-page',
+            html: `
+              <div class="w-full max-w-lg mx-auto rounded-2xl bg-white p-6 text-center border border-neutral-200 shadow-xs">
+                <div class="w-14 h-14 rounded-2xl ${style.bg} font-extrabold text-sm flex items-center justify-center mx-auto mb-3 shadow-sm">${escapeHtml(ext)}</div>
+                <div class="font-bold text-sm text-neutral-900 break-all mb-1">${escapeHtml(post.fileName || 'ไฟล์แนบ')}</div>
+                <div class="text-xs text-neutral-500 mb-4">${escapeHtml(style.typeLabel)} ${post.fileSize ? '• ' + formatUniversalFileSize(post.fileSize) : ''}</div>
+                <div class="flex items-center justify-center gap-2">
+                  <a href="${escapeHtml(blobUrl)}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-900 text-xs font-bold transition">เปิดไฟล์ในแท็บใหม่ ↗</a>
+                  <a href="${escapeHtml(blobUrl)}" download="${escapeHtml(post.fileName || 'file')}" class="px-4 py-2 rounded-xl bg-orange-500 hover:bg-neutral-900 text-white text-xs font-bold transition">ดาวน์โหลดไฟล์</a>
+                </div>
+              </div>
+            `
+          });
+        }
+        parsedDocPagesCache.set(cacheKey, pages);
+        return pages;
+      }
+
+      async function renderDocPageIntoStage(stageEl, pageObj) {
+        if (!stageEl || !pageObj) return;
+        if (pageObj.type === 'pdf-page' && pageObj.pdfDoc) {
+          stageEl.innerHTML = `<div class="w-full flex flex-col items-center justify-center py-2"><canvas class="pdf-render-canvas max-w-full rounded-xl shadow-md bg-white border border-neutral-200"></canvas></div>`;
+          const canvas = stageEl.querySelector('.pdf-render-canvas');
+          try {
+            const page = await pageObj.pdfDoc.getPage(pageObj.pageNumber);
+            const baseVp = page.getViewport({ scale: 1 });
+            const targetW = Math.min(stageEl.clientWidth ? stageEl.clientWidth - 16 : 640, 760);
+            const scale = Math.max(0.8, Math.min(1.8, targetW / (baseVp.width || 600)));
+            const viewport = page.getViewport({ scale });
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const ctx = canvas.getContext('2d');
+            await page.render({ canvasContext: ctx, viewport }).promise;
+          } catch (e) {}
+        } else if (pageObj.type === 'html-page') {
+          stageEl.innerHTML = pageObj.html;
+        }
+      }
+
+      function getPostImagesArray(post) {
+        if (!post) return [];
+        if (Array.isArray(post.images) && post.images.length > 0) {
+          return post.images.filter(Boolean);
+        }
+        if (post.image && typeof post.image === 'string' && post.image.length > 10) {
+          return [post.image];
+        }
+        return [];
+      }
+
+      function buildMultiImageGalleryHtml(post) {
+        const imgs = getPostImagesArray(post);
+        if (imgs.length === 0) return '';
+        if (imgs.length === 1) {
+          const bUrl = getOrCreateBlobUrlForDataUrl(post.id + '_img_0', imgs[0], 'image/webp');
+          return `
+            <div class="mb-3 rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-100/70 relative" onclick="event.stopPropagation()">
+              <img src="${escapeHtml(bUrl)}" data-idx="0" loading="lazy" decoding="async" alt="รูปภาพประกอบ" referrerpolicy="no-referrer" class="note-image w-full max-h-[520px] object-contain mx-auto cursor-zoom-in" />
+            </div>
+          `;
+        }
+        const firstBlobUrl = getOrCreateBlobUrlForDataUrl(post.id + '_img_0', imgs[0], 'image/webp');
+        return `
+          <div class="multi-image-carousel mb-3 rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-950 relative select-none" data-post-id="${escapeHtml(post.id)}" onclick="event.stopPropagation()">
+            <div class="relative w-full h-72 sm:h-[420px] flex items-center justify-center overflow-hidden bg-neutral-900">
+              <img src="${escapeHtml(firstBlobUrl)}" data-idx="0" loading="lazy" decoding="async" alt="รูปภาพประกอบ" referrerpolicy="no-referrer" class="carousel-active-img note-image w-full h-full object-contain cursor-zoom-in transition-opacity duration-200" />
+
+              <!-- Top Left Slide Counter -->
+              <span class="carousel-counter-badge absolute top-3 left-3 px-2.5 py-1 rounded-xl bg-black/70 text-white text-xs font-bold backdrop-blur-xs">
+                1 / ${imgs.length}
+              </span>
+
+              <!-- Top Right Auto-Loop Toggle -->
+              <button type="button" class="btn-carousel-autoloop absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-black/70 hover:bg-orange-500 text-white text-[11px] font-bold backdrop-blur-xs transition">
+                ↻ ไหลวน
+              </button>
+
+              <!-- Prev & Next Arrows -->
+              <button type="button" class="btn-carousel-prev absolute left-2.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/65 hover:bg-orange-500 text-white font-bold text-lg flex items-center justify-center shadow-md transition" title="รูปก่อนหน้า">
+                ‹
+              </button>
+              <button type="button" class="btn-carousel-next absolute right-2.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/65 hover:bg-orange-500 text-white font-bold text-lg flex items-center justify-center shadow-md transition" title="รูปถัดไป">
+                ›
+              </button>
+            </div>
+
+            <!-- Bottom Thumbnails & Dots Bar -->
+            <div class="px-3 py-2 bg-neutral-900 border-t border-neutral-800 flex items-center justify-center gap-1.5 overflow-x-auto">
+              ${imgs.map((_, i) => `<button type="button" data-slide-to="${i}" class="carousel-dot-btn h-2 rounded-full transition-all ${i === 0 ? 'w-5 bg-orange-500' : 'w-2 bg-neutral-600 hover:bg-neutral-400'}"></button>`).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      function bindMultiImageCarouselEvents(containerEl, post) {
+        if (!containerEl || !post) return;
+        const imgs = getPostImagesArray(post);
+        if (imgs.length === 0) return;
+
+        if (imgs.length === 1) {
+          const singleImg = containerEl.querySelector('.note-image');
+          if (singleImg) {
+            singleImg.addEventListener('click', e => {
+              e.stopPropagation();
+              openLightboxWithGallery(imgs, 0);
+            });
+          }
+          return;
+        }
+
+        const carouselEl = containerEl.querySelector('.multi-image-carousel');
+        if (!carouselEl) return;
+        const imgEl = carouselEl.querySelector('.carousel-active-img');
+        const counterEl = carouselEl.querySelector('.carousel-counter-badge');
+        const autoBtn = carouselEl.querySelector('.btn-carousel-autoloop');
+        const prevBtn = carouselEl.querySelector('.btn-carousel-prev');
+        const nextBtn = carouselEl.querySelector('.btn-carousel-next');
+        const dotBtns = carouselEl.querySelectorAll('.carousel-dot-btn');
+
+        const stateObj = activeCarouselStateMap.get(post.id) || { index: 0, autoLoop: true, pauseUntil: 0 };
+        activeCarouselStateMap.set(post.id, stateObj);
+
+        const showSlide = (newIdx) => {
+          const total = imgs.length;
+          stateObj.index = ((newIdx % total) + total) % total;
+          const idx = stateObj.index;
+          const bUrl = getOrCreateBlobUrlForDataUrl(post.id + '_img_' + idx, imgs[idx], 'image/webp');
+          if (imgEl) {
+            imgEl.src = bUrl;
+            imgEl.setAttribute('data-idx', String(idx));
+          }
+          if (counterEl) counterEl.textContent = `${idx + 1} / ${total}`;
+          dotBtns.forEach((d, di) => {
+            d.className = `carousel-dot-btn h-2 rounded-full transition-all ${di === idx ? 'w-5 bg-orange-500' : 'w-2 bg-neutral-600 hover:bg-neutral-400'}`;
+          });
+        };
+
+        stateObj.stepNext = () => showSlide(stateObj.index + 1);
+        showSlide(stateObj.index);
+
+        if (prevBtn) {
+          prevBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            stateObj.pauseUntil = Date.now() + 6000;
+            showSlide(stateObj.index - 1);
+          });
+        }
+        if (nextBtn) {
+          nextBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            stateObj.pauseUntil = Date.now() + 6000;
+            showSlide(stateObj.index + 1);
+          });
+        }
+        if (autoBtn) {
+          const syncAutoLabel = () => {
+            autoBtn.textContent = stateObj.autoLoop ? '↻ ไหลวน' : '⏸ หยุด';
+            autoBtn.className = `btn-carousel-autoloop absolute top-3 right-3 px-2.5 py-1 rounded-xl ${stateObj.autoLoop ? 'bg-orange-500 text-white' : 'bg-black/70 text-neutral-300'} text-[11px] font-bold backdrop-blur-xs transition`;
+          };
+          syncAutoLabel();
+          autoBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            stateObj.autoLoop = !stateObj.autoLoop;
+            syncAutoLabel();
+          });
+        }
+        dotBtns.forEach(dBtn => {
+          dBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            stateObj.pauseUntil = Date.now() + 6000;
+            showSlide(parseInt(dBtn.getAttribute('data-slide-to'), 10) || 0);
+          });
+        });
+        if (imgEl) {
+          imgEl.addEventListener('click', e => {
+            e.stopPropagation();
+            openLightboxWithGallery(imgs, stateObj.index);
+          });
+        }
+
+        // Touch swipe left / right support
+        let touchStartX = 0;
+        let touchStartY = 0;
+        carouselEl.addEventListener('touchstart', e => {
+          if (e.touches && e.touches[0]) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+          }
+        }, { passive: true });
+        carouselEl.addEventListener('touchend', e => {
+          if (e.changedTouches && e.changedTouches[0]) {
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+            if (Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy)) {
+              stateObj.pauseUntil = Date.now() + 6000;
+              if (dx < 0) showSlide(stateObj.index + 1);
+              else showSlide(stateObj.index - 1);
+            }
+          }
+        }, { passive: true });
+      }
+
+      // Shared Viewport-Aware Auto-Loop Ticker (Zero CPU when off-screen!)
+      const cardViewportObserver = ('IntersectionObserver' in window)
+        ? new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+              const pid = entry.target.dataset.postId;
+              if (!pid) return;
+              if (entry.isIntersecting) visibleCardIds.add(pid);
+              else visibleCardIds.delete(pid);
+            });
+          }, { threshold: 0.25 })
+        : null;
+
+      setInterval(() => {
+        const now = Date.now();
+        visibleCardIds.forEach(pid => {
+          const st = activeCarouselStateMap.get(pid);
+          if (st && st.autoLoop && now >= (st.pauseUntil || 0) && typeof st.stepNext === 'function') {
+            st.stepNext();
+          }
+        });
+      }, 3400);
+
+      function openLightboxWithGallery(imagesArr, startIndex = 0) {
+        if (!Array.isArray(imagesArr) || imagesArr.length === 0) return;
+        lightboxGalleryState.images = imagesArr;
+        lightboxGalleryState.index = startIndex || 0;
+        if (lightboxGalleryState.autoTimer) {
+          clearInterval(lightboxGalleryState.autoTimer);
+          lightboxGalleryState.autoTimer = null;
+        }
+        const modal = document.getElementById('modalLightbox');
+        const imgEl = document.getElementById('lightboxImage');
+        const counterEl = document.getElementById('lightboxCounterBadge');
+        const prevBtn = document.getElementById('btnLightboxPrev');
+        const nextBtn = document.getElementById('btnLightboxNext');
+        const autoBtn = document.getElementById('btnLightboxToggleAuto');
+
+        const renderLb = () => {
+          const total = lightboxGalleryState.images.length;
+          const idx = ((lightboxGalleryState.index % total) + total) % total;
+          lightboxGalleryState.index = idx;
+          const raw = lightboxGalleryState.images[idx];
+          imgEl.src = getOrCreateBlobUrlForDataUrl('lb_' + idx + '_' + raw.length, raw, 'image/webp');
+          if (counterEl) counterEl.textContent = `${idx + 1} / ${total}`;
+          if (prevBtn) prevBtn.classList.toggle('hidden', total <= 1);
+          if (nextBtn) nextBtn.classList.toggle('hidden', total <= 1);
+          if (autoBtn) autoBtn.classList.toggle('hidden', total <= 1);
+        };
+        lightboxGalleryState.render = renderLb;
+        renderLb();
+        modal.classList.remove('hidden');
+      }
+
+      async function openFullScreenDocPreviewModal(post) {
+        if (!post) return;
+        const modal = document.getElementById('modalDocPreview');
+        const extBadge = document.getElementById('docModalExtBadge');
+        const titleEl = document.getElementById('docModalTitle');
+        const pageBadge = document.getElementById('docModalPageBadge');
+        const stageEl = document.getElementById('docModalStage');
+        const dlBtn = document.getElementById('btnDocModalDownload');
+        const ext = post.fileExt || getUniversalFileExt(post.fileName || '', post.fileMime || '');
+        const style = getUniversalFileBadgeStyle(ext);
+
+        if (extBadge) {
+          extBadge.textContent = ext;
+          extBadge.className = `px-2 py-0.5 rounded-lg ${style.bg} text-xs font-extrabold uppercase shrink-0`;
+        }
+        if (titleEl) titleEl.textContent = post.fileName || 'เอกสารแนบ';
+        if (dlBtn && post.fileDataUrl) {
+          dlBtn.href = getOrCreateBlobUrlForDataUrl(post.id + '_blob', post.fileDataUrl, post.fileMime);
+          dlBtn.download = post.fileName || ('document.' + ext.toLowerCase());
+        }
+        if (stageEl) stageEl.innerHTML = `<div class="text-xs font-bold text-neutral-500">กำลังเปิดหน้าเอกสาร...</div>`;
+        modal.classList.remove('hidden');
+
+        const pages = await parseUniversalDocumentPages(post);
+        docModalState.post = post;
+        docModalState.pages = pages;
+        docModalState.pageIndex = 0;
+
+        const renderModalPage = async () => {
+          const total = Math.max(1, docModalState.pages.length);
+          const idx = ((docModalState.pageIndex % total) + total) % total;
+          docModalState.pageIndex = idx;
+          if (pageBadge) pageBadge.textContent = `หน้า ${idx + 1} / ${total}`;
+          await renderDocPageIntoStage(stageEl, docModalState.pages[idx]);
+        };
+        docModalState.render = renderModalPage;
+        await renderModalPage();
+      }
+
       function buildUniversalFileAttachmentHtml(post) {
         if (!post || (!post.fileName && !post.fileDataUrl && !post.hasFile)) return '';
         const ext = post.fileExt || getUniversalFileExt(post.fileName || '', post.fileMime || '');
         const style = getUniversalFileBadgeStyle(ext);
         const fName = post.fileName || ('ไฟล์แนบ.' + ext.toLowerCase());
         const fSize = formatUniversalFileSize(post.fileSize);
-        const isPdf = ext === 'PDF' || (post.fileMime && post.fileMime.includes('pdf'));
         const isVideo = ['MP4', 'WEBM', 'MOV', 'VIDEO'].includes(ext) || (post.fileMime && post.fileMime.startsWith('video/'));
         const isAudio = ['MP3', 'WAV', 'M4A', 'AUDIO'].includes(ext) || (post.fileMime && post.fileMime.startsWith('audio/'));
         const blobUrl = post.fileDataUrl ? getOrCreateBlobUrlForDataUrl(post.id + '_blob', post.fileDataUrl, post.fileMime) : '';
 
         return `
-          <div class="universal-file-card mb-3 rounded-2xl border border-neutral-200 bg-neutral-50/90 overflow-hidden shadow-xs" onclick="event.stopPropagation()">
-            <div class="p-3 sm:p-3.5 flex items-center justify-between gap-2.5 flex-wrap">
-              <div class="flex items-center gap-3 min-w-0 flex-1">
-                <div class="w-11 h-11 rounded-xl ${style.bg} font-extrabold text-xs flex flex-col items-center justify-center shrink-0 shadow-xs">
+          <div class="universal-file-card mb-3 rounded-2xl border border-neutral-200 bg-neutral-50/95 overflow-hidden shadow-xs" data-post-id="${escapeHtml(post.id)}" onclick="event.stopPropagation()">
+            <div class="p-3 sm:p-3.5 flex items-center justify-between gap-2 flex-wrap bg-white border-b border-neutral-200/80">
+              <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                <div class="w-10 h-10 rounded-xl ${style.bg} font-extrabold text-xs flex flex-col items-center justify-center shrink-0 shadow-xs">
                   <svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
@@ -3228,15 +3902,14 @@
 
               <div class="flex items-center gap-1.5 shrink-0">
                 ${
-                  isPdf && blobUrl
-                    ? `<button type="button" class="btn-toggle-pdf-preview px-3 py-1.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 border border-neutral-300 text-xs font-bold transition">
-                         เปิดดู PDF
+                  blobUrl && !isVideo && !isAudio
+                    ? `<button type="button" class="btn-toggle-doc-preview px-2.5 py-1.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-900 border border-neutral-300 text-xs font-bold transition">
+                         ซ่อนตัวอย่าง
+                       </button>
+                       <button type="button" class="btn-open-fullscreen-doc px-2.5 py-1.5 rounded-xl bg-white hover:bg-orange-50 text-orange-600 border border-orange-200 text-xs font-bold transition" title="เปิดดูไฟล์แบบเต็มจอ">
+                         ⛶ เปิดเต็มจอ
                        </button>`
-                    : (blobUrl
-                        ? `<a href="${escapeHtml(blobUrl)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 border border-neutral-300 text-xs font-bold transition">
-                             เปิดไฟล์ ↗
-                           </a>`
-                        : '')
+                    : ''
                 }
                 ${
                   blobUrl
@@ -3249,9 +3922,21 @@
             </div>
 
             ${
-              isPdf && blobUrl
-                ? `<div class="pdf-inline-preview-frame hidden border-t border-neutral-200 bg-neutral-900">
-                     <iframe src="${escapeHtml(blobUrl)}" class="w-full h-96 border-0 bg-white" title="${escapeHtml(fName)}"></iframe>
+              blobUrl && !isVideo && !isAudio
+                ? `<div class="doc-inline-preview-wrap bg-neutral-100">
+                     <div class="px-3 py-2 bg-neutral-200/80 border-b border-neutral-300 flex items-center justify-between gap-2 text-xs">
+                       <div class="flex items-center gap-1.5">
+                         <button type="button" class="btn-doc-inline-prev px-2.5 py-1 rounded-lg bg-white hover:bg-neutral-900 text-neutral-900 hover:text-white border border-neutral-300 font-bold transition">‹ หน้าก่อน</button>
+                         <span class="doc-inline-page-label px-2.5 py-1 rounded-lg bg-white border border-neutral-300 font-bold text-neutral-800">หน้า 1 / 1</span>
+                         <button type="button" class="btn-doc-inline-next px-2.5 py-1 rounded-lg bg-white hover:bg-neutral-900 text-neutral-900 hover:text-white border border-neutral-300 font-bold transition">หน้าถัดไป ›</button>
+                       </div>
+                       <button type="button" class="btn-doc-inline-auto px-2.5 py-1 rounded-lg bg-white hover:bg-orange-500 text-neutral-800 hover:text-white border border-neutral-300 font-bold transition">
+                         ↻ ไหลวน
+                       </button>
+                     </div>
+                     <div class="doc-inline-stage p-3 sm:p-4 min-h-[220px] max-h-[520px] overflow-auto flex items-center justify-center">
+                       <div class="text-xs font-semibold text-neutral-500">กำลังโหลดหน้าเอกสาร...</div>
+                     </div>
                    </div>`
                 : ''
             }
@@ -3273,6 +3958,101 @@
         `;
       }
 
+      function bindUniversalFilePreviewEvents(containerEl, post) {
+        if (!containerEl || !post || !post.fileDataUrl) return;
+        const fileCard = containerEl.querySelector('.universal-file-card');
+        if (!fileCard) return;
+
+        const toggleBtn = fileCard.querySelector('.btn-toggle-doc-preview');
+        const fullBtn = fileCard.querySelector('.btn-open-fullscreen-doc');
+        const wrapEl = fileCard.querySelector('.doc-inline-preview-wrap');
+        const stageEl = fileCard.querySelector('.doc-inline-stage');
+        const prevBtn = fileCard.querySelector('.btn-doc-inline-prev');
+        const nextBtn = fileCard.querySelector('.btn-doc-inline-next');
+        const autoBtn = fileCard.querySelector('.btn-doc-inline-auto');
+        const pageLabel = fileCard.querySelector('.doc-inline-page-label');
+
+        if (fullBtn) {
+          fullBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            openFullScreenDocPreviewModal(post);
+          });
+        }
+        if (toggleBtn && wrapEl) {
+          toggleBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            wrapEl.classList.toggle('hidden');
+            toggleBtn.textContent = wrapEl.classList.contains('hidden') ? 'เปิดดูไฟล์' : 'ซ่อนตัวอย่าง';
+          });
+        }
+        if (!stageEl) return;
+
+        let docPages = [];
+        let curPage = 0;
+        let autoFlipTimer = null;
+
+        const showDocPage = async (newPageIdx) => {
+          if (!docPages || docPages.length === 0) return;
+          const total = docPages.length;
+          curPage = ((newPageIdx % total) + total) % total;
+          if (pageLabel) pageLabel.textContent = `หน้า ${curPage + 1} / ${total}`;
+          await renderDocPageIntoStage(stageEl, docPages[curPage]);
+        };
+
+        parseUniversalDocumentPages(post).then(pages => {
+          docPages = pages || [];
+          showDocPage(0);
+        });
+
+        if (prevBtn) {
+          prevBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            showDocPage(curPage - 1);
+          });
+        }
+        if (nextBtn) {
+          nextBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            showDocPage(curPage + 1);
+          });
+        }
+        if (autoBtn) {
+          autoBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            if (autoFlipTimer) {
+              clearInterval(autoFlipTimer);
+              autoFlipTimer = null;
+              autoBtn.textContent = '↻ ไหลวน';
+              autoBtn.className = 'btn-doc-inline-auto px-2.5 py-1 rounded-lg bg-white hover:bg-orange-500 text-neutral-800 hover:text-white border border-neutral-300 font-bold transition';
+            } else {
+              autoFlipTimer = setInterval(() => showDocPage(curPage + 1), 3500);
+              autoBtn.textContent = '⏸ หยุดไหลวน';
+              autoBtn.className = 'btn-doc-inline-auto px-2.5 py-1 rounded-lg bg-orange-500 text-white border border-orange-500 font-bold transition';
+            }
+          });
+        }
+
+        // Swipe left/right on document stage to flip pages
+        let tStartX = 0;
+        let tStartY = 0;
+        stageEl.addEventListener('touchstart', e => {
+          if (e.touches && e.touches[0]) {
+            tStartX = e.touches[0].clientX;
+            tStartY = e.touches[0].clientY;
+          }
+        }, { passive: true });
+        stageEl.addEventListener('touchend', e => {
+          if (e.changedTouches && e.changedTouches[0]) {
+            const dx = e.changedTouches[0].clientX - tStartX;
+            const dy = e.changedTouches[0].clientY - tStartY;
+            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+              if (dx < 0) showDocPage(curPage + 1);
+              else showDocPage(curPage - 1);
+            }
+          }
+        }, { passive: true });
+      }
+
       function computePostRenderSignature(post) {
         const lastCmtId = Array.isArray(post.comments) && post.comments.length > 0
           ? post.comments[post.comments.length - 1].id
@@ -3288,6 +4068,7 @@
           post.rating || 5,
           (post.text || '').length,
           post.image ? (post.image.length + ':' + post.image.slice(-16)) : '0',
+          Array.isArray(post.images) ? post.images.length : 0,
           post.fileName || '',
           post.fileDataUrl ? (post.fileDataUrl.length + ':' + post.fileDataUrl.slice(-12)) : '0',
           post.youtubeId || '',
@@ -3375,6 +4156,40 @@
                   renderBoard();
                 } else if (!post.image && (post.hasImage || post.imageBlobId)) {
                   fetchMissingPostImageFromCloud(post);
+                }
+              });
+            }
+          }
+          if ((!Array.isArray(post.images) || post.images.length <= 1) && (post.imageCount > 1)) {
+            const restoredGal = getSyncImageForPost(post.id + '__gallery', null);
+            if (restoredGal) {
+              try {
+                const gArr = JSON.parse(restoredGal);
+                if (Array.isArray(gArr) && gArr.length > 0) post.images = gArr;
+              } catch (e) {}
+            } else {
+              loadAsyncImageForPost(post.id + '__gallery').then(asyncGal => {
+                if (asyncGal) {
+                  try {
+                    const gArr = JSON.parse(asyncGal);
+                    if (Array.isArray(gArr) && gArr.length > 0) {
+                      post.images = gArr;
+                      renderBoard();
+                    }
+                  } catch (e) {}
+                } else {
+                  pullFullImageFromNtfyChunks(post.id + '__gallery').then(chunkGal => {
+                    if (chunkGal) {
+                      try {
+                        const gArr = JSON.parse(chunkGal);
+                        if (Array.isArray(gArr) && gArr.length > 0) {
+                          post.images = gArr;
+                          savePostImageLocallyAllLayers(post.id + '__gallery', chunkGal);
+                          renderBoard();
+                        }
+                      } catch (e) {}
+                    }
+                  }).catch(() => {});
                 }
               });
             }
@@ -3487,13 +4302,7 @@
                        </div>`
                     : ''
                 }
-                ${
-                  post.image
-                    ? `<div class="mb-3 rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-100/70 relative">
-                         <img src="${escapeHtml(post.image)}" loading="lazy" decoding="async" alt="รูปภาพประกอบ" referrerpolicy="no-referrer" class="note-image w-full max-h-[520px] object-contain mx-auto" />
-                       </div>`
-                    : ''
-                }
+                ${buildMultiImageGalleryHtml(post)}
                 ${buildUniversalFileAttachmentHtml(post)}
                 ${
                   ytId
@@ -3607,17 +4416,9 @@
               </div>
             `;
 
-            const pdfToggleBtn = card.querySelector('.btn-toggle-pdf-preview');
-            if (pdfToggleBtn) {
-              pdfToggleBtn.addEventListener('click', e => {
-                e.stopPropagation();
-                const frameWrap = card.querySelector('.pdf-inline-preview-frame');
-                if (frameWrap) {
-                  frameWrap.classList.toggle('hidden');
-                  pdfToggleBtn.textContent = frameWrap.classList.contains('hidden') ? 'เปิดดู PDF' : 'ซ่อน PDF';
-                }
-              });
-            }
+            bindMultiImageCarouselEvents(card, post);
+            bindUniversalFilePreviewEvents(card, post);
+            if (cardViewportObserver) cardViewportObserver.observe(card);
 
             // Bind YouTube Click-to-Play Facade (Eliminates Heavy Iframe Lag During Scroll & Post!)
             const ytFacade = card.querySelector('.yt-facade-container');
@@ -3789,9 +4590,16 @@
         document.getElementById('detailPostTime').textContent = formatPostFullDateTime(post);
 
         const imgWrap = document.getElementById('detailImageWrapper');
-        const imgEl = document.getElementById('detailImageEl');
-        if (post.image) { imgEl.src = post.image; imgWrap.classList.remove('hidden'); }
-        else imgWrap.classList.add('hidden');
+        const imgsArr = getPostImagesArray(post);
+        if (imgsArr.length > 0) {
+          imgWrap.className = 'rounded-2xl overflow-hidden';
+          imgWrap.innerHTML = `<img id="detailImageEl" class="hidden" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" />` + buildMultiImageGalleryHtml(post);
+          imgWrap.classList.remove('hidden');
+          bindMultiImageCarouselEvents(imgWrap, post);
+        } else {
+          imgWrap.innerHTML = `<img id="detailImageEl" class="hidden" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" />`;
+          imgWrap.classList.add('hidden');
+        }
 
         const detailFileWrap = document.getElementById('detailUniversalFileWrapper');
         if (detailFileWrap) {
@@ -3799,17 +4607,7 @@
           if (fileHtml) {
             detailFileWrap.innerHTML = fileHtml;
             detailFileWrap.classList.remove('hidden');
-            const pdfBtn = detailFileWrap.querySelector('.btn-toggle-pdf-preview');
-            if (pdfBtn) {
-              pdfBtn.addEventListener('click', e => {
-                e.stopPropagation();
-                const fw = detailFileWrap.querySelector('.pdf-inline-preview-frame');
-                if (fw) {
-                  fw.classList.toggle('hidden');
-                  pdfBtn.textContent = fw.classList.contains('hidden') ? 'เปิดดู PDF' : 'ซ่อน PDF';
-                }
-              });
-            }
+            bindUniversalFilePreviewEvents(detailFileWrap, post);
           } else {
             detailFileWrap.innerHTML = '';
             detailFileWrap.classList.add('hidden');
@@ -3948,22 +4746,53 @@
         const ytId = extractYoutubeId(ytRaw);
         const imgFromText = detectImageUrlInText(raw);
         const webUrl = detectWebsiteUrlInText(raw);
-        const activeImg = pendingImageDataUrl || imgFromText;
+        const allPendingImgs = pendingImagesList.length > 0
+          ? [...pendingImagesList]
+          : (pendingImageDataUrl ? [pendingImageDataUrl] : (imgFromText ? [imgFromText] : []));
 
         const badges = [];
         if (ytId) {
-          badges.push(`<span class="px-2.5 py-1 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-300 font-semibold flex items-center gap-1">▶️ YouTube Auto (${escapeHtml(ytId)})</span>`);
+          badges.push(`<span class="px-2.5 py-1 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-600 font-semibold flex items-center gap-1">▶️ YouTube Auto (${escapeHtml(ytId)})</span>`);
         }
         if (webUrl) {
-          badges.push(`<span class="px-2.5 py-1 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-300 font-semibold flex items-center gap-1 max-w-xs truncate">🌐 รันเว็บ Auto: ${escapeHtml(webUrl)}</span>`);
+          badges.push(`<span class="px-2.5 py-1 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-700 font-semibold flex items-center gap-1 max-w-xs truncate">🌐 รันเว็บ Auto: ${escapeHtml(webUrl)}</span>`);
         }
 
-        if (activeImg) {
-          imgEl.src = activeImg;
+        const multiListEl = document.getElementById('inlineMultiImageListEl');
+        const multiCountEl = document.getElementById('inlineMultiImageCountBadge');
+        if (allPendingImgs.length > 0) {
+          imgEl.src = getOrCreateBlobUrlForDataUrl('composer_thumb_0_' + allPendingImgs[0].length, allPendingImgs[0], 'image/webp');
+          if (multiCountEl) multiCountEl.textContent = `${allPendingImgs.length} รูป`;
+          if (multiListEl) {
+            multiListEl.innerHTML = allPendingImgs.map((u, idx) => {
+              const bUrl = getOrCreateBlobUrlForDataUrl('composer_thumb_' + idx + '_' + u.length, u, 'image/webp');
+              return `
+                <div class="relative group/thumb shrink-0">
+                  <img src="${escapeHtml(bUrl)}" class="h-9 w-11 object-cover rounded-lg border border-neutral-300 bg-white" alt="รูปที่ ${idx + 1}" />
+                  <button type="button" data-remove-img-idx="${idx}" class="btn-remove-single-pending-img absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-neutral-900 hover:bg-orange-600 text-white text-[9px] font-bold flex items-center justify-center shadow">✕</button>
+                </div>
+              `;
+            }).join('');
+            multiListEl.querySelectorAll('.btn-remove-single-pending-img').forEach(btn => {
+              btn.addEventListener('click', e => {
+                e.stopPropagation();
+                const rmIdx = parseInt(btn.getAttribute('data-remove-img-idx'), 10);
+                if (!isNaN(rmIdx) && pendingImagesList.length > 0) {
+                  pendingImagesList.splice(rmIdx, 1);
+                  pendingImageDataUrl = pendingImagesList[0] || '';
+                } else {
+                  pendingImageDataUrl = '';
+                }
+                updateInlineAutoDetectUI();
+              });
+            });
+          }
           imgWrapEl.classList.remove('hidden');
         } else {
+          if (multiListEl) multiListEl.innerHTML = '';
           imgWrapEl.classList.add('hidden');
         }
+        const activeImg = allPendingImgs[0] || '';
 
         const fileWrapEl = document.getElementById('inlineAttachedFilePreviewWrap');
         const fileExtEl = document.getElementById('inlineAttachedFileExtBadge');
@@ -4013,9 +4842,9 @@
             parts.push(existingPost.image);
           }
           if (inlineInput) inlineInput.value = parts.join('\n');
-          pendingImageDataUrl = existingPost.image && existingPost.image.startsWith('data:')
-            ? existingPost.image
-            : (mediaCache.get(existingPost.id) && String(mediaCache.get(existingPost.id)).startsWith('data:') ? mediaCache.get(existingPost.id) : '');
+          const existingImgs = getPostImagesArray(existingPost);
+          pendingImagesList = [...existingImgs];
+          pendingImageDataUrl = existingImgs[0] || '';
           pendingFileAttachment = (existingPost.fileName || existingPost.fileDataUrl)
             ? {
                 fileName: existingPost.fileName || 'ไฟล์แนบ',
@@ -4155,6 +4984,7 @@
         const resetInlineComposer = () => {
           editingPostId = null;
           pendingImageDataUrl = '';
+          pendingImagesList = [];
           pendingFileAttachment = null;
           if (inlinePostText) {
             inlinePostText.value = '';
@@ -4172,18 +5002,25 @@
         document.getElementById('btnInlineCancelEdit').addEventListener('click', resetInlineComposer);
         const handleUniversalFilesSelected = async (fileList) => {
           if (!fileList || fileList.length === 0) return;
-          for (const file of Array.from(fileList)) {
+          const filesArr = Array.from(fileList);
+          const totalCount = filesArr.length;
+          // Adaptive compression when adding many images at once so memory stays low and app never crashes
+          const adaptiveMaxW = (pendingImagesList.length + totalCount) > 3 ? 480 : 560;
+          const adaptiveQual = (pendingImagesList.length + totalCount) > 3 ? 0.64 : 0.70;
+
+          for (let i = 0; i < totalCount; i++) {
+            const file = filesArr[i];
+            // Yield to browser UI thread between files so adding many files never lags or crashes mobile Safari/Chrome
+            if (i > 0) await new Promise(r => setTimeout(r, 24));
             if (isImageFileObj(file)) {
               try {
-                pendingImageDataUrl = await compressImageFile(file);
-                showToast('แนบรูปภาพเรียบร้อยแล้ว');
+                const compressed = await compressImageFile(file, adaptiveMaxW, adaptiveQual);
+                pendingImagesList.push(compressed);
+                pendingImageDataUrl = pendingImagesList[0] || compressed;
               } catch (err) {
                 try {
                   pendingFileAttachment = await readUniversalFileAsAttachment(file);
-                  showToast('แนบไฟล์ ' + file.name + ' เรียบร้อยแล้ว');
-                } catch (e2) {
-                  showToast('ไม่สามารถอ่านไฟล์นี้ได้');
-                }
+                } catch (e2) {}
               }
             } else {
               try {
@@ -4193,9 +5030,12 @@
                 showToast('ไม่สามารถอ่านไฟล์นี้ได้');
               }
             }
+            updateInlineAutoDetectUI();
+          }
+          if (pendingImagesList.length > 0) {
+            showToast(`แนบรูปภาพเรียบร้อยแล้ว (${pendingImagesList.length} รูป)`);
           }
           updateImagePreviewUI();
-          updateInlineAutoDetectUI();
         };
 
         document.getElementById('inlineImageFileInput').addEventListener('change', async e => {
@@ -4205,6 +5045,7 @@
 
         document.getElementById('btnClearInlineImage').addEventListener('click', () => {
           pendingImageDataUrl = '';
+          pendingImagesList = [];
           if (inlinePostText) {
             const imgInText = detectImageUrlInText(inlinePostText.value);
             if (imgInText) inlinePostText.value = inlinePostText.value.replace(imgInText, '').trim();
@@ -4241,9 +5082,11 @@
               const file = item.getAsFile();
               if (file) {
                 try {
-                  pendingImageDataUrl = await compressImageFile(file);
+                  const compressed = await compressImageFile(file);
+                  pendingImagesList.push(compressed);
+                  pendingImageDataUrl = pendingImagesList[0] || compressed;
                   updateInlineAutoDetectUI();
-                  showToast('🖼️ วางรูปภาพอัตโนมัติเรียบร้อยแล้ว');
+                  showToast(`🖼️ วางรูปภาพเรียบร้อยแล้ว (${pendingImagesList.length} รูป)`);
                 } catch (err) {}
               }
               return;
@@ -4275,7 +5118,10 @@
           const role = getSavedRole() || document.getElementById('inputReviewerRole').value || 'นักเรียน';
 
           const detectedImgUrl = detectImageUrlInText(rawInput);
-          const finalImage = pendingImageDataUrl || (detectedImgUrl ? normalizeImageUrl(detectedImgUrl) : '');
+          const finalImagesArr = pendingImagesList.length > 0
+            ? [...pendingImagesList]
+            : (pendingImageDataUrl ? [pendingImageDataUrl] : (detectedImgUrl ? [normalizeImageUrl(detectedImgUrl)] : []));
+          const finalImage = finalImagesArr[0] || '';
 
           const rawYoutube = detectYoutubeUrlInText(rawInput);
           const finalYoutubeId = extractYoutubeId(rawYoutube);
@@ -4308,8 +5154,13 @@
               target.rating = selectedRating;
               target.text = cleanedText;
               target.color = selectedColor;
-              target.image = finalImage || target.image || getSyncImageForPost(target.id, target);
+              target.images = finalImagesArr.length > 0 ? finalImagesArr : getPostImagesArray(target);
+              target.imageCount = target.images.length;
+              target.image = target.images[0] || finalImage || target.image || getSyncImageForPost(target.id, target);
               target.hasImage = Boolean(target.image);
+              if (target.images.length > 1) {
+                savePostImageLocallyAllLayers(target.id + '__gallery', JSON.stringify(target.images));
+              }
               if (finalImage && window._lastInlinePreview) target.imageInline = window._lastInlinePreview;
               if (finalFileObj && finalFileObj.fileName) {
                 target.fileName = finalFileObj.fileName;
@@ -4340,6 +5191,9 @@
           } else {
             const newId = 'note-' + nowMs + '-' + Math.random().toString(36).slice(2, 6);
             if (finalImage) savePostImageLocallyAllLayers(newId, finalImage);
+            if (finalImagesArr.length > 1) {
+              savePostImageLocallyAllLayers(newId + '__gallery', JSON.stringify(finalImagesArr));
+            }
             if (finalFileObj && finalFileObj.fileDataUrl) {
               savePostImageLocallyAllLayers(newId + '__file', finalFileObj.fileDataUrl);
             }
@@ -4350,6 +5204,8 @@
               rating: selectedRating,
               text: cleanedText,
               image: finalImage,
+              images: finalImagesArr,
+              imageCount: finalImagesArr.length,
               hasImage: Boolean(finalImage),
               imageInline: (finalImage && window._lastInlinePreview) ? window._lastInlinePreview : "",
               fileName: finalFileObj ? finalFileObj.fileName : '',
@@ -4671,12 +5527,102 @@
           }
         });
 
-        document.getElementById('btnCloseLightbox').addEventListener('click', () => {
+        const closeLightboxModal = () => {
+          if (lightboxGalleryState.autoTimer) {
+            clearInterval(lightboxGalleryState.autoTimer);
+            lightboxGalleryState.autoTimer = null;
+          }
           document.getElementById('modalLightbox').classList.add('hidden');
-        });
+        };
+        document.getElementById('btnCloseLightbox').addEventListener('click', closeLightboxModal);
         document.getElementById('modalLightbox').addEventListener('click', e => {
-          if (e.target.id === 'modalLightbox') document.getElementById('modalLightbox').classList.add('hidden');
+          if (e.target.id === 'modalLightbox' || e.target.id === 'lightboxTouchArea') closeLightboxModal();
         });
+        const btnLbPrev = document.getElementById('btnLightboxPrev');
+        const btnLbNext = document.getElementById('btnLightboxNext');
+        const btnLbAuto = document.getElementById('btnLightboxToggleAuto');
+        if (btnLbPrev) {
+          btnLbPrev.addEventListener('click', e => {
+            e.stopPropagation();
+            lightboxGalleryState.index--;
+            if (lightboxGalleryState.render) lightboxGalleryState.render();
+          });
+        }
+        if (btnLbNext) {
+          btnLbNext.addEventListener('click', e => {
+            e.stopPropagation();
+            lightboxGalleryState.index++;
+            if (lightboxGalleryState.render) lightboxGalleryState.render();
+          });
+        }
+        if (btnLbAuto) {
+          btnLbAuto.addEventListener('click', e => {
+            e.stopPropagation();
+            if (lightboxGalleryState.autoTimer) {
+              clearInterval(lightboxGalleryState.autoTimer);
+              lightboxGalleryState.autoTimer = null;
+              btnLbAuto.textContent = '↻ ไหลวน';
+            } else {
+              lightboxGalleryState.autoTimer = setInterval(() => {
+                lightboxGalleryState.index++;
+                if (lightboxGalleryState.render) lightboxGalleryState.render();
+              }, 2800);
+              btnLbAuto.textContent = '⏸ หยุดไหลวน';
+            }
+          });
+        }
+        const lbTouch = document.getElementById('lightboxTouchArea');
+        if (lbTouch) {
+          let lx = 0;
+          lbTouch.addEventListener('touchstart', e => { if (e.touches && e.touches[0]) lx = e.touches[0].clientX; }, { passive: true });
+          lbTouch.addEventListener('touchend', e => {
+            if (e.changedTouches && e.changedTouches[0]) {
+              const dx = e.changedTouches[0].clientX - lx;
+              if (Math.abs(dx) > 40 && lightboxGalleryState.images.length > 1) {
+                if (dx < 0) lightboxGalleryState.index++;
+                else lightboxGalleryState.index--;
+                if (lightboxGalleryState.render) lightboxGalleryState.render();
+              }
+            }
+          }, { passive: true });
+        }
+
+        // Bind Full-Screen Multi-Page Document Preview Modal Controls
+        const closeDocModal = () => {
+          if (docModalState.autoTimer) {
+            clearInterval(docModalState.autoTimer);
+            docModalState.autoTimer = null;
+          }
+          document.getElementById('modalDocPreview').classList.add('hidden');
+        };
+        document.getElementById('btnCloseDocModal').addEventListener('click', closeDocModal);
+        document.getElementById('modalDocPreview').addEventListener('click', e => {
+          if (e.target.id === 'modalDocPreview') closeDocModal();
+        });
+        document.getElementById('btnDocModalPrev').addEventListener('click', () => {
+          docModalState.pageIndex--;
+          if (docModalState.render) docModalState.render();
+        });
+        document.getElementById('btnDocModalNext').addEventListener('click', () => {
+          docModalState.pageIndex++;
+          if (docModalState.render) docModalState.render();
+        });
+        const btnDocModalAuto = document.getElementById('btnDocModalAutoFlip');
+        if (btnDocModalAuto) {
+          btnDocModalAuto.addEventListener('click', () => {
+            if (docModalState.autoTimer) {
+              clearInterval(docModalState.autoTimer);
+              docModalState.autoTimer = null;
+              btnDocModalAuto.textContent = '↻ ไหลวน';
+            } else {
+              docModalState.autoTimer = setInterval(() => {
+                docModalState.pageIndex++;
+                if (docModalState.render) docModalState.render();
+              }, 3500);
+              btnDocModalAuto.textContent = '⏸ หยุดไหลวน';
+            }
+          });
+        }
 
         const btnSortLatest = document.getElementById('btnSortLatest');
         const btnSortPopular = document.getElementById('btnSortPopular');
