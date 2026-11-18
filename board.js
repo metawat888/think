@@ -281,6 +281,21 @@ export default async function handler(req, res) {
               parsed.image = dbImageMap.get(idVal);
               parsed.hasImage = true;
             }
+            if (dbImageMap.has(idVal + '__gallery')) {
+              try {
+                const gal = JSON.parse(dbImageMap.get(idVal + '__gallery'));
+                if (Array.isArray(gal) && gal.length > 0) {
+                  parsed.images = gal;
+                  parsed.image = gal[0];
+                  parsed.hasImage = true;
+                  parsed.imageCount = gal.length;
+                }
+              } catch (e) {}
+            }
+            if (dbImageMap.has(idVal + '__file')) {
+              parsed.fileDataUrl = dbImageMap.get(idVal + '__file');
+              parsed.hasFile = true;
+            }
             if (dbBlobMap.has(idVal) && !parsed.imageBlobId) {
               parsed.imageBlobId = dbBlobMap.get(idVal);
             }
@@ -336,6 +351,12 @@ export default async function handler(req, res) {
       }
       for (const p of merged.posts) {
         if (globalTombstones.has(String(p.id))) continue;
+        const lightNode = Object.assign({}, p);
+        delete lightNode.images;
+        delete lightNode.fileDataUrl;
+        if (lightNode.image && lightNode.image.startsWith('data:') && lightNode.image.length > 2800) {
+          lightNode.image = lightNode.imageInline || '';
+        }
         stmts.push({
           sql: `INSERT INTO think_posts (id, room_code, post_json, updated_at, deleted)
                 VALUES (?, ?, ?, ?, 0)
@@ -343,7 +364,7 @@ export default async function handler(req, res) {
                   post_json = excluded.post_json,
                   updated_at = excluded.updated_at
                 WHERE think_posts.deleted = 0 AND excluded.updated_at >= think_posts.updated_at`,
-          args: [p.id, room, JSON.stringify(p), p.updatedAtMs || Date.now()]
+          args: [p.id, room, JSON.stringify(lightNode), p.updatedAtMs || Date.now()]
         });
         if (p.image && p.image.length > 10) {
           stmts.push({
@@ -354,6 +375,26 @@ export default async function handler(req, res) {
                     image_blob_id = CASE WHEN LENGTH(excluded.image_blob_id) > 3 THEN excluded.image_blob_id ELSE think_images.image_blob_id END,
                     updated_at = excluded.updated_at`,
             args: [p.id, room, p.image, p.imageBlobId || '', Date.now()]
+          });
+        }
+        if (Array.isArray(p.images) && p.images.length > 1) {
+          stmts.push({
+            sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
+                  VALUES (?, ?, ?, ?, ?)
+                  ON CONFLICT(post_id) DO UPDATE SET
+                    image_data = CASE WHEN LENGTH(excluded.image_data) >= LENGTH(think_images.image_data) THEN excluded.image_data ELSE think_images.image_data END,
+                    updated_at = excluded.updated_at`,
+            args: [p.id + '__gallery', room, JSON.stringify(p.images), String(p.images.length), Date.now()]
+          });
+        }
+        if (p.fileDataUrl && p.fileDataUrl.length > 15 && p.fileDataUrl.length <= 900000) {
+          stmts.push({
+            sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
+                  VALUES (?, ?, ?, ?, ?)
+                  ON CONFLICT(post_id) DO UPDATE SET
+                    image_data = CASE WHEN LENGTH(excluded.image_data) >= LENGTH(think_images.image_data) THEN excluded.image_data ELSE think_images.image_data END,
+                    updated_at = excluded.updated_at`,
+            args: [p.id + '__file', room, p.fileDataUrl, p.fileName || '', Date.now()]
           });
         }
       }

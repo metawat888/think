@@ -100,12 +100,11 @@
     }
 
     
-    /* Compact Clamping to Prevent Long Cards */
+    /* Auto-Fit Full Content Height (Never Cut Off or Crop Content) */
     .clamp-post-text {
-      display: -webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+      display: block;
+      height: auto;
+      overflow: visible;
     }
     .clamp-comment-text {
       display: -webkit-box;
@@ -1133,6 +1132,33 @@
         ]);
       }
 
+      // Facebook TAO Graph Serializer: separates fast Graph Post metadata (~1.5KB) from heavy Haystack Media Blobs
+      function toLightGraphPost(post, keepInlineThumb = true) {
+        if (!post) return null;
+        const light = Object.assign({}, post);
+        if (Array.isArray(post.images) && post.images.length > 0) {
+          light.hasImage = true;
+          light.imageCount = post.images.length;
+        }
+        if (post.image && post.image.length > 15) {
+          light.hasImage = true;
+        }
+        if (post.fileDataUrl && post.fileDataUrl.length > 15) {
+          light.hasFile = true;
+        }
+        // Keep only tiny inline thumbnail (<= 2.6KB) inside the Graph Node; full-res images & files live in Haystack Media Store (think_images / IndexedDB / CacheStorage)
+        if (light.image && light.image.startsWith('data:') && light.image.length > 2800) {
+          if (keepInlineThumb && light.imageInline && light.imageInline.length <= 2600) {
+            light.image = light.imageInline;
+          } else {
+            delete light.image;
+          }
+        }
+        delete light.images;
+        delete light.fileDataUrl;
+        return light;
+      }
+
       async function pushPostToTurso(roomCode, post, isDeleted = false) {
         if (!roomCode || !post || !post.id) return;
         const cleanRoom = String(roomCode).trim().toUpperCase();
@@ -1155,21 +1181,24 @@
               args: [post.id, cleanRoom, updatedAt]
             },
             {
-              sql: `DELETE FROM think_images WHERE post_id = ?`,
-              args: [post.id]
+              sql: `DELETE FROM think_images WHERE post_id = ? OR post_id LIKE ?`,
+              args: [post.id, post.id + '__%']
             }
           ], true);
         } else {
           const restoredImg = getSyncImageForPost(post.id, post);
-          if (restoredImg) {
+          if (restoredImg && (!post.image || restoredImg.length > post.image.length)) {
             post.image = restoredImg;
             post.hasImage = true;
           }
-          // CRITICAL GUARD: If this post is flagged as having an image (hasImage or imageBlobId) but this client hasn't downloaded the image bytes yet, do NOT overwrite Turso think_posts with an image-less JSON!
-          if ((post.hasImage || post.imageBlobId) && !post.image) {
-            return;
+          const restoredFileData = getSyncImageForPost(post.id + '__file', null);
+          if (restoredFileData && !post.fileDataUrl) {
+            post.fileDataUrl = restoredFileData;
+            post.hasFile = true;
           }
-          const stmts = [
+          // Step 1: Commit fast lightweight TAO Graph Node (< 2KB) to think_posts IMMEDIATELY so post metadata never fails or lags!
+          const graphNode = toLightGraphPost(post, true);
+          await executeTursoPipeline([
             {
               sql: `INSERT INTO think_posts (id, room_code, post_json, updated_at, deleted)
                     VALUES (?, ?, ?, ?, 0)
@@ -1177,16 +1206,14 @@
                       post_json = excluded.post_json,
                       updated_at = excluded.updated_at
                     WHERE think_posts.deleted = 0 AND excluded.updated_at >= think_posts.updated_at`,
-              args: [post.id, cleanRoom, JSON.stringify(post), post.updatedAtMs || updatedAt]
+              args: [post.id, cleanRoom, JSON.stringify(graphNode), post.updatedAtMs || updatedAt]
             }
-          ];
-          const restoredFileData = getSyncImageForPost(post.id + '__file', null);
-          if (restoredFileData && !post.fileDataUrl) {
-            post.fileDataUrl = restoredFileData;
-            post.hasFile = true;
-          }
+          ], true);
+
+          // Step 2: Commit Haystack Media Objects in separate dedicated pipelines so large galleries/files never block the post node!
+          const mediaStmts = [];
           if (post.image && post.image.length > 15) {
-            stmts.push({
+            mediaStmts.push({
               sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
                     VALUES (?, ?, ?, ?, ?)
                     ON CONFLICT(post_id) DO UPDATE SET
@@ -1199,7 +1226,7 @@
           if (Array.isArray(post.images) && post.images.length > 1) {
             const galJson = JSON.stringify(post.images);
             savePostImageLocallyAllLayers(post.id + '__gallery', galJson);
-            stmts.push({
+            mediaStmts.push({
               sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
                     VALUES (?, ?, ?, ?, ?)
                     ON CONFLICT(post_id) DO UPDATE SET
@@ -1208,17 +1235,21 @@
               args: [post.id + '__gallery', cleanRoom, galJson, String(post.images.length), updatedAt]
             });
           }
-          if (post.fileDataUrl && post.fileDataUrl.length > 15) {
-            stmts.push({
-              sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
-                    VALUES (?, ?, ?, ?, ?)
-                    ON CONFLICT(post_id) DO UPDATE SET
-                      image_data = CASE WHEN LENGTH(excluded.image_data) >= LENGTH(think_images.image_data) THEN excluded.image_data ELSE think_images.image_data END,
-                      updated_at = excluded.updated_at`,
-              args: [post.id + '__file', cleanRoom, post.fileDataUrl, post.fileName || '', updatedAt]
-            });
+          if (mediaStmts.length > 0) {
+            await executeTursoPipeline(mediaStmts);
           }
-          await executeTursoPipeline(stmmts_fix(stmts));
+          if (post.fileDataUrl && post.fileDataUrl.length > 15 && post.fileDataUrl.length <= 900000) {
+            await executeTursoPipeline([
+              {
+                sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
+                      VALUES (?, ?, ?, ?, ?)
+                      ON CONFLICT(post_id) DO UPDATE SET
+                        image_data = CASE WHEN LENGTH(excluded.image_data) >= LENGTH(think_images.image_data) THEN excluded.image_data ELSE think_images.image_data END,
+                        updated_at = excluded.updated_at`,
+                args: [post.id + '__file', cleanRoom, post.fileDataUrl, post.fileName || '', updatedAt]
+              }
+            ]);
+          }
         }
       }
       function stmmts_fix(s) { return s; }
@@ -1746,6 +1777,29 @@
                   return;
                 }
                 const mReq = mediaStore.get(p.id);
+                const gReq = mediaStore.get(p.id + '__gallery');
+                const fReq = mediaStore.get(p.id + '__file');
+                gReq.onsuccess = () => {
+                  if (gReq.result && !isPermanentlyDeleted(p.id)) {
+                    mediaCache.set(p.id + '__gallery', gReq.result);
+                    try {
+                      const gArr = JSON.parse(gReq.result);
+                      if (Array.isArray(gArr) && gArr.length > 0) {
+                        p.images = gArr;
+                        p.image = gArr[0];
+                        changed = true;
+                      }
+                    } catch (e) {}
+                  }
+                };
+                fReq.onsuccess = () => {
+                  if (fReq.result && !isPermanentlyDeleted(p.id)) {
+                    p.fileDataUrl = fReq.result;
+                    p.hasFile = true;
+                    mediaCache.set(p.id + '__file', fReq.result);
+                    changed = true;
+                  }
+                };
                 mReq.onsuccess = () => {
                   if (mReq.result && !isPermanentlyDeleted(p.id)) {
                     p.image = mReq.result;
@@ -2303,8 +2357,13 @@
             const mStore = tx.objectStore(IDB_MEDIA_STORE);
             if (deletedIdToRemove) mStore.delete(deletedIdToRemove);
             state.posts.forEach(p => {
+              if (isPermanentlyDeleted(p.id)) return;
               const imgData = p.image || mediaCache.get(p.id);
-              if (imgData && !isPermanentlyDeleted(p.id)) mStore.put(imgData, p.id);
+              if (imgData) mStore.put(imgData, p.id);
+              const galData = (Array.isArray(p.images) && p.images.length > 1) ? JSON.stringify(p.images) : mediaCache.get(p.id + '__gallery');
+              if (galData) mStore.put(galData, p.id + '__gallery');
+              const fileData = p.fileDataUrl || mediaCache.get(p.id + '__file');
+              if (fileData) mStore.put(fileData, p.id + '__file');
             });
           }
         } catch (err) {}
@@ -2312,7 +2371,21 @@
         saveToImmortalCacheStorage(activeRoom, state);
       }
 
+      function commitImmediateLocalGraph() {
+        if (!syncConfig.roomCode) return;
+        const activeRoom = syncConfig.roomCode;
+        const key = getRoomStorageKey(activeRoom);
+        try {
+          const lightState = Object.assign({}, state, {
+            posts: (state.posts || []).filter(p => p && p.id && !isPermanentlyDeleted(p.id)).map(p => toLightGraphPost(p, true))
+          });
+          localStorage.setItem(key, JSON.stringify(lightState));
+        } catch (e) {}
+      }
+
       function saveLocalOnly(deletedIdToRemove = null) {
+        // 1. Instant 0ms synchronous commit of lightweight Graph State to localStorage so refresh NEVER loses data!
+        commitImmediateLocalGraph();
         if (deletedIdToRemove) {
           return flushLocalSaveNow(deletedIdToRemove);
         }
@@ -2321,22 +2394,28 @@
           localSaveTimer = setTimeout(async () => {
             await flushLocalSaveNow(null);
             resolve();
-          }, 60);
+          }, 25);
         });
       }
 
       function persistStatePermanently(changedPost) {
         state.updatedAt = Date.now();
+        // Immediately commit locally (0ms) + push to Turso + broadcast to all cloud peers in parallel!
         saveLocalOnly();
         if (changedPost && !isPermanentlyDeleted(changedPost.id)) {
-          setTimeout(() => pushPostToTurso(syncConfig.roomCode, changedPost, false), 10);
+          pushPostToTurso(syncConfig.roomCode, changedPost, false).catch(() => {});
         }
         if (cloudSyncTimer) clearTimeout(cloudSyncTimer);
         cloudSyncTimer = setTimeout(() => {
           broadcastStateToCloud(changedPost);
-        }, 180);
+        }, 20);
         return Promise.resolve();
       }
+
+      window.addEventListener('beforeunload', () => { commitImmediateLocalGraph(); });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') flushLocalSaveNow(null);
+      });
 
       async function switchRoom(newRoomCode) {
         const cleanCode = (newRoomCode || '').trim();
@@ -2431,7 +2510,7 @@
           if (syncConfig.roomCode && (Date.now() - lastUserActivityMs > 3000)) {
             pullFromCloudAllEngines(false);
           }
-        }, 14000);
+        }, 6000);
         setInterval(() => {
           if (syncConfig.roomCode && state.posts && state.posts.length > 0) {
             autoHealCloudState();
@@ -2582,7 +2661,21 @@
               }
             } catch (e) {}
           }
-          const payload = JSON.stringify(state);
+          const safeCloudState = Object.assign({}, state, {
+            posts: (state.posts || []).map(p => {
+              const cp = Object.assign({}, p);
+              if (cp.fileDataUrl && cp.fileDataUrl.length > 60000) {
+                cp.hasFile = true;
+                delete cp.fileDataUrl;
+              }
+              if (Array.isArray(cp.images) && cp.images.length > 3) {
+                cp.imageCount = cp.images.length;
+                delete cp.images;
+              }
+              return cp;
+            })
+          });
+          const payload = JSON.stringify(safeCloudState);
           if (state.cloudBlobId) {
             const res = await fetch(`https://jsonblob.com/api/jsonBlob/${state.cloudBlobId}`, {
               method: 'PUT',
@@ -2774,101 +2867,73 @@
         const topic = getNtfyTopicForRoom(syncConfig.roomCode);
         const roomSafe = encodeURIComponent(syncConfig.roomCode.trim().toUpperCase());
 
-        // 0. If changedPost has a data:image, upload it to dedicated Cloud Image Blob & Gun.js Image Node first!
-        if (changedPost && changedPost.id && !isPermanentlyDeleted(changedPost.id) && changedPost.image) {
-          changedPost.hasImage = true;
-          if (changedPost.image.startsWith('data:')) {
-            try {
-              if (gunRoomNode) {
+        // STEP 1 (INSTANT < 100ms): Broadcast lightweight TAO Graph Node via ntfy.sh & Gun.js FIRST so all devices see the post/update immediately!
+        if (changedPost && changedPost.id && !isPermanentlyDeleted(changedPost.id)) {
+          const lightPost = toLightGraphPost(changedPost, true);
+          fetch(`https://ntfy.sh/${topic}`, {
+            method: 'POST',
+            keepalive: true,
+            body: JSON.stringify({
+              type: 'POST_UPSERT',
+              post: lightPost,
+              deletedIds: state.deletedIds,
+              blobId: state.cloudBlobId || '',
+              updatedAt: Date.now()
+            })
+          }).catch(() => {});
+
+          try {
+            if (gunRoomNode) {
+              gunRoomNode.get('posts').get(changedPost.id).put(JSON.stringify(lightPost));
+              if (changedPost.image && changedPost.image.startsWith('data:')) {
                 gunRoomNode.get('images').get(changedPost.id).put(changedPost.image);
               }
-            } catch (e) {}
-            const imgBlobId = await uploadPostImageToCloud(changedPost);
-            if (imgBlobId) {
-              changedPost.imageBlobId = imgBlobId;
-              saveLocalOnly();
-              pushPostToTurso(syncConfig.roomCode, changedPost, false);
             }
-          }
+          } catch (e) {}
         }
 
-        // 1. Push to Vercel /api/board (NO keepalive: true so payloads > 64KB with images NEVER fail!)
+        // STEP 2 (PARALLEL): Push to Vercel /api/board with payload-safe Graph + Media
         if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('googleusercontent')) {
           const headers = { 'Content-Type': 'application/json' };
           if (tursoConfig.authToken) headers['x-turso-token'] = tursoConfig.authToken;
+          const apiState = Object.assign({}, state, {
+            posts: (state.posts || []).map(p => {
+              if (changedPost && p.id === changedPost.id) return p;
+              return toLightGraphPost(p, true);
+            })
+          });
           fetch(window.location.origin + '/api/' + 'board?room=' + roomSafe, {
             method: 'POST',
             headers,
-            body: JSON.stringify(state)
+            body: JSON.stringify(apiState)
           }).catch(() => {});
         }
 
-        // 2. Push to Gun.js
+        // STEP 3 (BACKGROUND NON-BLOCKING): Stream Haystack Media Objects (images, gallery, files) & JSONBlob snapshot
+        if (changedPost && changedPost.id && !isPermanentlyDeleted(changedPost.id)) {
+          if (changedPost.image && changedPost.image.startsWith('data:')) {
+            uploadPostImageToCloud(changedPost).then(imgBlobId => {
+              if (imgBlobId) {
+                changedPost.imageBlobId = imgBlobId;
+                saveLocalOnly();
+                pushPostToTurso(syncConfig.roomCode, changedPost, false).catch(() => {});
+              }
+            }).catch(() => {});
+          }
+          if (Array.isArray(changedPost.images) && changedPost.images.length > 1) {
+            pushFullImageToNtfyChunks({ id: changedPost.id + '__gallery', image: JSON.stringify(changedPost.images) }).catch(() => {});
+          }
+          if (changedPost.fileDataUrl && changedPost.fileDataUrl.length > 2600 && changedPost.fileDataUrl.length <= 350000) {
+            pushFullImageToNtfyChunks({ id: changedPost.id + '__file', image: changedPost.fileDataUrl }).catch(() => {});
+          }
+        }
+
         try {
-          if (gunRoomNode && changedPost && changedPost.id && !isPermanentlyDeleted(changedPost.id)) {
-            gunRoomNode.get('posts').get(changedPost.id).put(JSON.stringify(changedPost));
+          const blobId = await pushToJsonBlob();
+          if (blobId) {
+            try { if (gunRoomNode) gunRoomNode.get('cloudBlobId').put(blobId); } catch (e) {}
           }
         } catch (e) {}
-
-        // 3. Push full room state (including images) to JSONBlob
-        let blobId = '';
-        try {
-          blobId = await pushToJsonBlob();
-        } catch (e) {}
-
-        // 4. Push real-time notification via ntfy.sh (NEVER leaves lightPost without an image — embeds inline preview <= 2.5KB while full-res chunks stream in parallel!)
-        if (changedPost && changedPost.id && !isPermanentlyDeleted(changedPost.id)) {
-          try {
-            const lightPost = Object.assign({}, changedPost);
-            if (lightPost.image && lightPost.image.startsWith('data:')) {
-              lightPost.hasImage = true;
-              if (lightPost.image.length > 2800) {
-                if (changedPost.imageInline && changedPost.imageInline.length <= 2600) {
-                  lightPost.image = changedPost.imageInline;
-                } else {
-                  delete lightPost.image;
-                }
-              }
-            }
-            if (Array.isArray(lightPost.images) && lightPost.images.length > 1) {
-              lightPost.imageCount = lightPost.images.length;
-              pushFullImageToNtfyChunks({ id: changedPost.id + '__gallery', image: JSON.stringify(changedPost.images) }).catch(() => {});
-              delete lightPost.images;
-            }
-            if (lightPost.fileDataUrl && lightPost.fileDataUrl.length > 2600) {
-              lightPost.hasFile = true;
-              pushFullImageToNtfyChunks({ id: changedPost.id + '__file', image: changedPost.fileDataUrl }).catch(() => {});
-              delete lightPost.fileDataUrl;
-            }
-            await fetch(`https://ntfy.sh/${topic}`, {
-              method: 'POST',
-              body: JSON.stringify({
-                type: 'POST_UPSERT',
-                post: lightPost,
-                deletedIds: state.deletedIds,
-                blobId,
-                updatedAt: Date.now()
-              })
-            });
-          } catch (e) {}
-        }
-
-        if (blobId) {
-          try {
-            if (gunRoomNode) gunRoomNode.get('cloudBlobId').put(blobId);
-          } catch (e) {}
-          try {
-            await fetch(`https://ntfy.sh/${topic}`, {
-              method: 'POST',
-              body: JSON.stringify({
-                type: 'BLOB_SYNC',
-                blobId: blobId,
-                deletedIds: state.deletedIds,
-                updatedAt: state.updatedAt
-              })
-            });
-          } catch (e) {}
-        }
       }
 
       function getSavedNickname() {
@@ -3421,7 +3486,7 @@
               pages.push({
                 type: 'html-page',
                 html: `
-                  <div class="w-full max-w-2xl mx-auto aspect-video rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 text-white p-5 sm:p-8 shadow-xl border border-neutral-700 flex flex-col justify-between overflow-y-auto">
+                  <div class="w-full h-auto min-h-[260px] rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 text-white p-5 sm:p-8 shadow-xl border border-neutral-700 flex flex-col justify-between">
                     <div>
                       <div class="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-white/15">
                         <span class="px-2.5 py-0.5 rounded-lg bg-orange-500 text-white text-[11px] font-extrabold">SLIDE ${i + 1} / ${slideFiles.length}</span>
@@ -3438,7 +3503,7 @@
                       ${
                         slideImgs.length > 0
                           ? `<div class="mt-3 grid grid-cols-${Math.min(slideImgs.length, 2)} gap-2">
-                               ${slideImgs.map(u => `<img src="${escapeHtml(u)}" class="max-h-44 w-full object-contain rounded-xl bg-white/95 p-1 mx-auto" alt="Slide Image" />`).join('')}
+                               ${slideImgs.map(u => `<img src="${escapeHtml(u)}" class="w-full h-auto object-contain rounded-xl bg-white/95 p-1.5 mx-auto" alt="Slide Image" />`).join('')}
                              </div>`
                           : ''
                       }
@@ -3475,7 +3540,7 @@
                 pages.push({
                   type: 'html-page',
                   html: `
-                    <div class="w-full max-w-2xl mx-auto min-h-[340px] rounded-2xl bg-white text-neutral-900 p-5 sm:p-8 shadow-md border border-neutral-200">
+                    <div class="w-full h-auto rounded-2xl bg-white text-neutral-900 p-5 sm:p-8 shadow-md border border-neutral-200">
                       <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-neutral-200 text-xs text-neutral-400 font-semibold">
                         <span class="truncate">${escapeHtml(post.fileName || 'Document.docx')}</span>
                         <span class="shrink-0">หน้า ${p + 1} / ${totalP}</span>
@@ -3528,7 +3593,7 @@
               pages.push({
                 type: 'html-page',
                 html: `
-                  <div class="w-full max-w-2xl mx-auto rounded-2xl bg-white p-4 shadow-md border border-neutral-200 overflow-x-auto">
+                  <div class="w-full h-auto rounded-2xl bg-white p-4 shadow-md border border-neutral-200 overflow-x-auto">
                     <div class="text-xs font-bold text-emerald-700 mb-2">ตารางแผ่นงานที่ ${sIdx + 1} / ${sheetFiles.length}</div>
                     <table class="w-full border-collapse text-left">${rowsHtml.join('')}</table>
                   </div>
@@ -3552,7 +3617,7 @@
               pages.push({
                 type: 'html-page',
                 html: `
-                  <div class="w-full max-w-2xl mx-auto rounded-2xl bg-neutral-900 text-neutral-100 p-4 sm:p-5 shadow-md border border-neutral-700 overflow-x-auto">
+                  <div class="w-full h-auto rounded-2xl bg-neutral-900 text-neutral-100 p-4 sm:p-5 shadow-md border border-neutral-700 overflow-x-auto">
                     <div class="flex items-center justify-between text-[11px] text-neutral-400 pb-2 mb-2 border-b border-neutral-800">
                       <span>${escapeHtml(post.fileName || 'file')}</span>
                       <span>หน้า ${p + 1} / ${totalP}</span>
@@ -3572,7 +3637,7 @@
         if (ext === 'PDF' && blobUrl) {
           pages.push({
             type: 'html-page',
-            html: `<iframe src="${escapeHtml(blobUrl)}" class="w-full h-96 rounded-xl border border-neutral-200 bg-white" title="${escapeHtml(post.fileName || 'PDF')}"></iframe>`
+            html: `<iframe src="${escapeHtml(blobUrl)}" class="w-full min-h-[680px] h-auto rounded-xl border border-neutral-200 bg-white" title="${escapeHtml(post.fileName || 'PDF')}"></iframe>`
           });
         } else {
           const style = getUniversalFileBadgeStyle(ext);
@@ -3598,13 +3663,14 @@
       async function renderDocPageIntoStage(stageEl, pageObj) {
         if (!stageEl || !pageObj) return;
         if (pageObj.type === 'pdf-page' && pageObj.pdfDoc) {
-          stageEl.innerHTML = `<div class="w-full flex flex-col items-center justify-center py-2"><canvas class="pdf-render-canvas max-w-full rounded-xl shadow-md bg-white border border-neutral-200"></canvas></div>`;
+          stageEl.innerHTML = `<div class="w-full h-auto flex flex-col items-center justify-center"><canvas class="pdf-render-canvas w-full h-auto block rounded-xl shadow-md bg-white border border-neutral-200"></canvas></div>`;
           const canvas = stageEl.querySelector('.pdf-render-canvas');
           try {
             const page = await pageObj.pdfDoc.getPage(pageObj.pageNumber);
             const baseVp = page.getViewport({ scale: 1 });
-            const targetW = Math.min(stageEl.clientWidth ? stageEl.clientWidth - 16 : 640, 760);
-            const scale = Math.max(0.8, Math.min(1.8, targetW / (baseVp.width || 600)));
+            const availW = Math.max(320, (stageEl.clientWidth || 680) - 8);
+            const dpr = Math.min(window.devicePixelRatio || 1.5, 2);
+            const scale = Math.max(1.1, Math.min(2.2, (availW / (baseVp.width || 600)) * dpr));
             const viewport = page.getViewport({ scale });
             canvas.width = viewport.width;
             canvas.height = viewport.height;
@@ -3633,16 +3699,16 @@
         if (imgs.length === 1) {
           const bUrl = getOrCreateBlobUrlForDataUrl(post.id + '_img_0', imgs[0], 'image/webp');
           return `
-            <div class="mb-3 rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-100/70 relative" onclick="event.stopPropagation()">
-              <img src="${escapeHtml(bUrl)}" data-idx="0" loading="lazy" decoding="async" alt="รูปภาพประกอบ" referrerpolicy="no-referrer" class="note-image w-full max-h-[520px] object-contain mx-auto cursor-zoom-in" />
+            <div class="mb-3 rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-100/70 relative h-auto" onclick="event.stopPropagation()">
+              <img src="${escapeHtml(bUrl)}" data-idx="0" loading="lazy" decoding="async" alt="รูปภาพประกอบ" referrerpolicy="no-referrer" class="note-image w-full h-auto block object-contain mx-auto cursor-zoom-in" />
             </div>
           `;
         }
         const firstBlobUrl = getOrCreateBlobUrlForDataUrl(post.id + '_img_0', imgs[0], 'image/webp');
         return `
-          <div class="multi-image-carousel mb-3 rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-950 relative select-none" data-post-id="${escapeHtml(post.id)}" onclick="event.stopPropagation()">
-            <div class="relative w-full h-72 sm:h-[420px] flex items-center justify-center overflow-hidden bg-neutral-900">
-              <img src="${escapeHtml(firstBlobUrl)}" data-idx="0" loading="lazy" decoding="async" alt="รูปภาพประกอบ" referrerpolicy="no-referrer" class="carousel-active-img note-image w-full h-full object-contain cursor-zoom-in transition-opacity duration-200" />
+          <div class="multi-image-carousel mb-3 rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-950 relative h-auto select-none" data-post-id="${escapeHtml(post.id)}" onclick="event.stopPropagation()">
+            <div class="relative w-full h-auto flex items-center justify-center bg-neutral-900">
+              <img src="${escapeHtml(firstBlobUrl)}" data-idx="0" loading="lazy" decoding="async" alt="รูปภาพประกอบ" referrerpolicy="no-referrer" class="carousel-active-img note-image w-full h-auto block object-contain cursor-zoom-in transition-opacity duration-200" />
 
               <!-- Top Left Slide Counter -->
               <span class="carousel-counter-badge absolute top-3 left-3 px-2.5 py-1 rounded-xl bg-black/70 text-white text-xs font-bold backdrop-blur-xs">
@@ -3934,7 +4000,7 @@
                          ↻ ไหลวน
                        </button>
                      </div>
-                     <div class="doc-inline-stage p-3 sm:p-4 min-h-[220px] max-h-[520px] overflow-auto flex items-center justify-center">
+                     <div class="doc-inline-stage p-3 sm:p-4 w-full h-auto flex items-center justify-center">
                        <div class="text-xs font-semibold text-neutral-500">กำลังโหลดหน้าเอกสาร...</div>
                      </div>
                    </div>`
@@ -3943,7 +4009,7 @@
             ${
               isVideo && blobUrl
                 ? `<div class="border-t border-neutral-200 bg-black">
-                     <video src="${escapeHtml(blobUrl)}" controls playsinline class="w-full max-h-96 mx-auto"></video>
+                     <video src="${escapeHtml(blobUrl)}" controls playsinline class="w-full h-auto block mx-auto"></video>
                    </div>`
                 : ''
             }
@@ -4294,11 +4360,6 @@
                              ? 'text-base sm:text-[17px] font-semibold text-neutral-900 leading-snug'
                              : 'text-sm sm:text-[14.5px] text-neutral-800 leading-relaxed'
                          } ${isLongText ? 'clamp-post-text' : ''} whitespace-pre-line break-words">${formatTextWithLinks(post.text)}</div>
-                         ${
-                           isLongText
-                             ? `<div class="mt-1.5 text-xs font-bold text-orange-600 group-hover:underline">คลิกเพื่ออ่านข้อความทั้งหมด...</div>`
-                             : ''
-                         }
                        </div>`
                     : ''
                 }
@@ -4307,7 +4368,7 @@
                 ${
                   ytId
                     ? `<div class="mb-3 rounded-2xl overflow-hidden border border-neutral-300 bg-neutral-950 shadow-sm" onclick="event.stopPropagation()">
-                         <div class="yt-facade-container relative w-full aspect-video max-h-[500px] bg-black cursor-pointer group/yt" data-ytid="${escapeHtml(ytId)}">
+                         <div class="yt-facade-container relative w-full aspect-video h-auto bg-black cursor-pointer group/yt" data-ytid="${escapeHtml(ytId)}">
                            <img src="https://i.ytimg.com/vi/${escapeHtml(ytId)}/hqdefault.jpg" loading="lazy" decoding="async" alt="YouTube thumbnail" class="w-full h-full object-cover opacity-90 group-hover/yt:opacity-100 transition" />
                            <div class="absolute inset-0 flex items-center justify-center bg-black/25 group-hover/yt:bg-black/10 transition">
                              <div class="w-16 h-11 rounded-2xl bg-red-600 group-hover/yt:scale-110 text-white flex items-center justify-center shadow-lg transition">
@@ -5063,7 +5124,7 @@
 
         inlinePostText.addEventListener('input', () => {
           inlinePostText.style.height = 'auto';
-          inlinePostText.style.height = Math.min(inlinePostText.scrollHeight, 180) + 'px';
+          inlinePostText.style.height = inlinePostText.scrollHeight + 'px';
           updateInlineAutoDetectUI();
         });
 
