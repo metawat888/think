@@ -136,32 +136,35 @@ function mergeRoomData(existing, incoming) {
       if (!rp || !rp.id || deletedSet.has(String(rp.id))) continue;
       const sId = String(rp.id);
       const lp = postMap.get(sId);
-      if (!lp || (rp.updatedAtMs || 0) >= (lp.updatedAtMs || 0)) {
-        const mergedComments = new Map();
-        for (const c of [...(lp?.comments || []), ...(rp.comments || [])]) {
-          if (c && c.id && !deletedSet.has(String(c.id))) mergedComments.set(String(c.id), c);
-        }
-        postMap.set(sId, {
-          ...lp,
-          ...rp,
-                    likes: Math.max(lp?.likes || 0, rp.likes || 0),
-          hearts: Math.max(lp?.hearts || 0, rp.hearts || 0),
-          cares: Math.max(lp?.cares || 0, rp.cares || 0),
-          hahas: Math.max(lp?.hahas || 0, rp.hahas || 0),
-          wows: Math.max(lp?.wows || 0, rp.wows || 0),
-          sads: Math.max(lp?.sads || 0, rp.sads || 0),
-          angrys: Math.max(lp?.angrys || 0, rp.angrys || 0),
-          imageBlobId: rp.imageBlobId || lp?.imageBlobId || '',
-          hasImage: Boolean(rp.hasImage || lp?.hasImage || rp.image || lp?.image),
-          imageInline: rp.imageInline || lp?.imageInline || '',
-          image: (rp.image && (!lp?.image || rp.image.length >= lp.image.length)) ? rp.image : (lp?.image || rp.image || rp.imageInline || lp?.imageInline || ''),
-          youtubeUrl: rp.youtubeUrl || lp?.youtubeUrl || '',
-          youtubeId: rp.youtubeId || lp?.youtubeId || '',
-          webRunUrl: rp.webRunUrl || lp?.webRunUrl || '',
-          webAutoCmd: rp.webAutoCmd !== undefined ? rp.webAutoCmd : (lp?.webAutoCmd || ''),
-          comments: Array.from(mergedComments.values())
-        });
+      const mergedComments = new Map();
+      for (const c of [...(lp?.comments || []), ...(rp.comments || [])]) {
+        if (c && c.id && !deletedSet.has(String(c.id))) mergedComments.set(String(c.id), c);
       }
+      const sortedComments = Array.from(mergedComments.values()).sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
+      const newer = (!lp || (rp.updatedAtMs || 0) >= (lp.updatedAtMs || 0)) ? rp : lp;
+      const older = newer === rp ? (lp || {}) : rp;
+      postMap.set(sId, {
+        ...older,
+        ...newer,
+        likes: Math.max(lp?.likes || 0, rp.likes || 0),
+        hearts: Math.max(lp?.hearts || 0, rp.hearts || 0),
+        cares: Math.max(lp?.cares || 0, rp.cares || 0),
+        hahas: Math.max(lp?.hahas || 0, rp.hahas || 0),
+        wows: Math.max(lp?.wows || 0, rp.wows || 0),
+        sads: Math.max(lp?.sads || 0, rp.sads || 0),
+        angrys: Math.max(lp?.angrys || 0, rp.angrys || 0),
+        imageBlobId: rp.imageBlobId || lp?.imageBlobId || '',
+        hasImage: Boolean(rp.hasImage || lp?.hasImage || rp.image || lp?.image),
+        imageInline: rp.imageInline || lp?.imageInline || '',
+        image: (rp.image && (!lp?.image || rp.image.length >= lp.image.length)) ? rp.image : (lp?.image || rp.image || rp.imageInline || lp?.imageInline || ''),
+        images: (Array.isArray(rp.images) && rp.images.length >= (Array.isArray(lp?.images) ? lp.images.length : 0)) ? rp.images : (lp?.images || rp.images),
+        fileDataUrl: (rp.fileDataUrl && (!lp?.fileDataUrl || rp.fileDataUrl.length >= lp.fileDataUrl.length)) ? rp.fileDataUrl : (lp?.fileDataUrl || rp.fileDataUrl || ''),
+        youtubeUrl: newer.youtubeUrl || older.youtubeUrl || '',
+        youtubeId: newer.youtubeId || older.youtubeId || '',
+        webRunUrl: newer.webRunUrl || older.webRunUrl || '',
+        webAutoCmd: newer.webAutoCmd !== undefined ? newer.webAutoCmd : (older.webAutoCmd || ''),
+        comments: sortedComments
+      });
     }
   }
   return {
@@ -235,13 +238,24 @@ export default async function handler(req, res) {
           image_blob_id TEXT DEFAULT '',
           updated_at INTEGER NOT NULL
         )`
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS think_comments (
+          id TEXT PRIMARY KEY,
+          post_id TEXT NOT NULL,
+          room_code TEXT NOT NULL,
+          comment_json TEXT NOT NULL,
+          created_at INTEGER NOT NULL,
+          deleted INTEGER NOT NULL DEFAULT 0
+        )`
       }
     ], clientToken);
 
     const dbRead = await tursoPipeline([
       { sql: `SELECT id FROM think_tombstones WHERE room_code = ?`, args: [room] },
       { sql: `SELECT id, post_json, updated_at, deleted FROM think_posts WHERE room_code = ?`, args: [room] },
-      { sql: `SELECT post_id, image_data, image_blob_id FROM think_images WHERE room_code = ?`, args: [room] }
+      { sql: `SELECT post_id, image_data, image_blob_id FROM think_images WHERE room_code = ?`, args: [room] },
+      { sql: `SELECT id, post_id, comment_json, deleted FROM think_comments WHERE room_code = ?`, args: [room] }
     ], clientToken);
 
     if (dbRead && Array.isArray(dbRead.results)) {
@@ -265,6 +279,26 @@ export default async function handler(req, res) {
           dbImageMap.set(pId, imgVal);
         }
         if (pId && blobVal) dbBlobMap.set(pId, blobVal);
+      }
+      const dbCommentsMap = new Map();
+      const cmtRows = dbRead.results[3]?.response?.result?.rows || [];
+      for (const r of cmtRows) {
+        const cId = r[0]?.value ? String(r[0].value) : '';
+        const pId = r[1]?.value ? String(r[1].value) : '';
+        const cJson = r[2]?.value;
+        const cDel = Number(r[3]?.value || 0);
+        if (cDel === 1 && cId) {
+          dbDeleted.push(cId);
+          globalTombstones.add(cId);
+        } else if (cId && pId && cJson && !globalTombstones.has(cId)) {
+          try {
+            const cObj = JSON.parse(cJson);
+            if (cObj && cObj.id) {
+              if (!dbCommentsMap.has(pId)) dbCommentsMap.set(pId, []);
+              dbCommentsMap.get(pId).push(cObj);
+            }
+          } catch (e) {}
+        }
       }
       const postRows = dbRead.results[1]?.response?.result?.rows || [];
       for (const r of postRows) {
@@ -298,6 +332,13 @@ export default async function handler(req, res) {
             }
             if (dbBlobMap.has(idVal) && !parsed.imageBlobId) {
               parsed.imageBlobId = dbBlobMap.get(idVal);
+            }
+            if (dbCommentsMap.has(idVal)) {
+              const cMap = new Map((Array.isArray(parsed.comments) ? parsed.comments : []).map(c => [c.id, c]));
+              for (const dc of dbCommentsMap.get(idVal)) {
+                if (dc && dc.id && !globalTombstones.has(String(dc.id)) && !cMap.has(dc.id)) cMap.set(dc.id, dc);
+              }
+              parsed.comments = Array.from(cMap.values()).sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
             }
             dbPosts.push(parsed);
           } catch (e) {}
@@ -395,6 +436,15 @@ export default async function handler(req, res) {
                     image_data = CASE WHEN LENGTH(excluded.image_data) >= LENGTH(think_images.image_data) THEN excluded.image_data ELSE think_images.image_data END,
                     updated_at = excluded.updated_at`,
             args: [p.id + '__file', room, p.fileDataUrl, p.fileName || '', Date.now()]
+          });
+        }
+        for (const c of p.comments || []) {
+          if (!c || !c.id || globalTombstones.has(String(c.id))) continue;
+          stmts.push({
+            sql: `INSERT INTO think_comments (id, post_id, room_code, comment_json, created_at, deleted)
+                  VALUES (?, ?, ?, ?, ?, 0)
+                  ON CONFLICT(id) DO NOTHING`,
+            args: [c.id, p.id, room, JSON.stringify(c), c.createdAtMs || Date.now()]
           });
         }
       }

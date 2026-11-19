@@ -1128,6 +1128,16 @@
               image_blob_id TEXT DEFAULT '',
               updated_at INTEGER NOT NULL
             )`
+          },
+          {
+            sql: `CREATE TABLE IF NOT EXISTS think_comments (
+              id TEXT PRIMARY KEY,
+              post_id TEXT NOT NULL,
+              room_code TEXT NOT NULL,
+              comment_json TEXT NOT NULL,
+              created_at INTEGER NOT NULL,
+              deleted INTEGER NOT NULL DEFAULT 0
+            )`
           }
         ]);
       }
@@ -1250,6 +1260,49 @@
               }
             ]);
           }
+          // Step 3: Commit every comment as an immutable row in think_comments (never overwritten by concurrent edits or clock skew!)
+          if (Array.isArray(post.comments) && post.comments.length > 0) {
+            const cStmts = post.comments
+              .filter(c => c && c.id && !isPermanentlyDeleted(c.id))
+              .map(c => ({
+                sql: `INSERT INTO think_comments (id, post_id, room_code, comment_json, created_at, deleted)
+                      VALUES (?, ?, ?, ?, ?, 0)
+                      ON CONFLICT(id) DO NOTHING`,
+                args: [c.id, post.id, cleanRoom, JSON.stringify(c), c.createdAtMs || updatedAt]
+              }));
+            if (cStmts.length > 0) {
+              await executeTursoPipeline(cStmts);
+            }
+          }
+        }
+      }
+
+      async function pushCommentToTurso(roomCode, postId, commentObj, isDeleted = false) {
+        if (!roomCode || !postId || !commentObj || !commentObj.id) return;
+        const cleanRoom = String(roomCode).trim().toUpperCase();
+        const nowTs = Date.now();
+        if (isDeleted || isPermanentlyDeleted(commentObj.id)) {
+          await executeTursoPipeline([
+            {
+              sql: `INSERT INTO think_tombstones (id, room_code, deleted_at)
+                    VALUES (?, ?, ?)
+                    ON CONFLICT(id) DO UPDATE SET deleted_at = excluded.deleted_at`,
+              args: [commentObj.id, cleanRoom, nowTs]
+            },
+            {
+              sql: `UPDATE think_comments SET deleted = 1 WHERE id = ?`,
+              args: [commentObj.id]
+            }
+          ], true);
+        } else {
+          await executeTursoPipeline([
+            {
+              sql: `INSERT INTO think_comments (id, post_id, room_code, comment_json, created_at, deleted)
+                    VALUES (?, ?, ?, ?, ?, 0)
+                    ON CONFLICT(id) DO NOTHING`,
+              args: [commentObj.id, postId, cleanRoom, JSON.stringify(commentObj), commentObj.createdAtMs || nowTs]
+            }
+          ], true);
         }
       }
       function stmmts_fix(s) { return s; }
@@ -1269,6 +1322,10 @@
           },
           {
             sql: `SELECT post_id, image_data, image_blob_id FROM think_images WHERE room_code = ?`,
+            args: [cleanRoom]
+          },
+          {
+            sql: `SELECT id, post_id, comment_json, deleted FROM think_comments WHERE room_code = ?`,
             args: [cleanRoom]
           }
         ]);
@@ -1304,7 +1361,30 @@
           }
         }
 
-        // 3. Collect posts from think_posts and re-attach any image from think_images
+        // 2b. Collect dedicated permanent comments from think_comments
+        const tursoCommentsByPost = new Map();
+        const cmtResp = data.results[3] && data.results[3].response;
+        if (cmtResp && cmtResp.result && Array.isArray(cmtResp.result.rows)) {
+          for (const row of cmtResp.result.rows) {
+            const cId = row[0] && row[0].value;
+            const pId = row[1] && row[1].value;
+            const cJson = row[2] && row[2].value;
+            const cDel = row[3] && Number(row[3].value);
+            if (cDel === 1 && cId) {
+              deletedIds.push(cId);
+            } else if (cId && pId && cJson && !deletedIds.includes(cId) && !isPermanentlyDeleted(cId)) {
+              try {
+                const cObj = JSON.parse(cJson);
+                if (cObj && cObj.id) {
+                  if (!tursoCommentsByPost.has(String(pId))) tursoCommentsByPost.set(String(pId), []);
+                  tursoCommentsByPost.get(String(pId)).push(cObj);
+                }
+              } catch (e) {}
+            }
+          }
+        }
+
+        // 3. Collect posts from think_posts and re-attach any image & comments from think_images / think_comments
         const postResp = data.results[1] && data.results[1].response;
         if (postResp && postResp.result && Array.isArray(postResp.result.rows)) {
           for (const row of postResp.result.rows) {
@@ -1344,6 +1424,16 @@
                   }
                   if (tursoBlobIdMap.has(sId) && !parsedPost.imageBlobId) {
                     parsedPost.imageBlobId = tursoBlobIdMap.get(sId);
+                  }
+                  if (tursoCommentsByPost.has(sId)) {
+                    const existingCmts = Array.isArray(parsedPost.comments) ? parsedPost.comments : [];
+                    const cMap = new Map(existingCmts.map(c => [c.id, c]));
+                    tursoCommentsByPost.get(sId).forEach(tc => {
+                      if (tc && tc.id && !deletedIds.includes(tc.id) && !isPermanentlyDeleted(tc.id) && !cMap.has(tc.id)) {
+                        cMap.set(tc.id, tc);
+                      }
+                    });
+                    parsedPost.comments = Array.from(cMap.values()).sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
                   }
                   incomingPosts.push(parsedPost);
                 }
@@ -1506,7 +1596,10 @@
         tasks.push(
           !parentPost
             ? pushPostToTurso(roomCode, { id: sId, updatedAtMs: state.updatedAt }, true)
-            : pushPostToTurso(roomCode, parentPost, false)
+            : Promise.allSettled([
+                pushCommentToTurso(roomCode, parentPost.id, { id: sId }, true),
+                pushPostToTurso(roomCode, parentPost, false)
+              ])
         );
 
         // 2. Vercel Serverless /api/board (Immediate keepalive POST)
@@ -1663,6 +1756,15 @@
               const existing = postMap.get(sId);
               if (!existing.image && vp.image) existing.image = vp.image;
               if (!existing.imageBlobId && vp.imageBlobId) existing.imageBlobId = vp.imageBlobId;
+              if (Array.isArray(vp.comments) && vp.comments.length > 0) {
+                const cMap = new Map((Array.isArray(existing.comments) ? existing.comments : []).map(c => [c.id, c]));
+                vp.comments.forEach(c => {
+                  if (c && c.id && !globalDeletedSet.has(String(c.id)) && !cMap.has(c.id)) {
+                    cMap.set(c.id, c);
+                  }
+                });
+                existing.comments = Array.from(cMap.values()).sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
+              }
             }
           }
         });
@@ -2256,7 +2358,7 @@
               changed = true;
             }
           });
-          lPost.comments = lComments.filter(c => c && c.id && !deletedSet.has(String(c.id)));
+          lPost.comments = lComments.filter(c => c && c.id && !deletedSet.has(String(c.id))).sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
         }
         return changed;
       }
@@ -2412,6 +2514,30 @@
         return Promise.resolve();
       }
 
+      function persistCommentPermanently(post, newComment) {
+        state.updatedAt = Date.now();
+        saveLocalOnly();
+        if (syncConfig.roomCode && post && newComment && newComment.id) {
+          pushCommentToTurso(syncConfig.roomCode, post.id, newComment, false).catch(() => {});
+          pushPostToTurso(syncConfig.roomCode, post, false).catch(() => {});
+          const topic = getNtfyTopicForRoom(syncConfig.roomCode);
+          fetch(`https://ntfy.sh/${topic}`, {
+            method: 'POST',
+            keepalive: true,
+            body: JSON.stringify({
+              type: 'COMMENT_ADD',
+              postId: post.id,
+              comment: newComment,
+              updatedAt: Date.now()
+            })
+          }).catch(() => {});
+        }
+        if (cloudSyncTimer) clearTimeout(cloudSyncTimer);
+        cloudSyncTimer = setTimeout(() => {
+          broadcastStateToCloud(post);
+        }, 30);
+      }
+
       window.addEventListener('beforeunload', () => { commitImmediateLocalGraph(); });
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') flushLocalSaveNow(null);
@@ -2544,6 +2670,23 @@
             if (mergeIncomingState({ deletedIds: delList })) {
               await saveLocalOnly(packet.targetId || null);
               renderBoard();
+            }
+            return;
+          }
+
+          if (packet.type === 'COMMENT_ADD' && packet.postId && packet.comment && packet.comment.id) {
+            if (isPermanentlyDeleted(packet.postId) || isPermanentlyDeleted(packet.comment.id)) return;
+            const target = state.posts.find(p => p.id === packet.postId);
+            if (target) {
+              if (!Array.isArray(target.comments)) target.comments = [];
+              if (!target.comments.some(c => c && c.id === packet.comment.id)) {
+                target.comments.push(packet.comment);
+                target.comments.sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
+                target.updatedAtMs = Math.max(target.updatedAtMs || 0, packet.comment.createdAtMs || Date.now());
+                saveLocalOnly();
+                renderBoard();
+                if (activeDetailPostId === target.id) renderNoteDetailModal(target.id);
+              }
             }
             return;
           }
@@ -4287,6 +4430,17 @@
 
           if (!card || card.dataset.renderSig !== sig) {
             const isNewCard = !card;
+            let savedDraftComment = '';
+            let wasCommentFocused = false;
+            let savedSelStart = 0;
+            if (!isNewCard && card) {
+              const prevCmtInp = card.querySelector('.input-card-inline-comment');
+              if (prevCmtInp) {
+                savedDraftComment = prevCmtInp.value || '';
+                wasCommentFocused = (document.activeElement === prevCmtInp);
+                savedSelStart = prevCmtInp.selectionStart || savedDraftComment.length;
+              }
+            }
             if (isNewCard) {
               card = document.createElement('article');
             }
@@ -4563,18 +4717,19 @@
                 const nickVal = getSavedNickname() || 'ผู้ใช้งาน';
                 if (!Array.isArray(post.comments)) post.comments = [];
                 const cNow = Date.now();
-                post.comments.push({
+                const newCmtObj = {
                   id: 'c-' + cNow + '-' + Math.random().toString(36).slice(2, 5),
                   nickname: nickVal,
                   text: textVal,
                   createdAtMs: cNow,
                   dateStr: formatThaiDateStr(cNow),
                   time: new Date(cNow).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.'
-                });
+                };
+                post.comments.push(newCmtObj);
                 post.updatedAtMs = Date.now();
                 inlineCommentInput.value = '';
                 renderBoard();
-                persistStatePermanently(post);
+                persistCommentPermanently(post, newCmtObj);
                 showToast('💬 ส่งความคิดเห็นเรียบร้อยแล้ว');
               });
             }
@@ -4610,6 +4765,13 @@
               );
             });
 
+            if (savedDraftComment && inlineCommentInput) {
+              inlineCommentInput.value = savedDraftComment;
+              if (wasCommentFocused) {
+                inlineCommentInput.focus();
+                try { inlineCommentInput.setSelectionRange(savedSelStart, savedSelStart); } catch (e) {}
+              }
+            }
             card.querySelector('.note-clickable-body').addEventListener('click', () => openNoteDetailModal(post.id));
             renderedCardMap.set(post.id, card);
           }
@@ -5550,17 +5712,18 @@
           saveNickname(nick);
           if (!Array.isArray(post.comments)) post.comments = [];
           const cNow = Date.now();
-          post.comments.push({
+          const newCmtObj = {
             id: 'c-' + cNow + '-' + Math.random().toString(36).slice(2, 5),
             nickname: nick,
             text,
             createdAtMs: cNow,
             dateStr: formatThaiDateStr(cNow),
             time: new Date(cNow).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.'
-          });
+          };
+          post.comments.push(newCmtObj);
           post.updatedAtMs = Date.now();
           document.getElementById('inputCommentText').value = '';
-          persistStatePermanently(post);
+          persistCommentPermanently(post, newCmtObj);
           renderNoteDetailModal(post.id);
           renderBoard();
         });
