@@ -2296,6 +2296,7 @@
               changed = true;
             }
           }
+          if (!lPost.avatarSeed && rPost.avatarSeed) { lPost.avatarSeed = rPost.avatarSeed; changed = true; }
           if (!lPost.youtubeUrl && rPost.youtubeUrl) { lPost.youtubeUrl = rPost.youtubeUrl; changed = true; }
           if (!lPost.webRunUrl && rPost.webRunUrl) { lPost.webRunUrl = rPost.webRunUrl; changed = true; }
           if (!lPost.webAutoCmd && rPost.webAutoCmd) { lPost.webAutoCmd = rPost.webAutoCmd; changed = true; }
@@ -2325,6 +2326,7 @@
 
           if ((rPost.updatedAtMs || 0) > (lPost.updatedAtMs || 0)) {
             lPost.nickname = rPost.nickname || lPost.nickname;
+            if (rPost.avatarSeed) lPost.avatarSeed = rPost.avatarSeed;
             lPost.role = rPost.role || lPost.role;
             if (typeof rPost.rating === 'number') lPost.rating = rPost.rating;
             if (rPost.text !== undefined) lPost.text = rPost.text;
@@ -3428,27 +3430,71 @@
 
       // 4. Cute Cartoon Avatar Generator Engine (16 Chibi Characters × 24 Vibrant Colors × 8 Eyes × 7 Mouths × 8 Accessories)
       const LS_USER_AVATAR_SEED_KEY = 'THINK_BOARD_CUTE_AVATAR_SEED_V1';
+      const LS_USER_AVATAR_MAP_KEY = 'THINK_BOARD_CUTE_AVATAR_MAP_V2';
       let currentComposerAvatarSeed = '';
+      let currentComposerAvatarOwner = '';
+
+      function loadAvatarSeedMap() {
+        try {
+          const raw = localStorage.getItem(LS_USER_AVATAR_MAP_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') return parsed;
+          }
+        } catch (e) {}
+        return {};
+      }
+
+      function saveAvatarSeedForNick(nickname, seedVal) {
+        const cleanNick = String(nickname || 'ผู้ใช้งาน').trim() || 'ผู้ใช้งาน';
+        currentComposerAvatarOwner = cleanNick;
+        currentComposerAvatarSeed = seedVal;
+        try {
+          localStorage.setItem(LS_USER_AVATAR_SEED_KEY, seedVal);
+          const map = loadAvatarSeedMap();
+          map[cleanNick] = seedVal;
+          localStorage.setItem(LS_USER_AVATAR_MAP_KEY, JSON.stringify(map));
+        } catch (e) {}
+      }
 
       function getActiveUserAvatarSeed(nickname) {
-        if (currentComposerAvatarSeed) return currentComposerAvatarSeed;
+        const cleanNick = String(nickname || getSavedNickname() || 'ผู้ใช้งาน').trim() || 'ผู้ใช้งาน';
+        if (currentComposerAvatarSeed && (!currentComposerAvatarOwner || currentComposerAvatarOwner === cleanNick)) {
+          return currentComposerAvatarSeed;
+        }
+        const map = loadAvatarSeedMap();
+        if (map[cleanNick]) {
+          currentComposerAvatarOwner = cleanNick;
+          currentComposerAvatarSeed = map[cleanNick];
+          return currentComposerAvatarSeed;
+        }
         try {
           const saved = localStorage.getItem(LS_USER_AVATAR_SEED_KEY);
-          if (saved) {
-            currentComposerAvatarSeed = saved;
+          if (saved && saved.startsWith(cleanNick + '#')) {
+            saveAvatarSeedForNick(cleanNick, saved);
             return saved;
           }
         } catch (e) {}
-        currentComposerAvatarSeed = (nickname || 'user') + '#av_' + Math.random().toString(36).slice(2, 8);
-        try { localStorage.setItem(LS_USER_AVATAR_SEED_KEY, currentComposerAvatarSeed); } catch (e) {}
-        return currentComposerAvatarSeed;
+        const freshSeed = cleanNick + '#av_' + Math.random().toString(36).slice(2, 8) + '_' + Date.now().toString(36).slice(-4);
+        saveAvatarSeedForNick(cleanNick, freshSeed);
+        return freshSeed;
       }
 
       function shuffleUserAvatarSeed(nickname) {
-        currentComposerAvatarSeed = (nickname || 'user') + '#av_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
-        try { localStorage.setItem(LS_USER_AVATAR_SEED_KEY, currentComposerAvatarSeed); } catch (e) {}
+        const cleanNick = String(nickname || getSavedNickname() || 'ผู้ใช้งาน').trim() || 'ผู้ใช้งาน';
+        const prevSeed = currentComposerAvatarSeed;
+        let nextSeed = '';
+        for (let attempt = 0; attempt < 12; attempt++) {
+          const candidate = cleanNick + '#av_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8) + '_' + attempt;
+          if (!prevSeed || (hashAvatarSeed(candidate, 3) % 14) !== (hashAvatarSeed(prevSeed, 3) % 14) || (hashAvatarSeed(candidate, 1) % 24) !== (hashAvatarSeed(prevSeed, 1) % 24)) {
+            nextSeed = candidate;
+            break;
+          }
+        }
+        if (!nextSeed) nextSeed = cleanNick + '#av_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+        saveAvatarSeedForNick(cleanNick, nextSeed);
         updateLuxuryComposerHeader();
-        return currentComposerAvatarSeed;
+        return nextSeed;
       }
 
       function hashAvatarSeed(str, salt = 0) {
@@ -5262,7 +5308,7 @@
                 const newCmtObj = {
                   id: 'c-' + cNow + '-' + Math.random().toString(36).slice(2, 5),
                   nickname: nickVal,
-                  avatarSeed: nickVal + '#c_' + cNow + '_' + Math.random().toString(36).slice(2, 6),
+                  avatarSeed: currentComposerAvatarSeed || getActiveUserAvatarSeed(nickVal),
                   text: textVal,
                   createdAtMs: cNow,
                   dateStr: formatThaiDateStr(cNow),
@@ -5664,6 +5710,11 @@
                 fileDataUrl: existingPost.fileDataUrl || getSyncImageForPost(existingPost.id + '__file', null) || ''
               }
             : null;
+          if (existingPost.avatarSeed) {
+            currentComposerAvatarSeed = existingPost.avatarSeed;
+            currentComposerAvatarOwner = existingPost.nickname || getSavedNickname() || 'ผู้ใช้งาน';
+            updateLuxuryComposerHeader();
+          }
           selectedRating = typeof existingPost.rating === 'number' ? existingPost.rating : 5;
           selectedColor = existingPost.color || 'green';
           if (editBadge) editBadge.classList.remove('hidden');
@@ -5762,6 +5813,10 @@
           }
           loginErrorMsg.classList.add('hidden');
           saveNickname(nickVal, roleVal);
+          currentComposerAvatarOwner = nickVal;
+          currentComposerAvatarSeed = '';
+          getActiveUserAvatarSeed(nickVal);
+          updateLuxuryComposerHeader();
           document.getElementById('inputNickname').value = nickVal;
           document.getElementById('inputReviewerRole').value = roleVal;
           document.getElementById('inputCommentNickname').value = nickVal;
@@ -6014,10 +6069,12 @@
           const nowMs = Date.now();
           let savedPost = null;
 
+          const exactShownAvatarSeed = currentComposerAvatarSeed || getActiveUserAvatarSeed(nickname);
           if (editingPostId) {
             const target = state.posts.find(p => p.id === editingPostId);
             if (target) {
               target.nickname = nickname;
+              target.avatarSeed = exactShownAvatarSeed;
               target.role = role;
               target.rating = selectedRating;
               target.text = cleanedText;
@@ -6065,12 +6122,10 @@
             if (finalFileObj && finalFileObj.fileDataUrl) {
               savePostImageLocallyAllLayers(newId + '__file', finalFileObj.fileDataUrl);
             }
-            const postAvSeed = getActiveUserAvatarSeed(nickname) + '_' + newId;
-            shuffleUserAvatarSeed(nickname);
             savedPost = {
               id: newId,
               nickname,
-              avatarSeed: postAvSeed,
+              avatarSeed: exactShownAvatarSeed,
               role,
               rating: selectedRating,
               text: cleanedText,
@@ -6112,7 +6167,7 @@
         document.getElementById('inputNickname').addEventListener('input', e => {
           const val = (e.target.value || '').trim();
           const modalAvatarEl = document.getElementById('modalAuthorAvatarPreview');
-          if (modalAvatarEl) modalAvatarEl.textContent = (val || 'น').charAt(0).toUpperCase();
+          if (modalAvatarEl) modalAvatarEl.innerHTML = buildCuteCartoonAvatarSvg(getActiveUserAvatarSeed(val || 'ผู้ใช้งาน'));
         });
 
         document.getElementById('whiteboardSurface').addEventListener('dblclick', e => {
@@ -6184,10 +6239,12 @@
           const nowMs = Date.now();
           let savedPost = null;
 
+          const exactModalAvSeed = currentComposerAvatarSeed || getActiveUserAvatarSeed(nickname);
           if (editingPostId) {
             const target = state.posts.find(p => p.id === editingPostId);
             if (target) {
               target.nickname = nickname;
+              target.avatarSeed = exactModalAvSeed;
               target.role = role;
               target.rating = selectedRating;
               target.text = text;
@@ -6209,6 +6266,7 @@
             savedPost = {
               id: newId,
               nickname,
+              avatarSeed: exactModalAvSeed,
               role,
               rating: selectedRating,
               text,
@@ -6363,7 +6421,7 @@
           const newCmtObj = {
             id: 'c-' + cNow + '-' + Math.random().toString(36).slice(2, 5),
             nickname: nick,
-            avatarSeed: nick + '#c_' + cNow + '_' + Math.random().toString(36).slice(2, 6),
+            avatarSeed: (nick === getSavedNickname() && currentComposerAvatarSeed) ? currentComposerAvatarSeed : getActiveUserAvatarSeed(nick),
             text,
             createdAtMs: cNow,
             dateStr: formatThaiDateStr(cNow),
