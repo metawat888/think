@@ -873,7 +873,7 @@
         }
         mediaCache.set(sId, imgData);
         // Only write to synchronous localStorage if payload <= 120KB; larger galleries/files go to async IndexedDB & CacheStorage to prevent main-thread lag & QuotaExceeded crashes!
-        if (imgData.length <= 120000) {
+        if (imgData.length <= 450000) {
           try {
             const existingLs = localStorage.getItem(LS_SINGLE_IMG_PREFIX + sId) || '';
             if (!existingLs || imgData.length >= existingLs.length) {
@@ -1775,11 +1775,12 @@
           if (Array.isArray(p.comments)) {
             p.comments = p.comments.filter(c => c && c.id && !globalDeletedSet.has(String(c.id)));
           }
-          if (p.image && p.image.length > 10) {
+          const bestSyncImg = getSyncImageForPost(p.id, p);
+          if (bestSyncImg && (!p.image || bestSyncImg.length > p.image.length)) {
+            p.image = bestSyncImg;
+          }
+          if (p.image && p.image.length > 3500) {
             savePostImageLocallyAllLayers(p.id, p.image);
-          } else {
-            const restored = getSyncImageForPost(p.id, p);
-            if (restored) p.image = restored;
           }
         });
         return baseState;
@@ -3312,15 +3313,63 @@
         setTimeout(() => pinInput.focus(), 60);
       }
 
-      function compressImageFile(file, maxWidth = 560, quality = 0.70) {
+      function compressImageFile(file, maxWidth = 1600, quality = 0.90) {
         return new Promise((resolve, reject) => {
+          const buildInlineThumb = (img) => {
+            try {
+              const tc = document.createElement('canvas');
+              const tw = Math.min(160, img.width || 160);
+              const th = Math.max(1, Math.round(((img.height || 160) * tw) / (img.width || 160)));
+              tc.width = tw;
+              tc.height = th;
+              const tctx = tc.getContext('2d');
+              tctx.imageSmoothingEnabled = true;
+              tctx.imageSmoothingQuality = 'high';
+              tctx.fillStyle = '#ffffff';
+              tctx.fillRect(0, 0, tw, th);
+              tctx.drawImage(img, 0, 0, tw, th);
+              let inlineUrl = tc.toDataURL('image/webp', 0.52);
+              if (!inlineUrl.startsWith('data:image/webp') || inlineUrl.length > 2400) {
+                inlineUrl = tc.toDataURL('image/jpeg', 0.45);
+              }
+              window._lastInlinePreview = inlineUrl.length <= 2500 ? inlineUrl : '';
+              tc.width = 1;
+              tc.height = 1;
+            } catch (e) {}
+          };
+
+          // Lossless original pass-through for SVG/GIF or images already <= 420KB so diagrams, text screenshots & infographics stay 100% razor-sharp!
+          const isLosslessCandidate = file && (
+            (file.size && file.size <= 420 * 1024) ||
+            (file.type && (file.type.includes('svg') || file.type.includes('gif')))
+          );
+          if (isLosslessCandidate) {
+            const rawReader = new FileReader();
+            rawReader.onload = ev => {
+              const rawDataUrl = ev.target && ev.target.result;
+              if (rawDataUrl && typeof rawDataUrl === 'string') {
+                const probeImg = new Image();
+                probeImg.onload = () => {
+                  buildInlineThumb(probeImg);
+                  resolve(rawDataUrl);
+                };
+                probeImg.onerror = () => resolve(rawDataUrl);
+                probeImg.src = rawDataUrl;
+                return;
+              }
+            };
+            rawReader.onerror = () => {};
+            rawReader.readAsDataURL(file);
+            return;
+          }
+
           const objUrl = URL.createObjectURL(file);
           const img = new Image();
           img.onload = () => {
             try { URL.revokeObjectURL(objUrl); } catch (e) {}
             try {
               let w = img.width, h = img.height;
-              const maxDim = maxWidth;
+              const maxDim = Math.max(1200, maxWidth || 1600);
               if (w > maxDim || h > maxDim) {
                 if (w >= h) {
                   h = Math.round((h * maxDim) / w);
@@ -3334,34 +3383,22 @@
               canvas.width = w;
               canvas.height = h;
               const ctx = canvas.getContext('2d');
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
               ctx.fillStyle = '#ffffff';
               ctx.fillRect(0, 0, w, h);
               ctx.drawImage(img, 0, 0, w, h);
-              let dataUrl = canvas.toDataURL('image/webp', 0.76);
-              if (!dataUrl.startsWith('data:image/webp') || dataUrl.length > 36000) {
-                dataUrl = canvas.toDataURL('image/jpeg', 0.68);
+
+              const targetQual = Math.max(0.84, quality || 0.90);
+              let dataUrl = canvas.toDataURL('image/webp', targetQual);
+              if (!dataUrl.startsWith('data:image/webp') || dataUrl.length > 420000) {
+                dataUrl = canvas.toDataURL('image/jpeg', Math.min(0.90, targetQual));
               }
-              if (dataUrl.length > 34000) {
-                dataUrl = canvas.toDataURL('image/jpeg', 0.54);
+              if (dataUrl.length > 380000) {
+                dataUrl = canvas.toDataURL('image/jpeg', 0.82);
               }
-              // Generate an indestructible <= 2.4KB inline preview so even 4KB ntfy packets carry the image inline!
-              try {
-                const tc = document.createElement('canvas');
-                const tw = Math.min(140, w);
-                const th = Math.max(1, Math.round((h * tw) / w));
-                tc.width = tw;
-                tc.height = th;
-                const tctx = tc.getContext('2d');
-                tctx.fillStyle = '#ffffff';
-                tctx.fillRect(0, 0, tw, th);
-                tctx.drawImage(img, 0, 0, tw, th);
-                let inlineUrl = tc.toDataURL('image/webp', 0.48);
-                if (!inlineUrl.startsWith('data:image/webp') || inlineUrl.length > 2400) {
-                  inlineUrl = tc.toDataURL('image/jpeg', 0.42);
-                }
-                window._lastInlinePreview = inlineUrl.length <= 2500 ? inlineUrl : '';
-              } catch (e) {}
-              // Release canvas GPU backing store immediately to prevent iOS/Android crash when adding many images
+
+              buildInlineThumb(img);
               canvas.width = 1;
               canvas.height = 1;
               resolve(dataUrl);
@@ -3525,7 +3562,8 @@
       function getOrCreateBlobUrlForDataUrl(cacheKey, dataUrl, fallbackMime) {
         if (!dataUrl) return '';
         if (!dataUrl.startsWith('data:')) return dataUrl;
-        if (cacheKey && blobUrlCache.has(cacheKey)) return blobUrlCache.get(cacheKey);
+        const sizedKey = cacheKey ? (cacheKey + ':' + dataUrl.length) : '';
+        if (sizedKey && blobUrlCache.has(sizedKey)) return blobUrlCache.get(sizedKey);
         try {
           const parts = dataUrl.split(',');
           const header = parts[0] || '';
@@ -3538,7 +3576,7 @@
           for (let i = 0; i < len; i++) bytes[i] = binStr.charCodeAt(i);
           const blob = new Blob([bytes], { type: mime });
           const blobUrl = URL.createObjectURL(blob);
-          if (cacheKey) blobUrlCache.set(cacheKey, blobUrl);
+          if (sizedKey) blobUrlCache.set(sizedKey, blobUrl);
           return blobUrl;
         } catch (e) {
           return dataUrl;
@@ -3865,7 +3903,14 @@
 
       function getPostImagesArray(post) {
         if (!post) return [];
+        const bestSingle = getSyncImageForPost(post.id, post);
+        if (bestSingle && (!post.image || bestSingle.length > post.image.length)) {
+          post.image = bestSingle;
+        }
         if (Array.isArray(post.images) && post.images.length > 0) {
+          if (post.images.length === 1 && post.image && post.image.length > post.images[0].length) {
+            post.images[0] = post.image;
+          }
           return post.images.filter(Boolean);
         }
         if (post.image && typeof post.image === 'string' && post.image.length > 10) {
@@ -4481,20 +4526,21 @@
           if (isPermanentlyDeleted(post.id)) return;
           if (!Array.isArray(post.comments)) post.comments = [];
           post.comments = post.comments.filter(c => c && c.id && !isPermanentlyDeleted(c.id));
-          if (!post.image) {
-            const restored = getSyncImageForPost(post.id, post);
-            if (restored) {
-              post.image = restored;
-            } else {
-              loadAsyncImageForPost(post.id).then(asyncImg => {
-                if (asyncImg && !post.image) {
-                  post.image = asyncImg;
-                  renderBoard();
-                } else if (!post.image && (post.hasImage || post.imageBlobId)) {
-                  fetchMissingPostImageFromCloud(post);
-                }
-              });
-            }
+          const syncBest = getSyncImageForPost(post.id, post);
+          if (syncBest && (!post.image || syncBest.length > post.image.length)) {
+            post.image = syncBest;
+            if (Array.isArray(post.images) && post.images.length === 1) post.images[0] = syncBest;
+          }
+          if (!post.image || (post.image.startsWith('data:') && post.image.length < 3500)) {
+            loadAsyncImageForPost(post.id).then(asyncImg => {
+              if (asyncImg && (!post.image || asyncImg.length > post.image.length)) {
+                post.image = asyncImg;
+                if (Array.isArray(post.images) && post.images.length === 1) post.images[0] = asyncImg;
+                renderBoard();
+              } else if ((!post.image || post.image.length < 3500) && (post.hasImage || post.imageBlobId)) {
+                fetchMissingPostImageFromCloud(post);
+              }
+            });
           }
           if ((!Array.isArray(post.images) || post.images.length <= 1) && (post.imageCount > 1)) {
             const restoredGal = getSyncImageForPost(post.id + '__gallery', null);
@@ -5454,8 +5500,8 @@
           const filesArr = Array.from(fileList);
           const totalCount = filesArr.length;
           // Adaptive compression when adding many images at once so memory stays low and app never crashes
-          const adaptiveMaxW = (pendingImagesList.length + totalCount) > 3 ? 480 : 560;
-          const adaptiveQual = (pendingImagesList.length + totalCount) > 3 ? 0.64 : 0.70;
+          const adaptiveMaxW = (pendingImagesList.length + totalCount) > 4 ? 1280 : 1600;
+          const adaptiveQual = (pendingImagesList.length + totalCount) > 4 ? 0.85 : 0.90;
 
           for (let i = 0; i < totalCount; i++) {
             const file = filesArr[i];
