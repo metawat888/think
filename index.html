@@ -370,9 +370,9 @@
         <!-- Top Bar Inside Composer: Board Code & Name + Stars -->
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div class="flex items-center gap-2.5 min-w-0">
-            <div id="composerAvatarInitial" class="w-9 h-9 rounded-full bg-neutral-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
+            <button id="composerAvatarInitial" type="button" title="คลิกเพื่อสุ่มเปลี่ยนตัวการ์ตูน Avatar น่ารักใหม่" class="relative w-10 h-10 rounded-full overflow-hidden bg-neutral-100 ring-2 ring-orange-400 hover:ring-neutral-900 hover:scale-105 active:scale-95 flex items-center justify-center shrink-0 transition cursor-pointer shadow-sm">
               น
-            </div>
+            </button>
             <div class="flex items-center gap-2 flex-wrap min-w-0">
               <span class="px-2.5 py-0.5 rounded-lg bg-orange-500 text-white text-xs font-bold inline-flex items-center gap-1 max-w-[160px] sm:max-w-[220px]"><span class="shrink-0">Board:</span><span id="composerRoomCodeLabel" class="truncate">-</span></span>
               <span id="composerAuthorNameLabel" class="font-bold text-sm text-neutral-900 truncate">ผู้ใช้งาน</span>
@@ -3426,12 +3426,369 @@
         };
       }
 
-      // 4. Render Think Board
+      // 4. Cute Cartoon Avatar Generator Engine (16 Chibi Characters × 24 Vibrant Colors × 8 Eyes × 7 Mouths × 8 Accessories)
+      const LS_USER_AVATAR_SEED_KEY = 'THINK_BOARD_CUTE_AVATAR_SEED_V1';
+      let currentComposerAvatarSeed = '';
+
+      function getActiveUserAvatarSeed(nickname) {
+        if (currentComposerAvatarSeed) return currentComposerAvatarSeed;
+        try {
+          const saved = localStorage.getItem(LS_USER_AVATAR_SEED_KEY);
+          if (saved) {
+            currentComposerAvatarSeed = saved;
+            return saved;
+          }
+        } catch (e) {}
+        currentComposerAvatarSeed = (nickname || 'user') + '#av_' + Math.random().toString(36).slice(2, 8);
+        try { localStorage.setItem(LS_USER_AVATAR_SEED_KEY, currentComposerAvatarSeed); } catch (e) {}
+        return currentComposerAvatarSeed;
+      }
+
+      function shuffleUserAvatarSeed(nickname) {
+        currentComposerAvatarSeed = (nickname || 'user') + '#av_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+        try { localStorage.setItem(LS_USER_AVATAR_SEED_KEY, currentComposerAvatarSeed); } catch (e) {}
+        updateLuxuryComposerHeader();
+        return currentComposerAvatarSeed;
+      }
+
+      function hashAvatarSeed(str, salt = 0) {
+        const s = String(str || 'thinkboard') + '|' + String(salt);
+        let h = 2166136261 >>> 0;
+        for (let i = 0; i < s.length; i++) {
+          h ^= s.charCodeAt(i);
+          h = Math.imul(h, 16777619);
+        }
+        h ^= h >>> 16;
+        h = Math.imul(h, 2246822507);
+        h ^= h >>> 13;
+        h = Math.imul(h, 3266489909);
+        h ^= h >>> 16;
+        return h >>> 0;
+      }
+
+      const CUTE_BG_PALETTES = [
+        ['#FF6B6B', '#FF8E53'], ['#4FACFE', '#00F2FE'], ['#43E97B', '#38F9D7'], ['#FA709A', '#FEE140'],
+        ['#A18CD1', '#FBC2EB'], ['#F6D365', '#FDA085'], ['#FF9A9E', '#FECFEF'], ['#667EEA', '#764BA2'],
+        ['#FF758C', '#FF7EB3'], ['#10B981', '#34D399'], ['#0EA5E9', '#38BDF8'], ['#8B5CF6', '#C084FC'],
+        ['#F59E0B', '#FBBF24'], ['#EC4899', '#F472B6'], ['#14B8A6', '#2DD4BF'], ['#F43F5E', '#FB7185'],
+        ['#6366F1', '#818CF8'], ['#84CC16', '#A3E635'], ['#EA580C', '#FB923C'], ['#06B6D4', '#22D3EE'],
+        ['#D946EF', '#F0ABFC'], ['#E11D48', '#FDA4AF'], ['#0284C7', '#7DD3FC'], ['#059669', '#6EE7B7']
+      ];
+
+      const CUTE_CHAR_COLORS = [
+        { fur: '#FFFDF9', inner: '#FFD1DC', muzzle: '#FFF3E6', accent: '#FFB6C1' }, // Creamy White
+        { fur: '#F6C28B', inner: '#FFA8B8', muzzle: '#FFF5E4', accent: '#E09F5A' }, // Warm Caramel
+        { fur: '#FFD875', inner: '#FF9EBB', muzzle: '#FFF9E6', accent: '#F59E0B' }, // Sunny Yellow
+        { fur: '#FFB5C2', inner: '#FF7597', muzzle: '#FFF0F5', accent: '#F43F5E' }, // Pastel Pink
+        { fur: '#A7F3D0', inner: '#6EE7B7', muzzle: '#ECFDF5', accent: '#10B981' }, // Mint Pastel
+        { fur: '#BAE6FD', inner: '#7DD3FC', muzzle: '#F0F9FF', accent: '#0284C7' }, // Sky Blue
+        { fur: '#DDD6FE', inner: '#C4B5FD', muzzle: '#F5F3FF', accent: '#7C3AED' }, // Lavender
+        { fur: '#FDBA74', inner: '#FB7185', muzzle: '#FFF7ED', accent: '#EA580C' }, // Fox Orange
+        { fur: '#E2E8F0', inner: '#FDA4AF', muzzle: '#FFFFFF', accent: '#94A3B8' }, // Silver Koala
+        { fur: '#FDE68A', inner: '#FDBA74', muzzle: '#FEF3C7', accent: '#D97706' }, // Honey Bear
+        { fur: '#FBCFE8', inner: '#F472B6', muzzle: '#FDF2F8', accent: '#DB2777' }, // Berry Mochi
+        { fur: '#C7D2FE', inner: '#F9A8D4', muzzle: '#EEF2FF', accent: '#4F46E5' }  // Periwinkle
+      ];
+
+      function buildCuteCartoonAvatarSvg(seedInput) {
+        const seed = String(seedInput || 'default_think_avatar');
+        const h1 = hashAvatarSeed(seed, 1);
+        const h2 = hashAvatarSeed(seed, 2);
+        const h3 = hashAvatarSeed(seed, 3);
+        const h4 = hashAvatarSeed(seed, 4);
+        const h5 = hashAvatarSeed(seed, 5);
+
+        const bgPair = CUTE_BG_PALETTES[h1 % CUTE_BG_PALETTES.length];
+        const charPal = CUTE_CHAR_COLORS[h2 % CUTE_CHAR_COLORS.length];
+        const speciesIdx = h3 % 14; // 14 distinct cute character archetypes
+        const eyeIdx = h4 % 6;     // 6 adorable eye expressions
+        const mouthIdx = (h4 >>> 4) % 6; // 6 cute mouths
+        const accIdx = h5 % 8;     // 8 cute head accessories
+        const gradId = 'avG_' + (h1 % 999999);
+
+        let earsAndBase = '';
+        if (speciesIdx === 0) {
+          // 0: Cute Teddy Bear
+          earsAndBase = `
+            <circle cx="26" cy="28" r="13" fill="${charPal.fur}" stroke="#1F2937" stroke-width="2.6"/>
+            <circle cx="26" cy="28" r="7" fill="${charPal.inner}"/>
+            <circle cx="74" cy="28" r="13" fill="${charPal.fur}" stroke="#1F2937" stroke-width="2.6"/>
+            <circle cx="74" cy="28" r="7" fill="${charPal.inner}"/>
+            <ellipse cx="50" cy="56" rx="31" ry="28" fill="${charPal.fur}" stroke="#1F2937" stroke-width="2.6"/>
+            <ellipse cx="50" cy="63" rx="12" ry="9.5" fill="${charPal.muzzle}"/>
+          `;
+        } else if (speciesIdx === 1) {
+          // 1: Kawaii Kitty Cat
+          earsAndBase = `
+            <polygon points="20,44 22,16 44,32" fill="${charPal.fur}" stroke="#1F2937" stroke-width="2.6" stroke-linejoin="round"/>
+            <polygon points="24,39 25,22 39,32" fill="${charPal.inner}"/>
+            <polygon points="80,44 78,16 56,32" fill="${charPal.fur}" stroke="#1F2937" stroke-width="2.6" stroke-linejoin="round"/>
+            <polygon points="76,39 75,22 61,32" fill="${charPal.inner}"/>
+            <ellipse cx="50" cy="57" rx="31" ry="27" fill="${charPal.fur}" stroke="#1F2937" stroke-width="2.6"/>
+            <path d="M14 55 L24 57 M14 62 L24 61 M86 55 L76 57 M86 62 L76 61" stroke="#1F2937" stroke-width="2" stroke-linecap="round"/>
+          `;
+        } else if (speciesIdx === 2) {
+          // 2: Fluffy Long-Ear Bunny
+          earsAndBase = `
+            <ellipse cx="34" cy="24" rx="8.5" ry="19" transform="rotate(-10 34 24)" fill="${charPal.fur}" stroke="#1F2937" stroke-width="2.6"/>
+            <ellipse cx="34" cy="25" rx="4.5" ry="13" transform="rotate(-10 34 25)" fill="${charPal.inner}"/>
+            <ellipse cx="66" cy="24" rx="8.5" ry="19" transform="rotate(10 66 24)" fill="${charPal.fur}" stroke="#1F2937" stroke-width="2.6"/>
+            <ellipse cx="66" cy="25" rx="4.5" ry="13" transform="rotate(10 66 25)" fill="${charPal.inner}"/>
+            <ellipse cx="50" cy="60" rx="30" ry="25" fill="${charPal.fur}" stroke="#1F2937" stroke-width="2.6"/>
+          `;
+        } else if (speciesIdx === 3) {
+          // 3: Baby Panda
+          earsAndBase = `
+            <circle cx="25" cy="28" r="12.5" fill="#1F2937"/>
+            <circle cx="75" cy="28" r="12.5" fill="#1F2937"/>
+            <ellipse cx="50" cy="56" rx="31" ry="28" fill="#FFFFFF" stroke="#1F2937" stroke-width="2.6"/>
+            <ellipse cx="35" cy="52" rx="8.5" ry="7" transform="rotate(-12 35 52)" fill="#1F2937" opacity="0.18"/>
+            <ellipse cx="65" cy="52" rx="8.5" ry="7" transform="rotate(12 65 52)" fill="#1F2937" opacity="0.18"/>
+          `;
+        } else if (speciesIdx === 4) {
+          // 4: Shiba Inu Puppy
+          earsAndBase = `
+            <polygon points="21,42 26,17 44,31" fill="#F59E0B" stroke="#1F2937" stroke-width="2.6" stroke-linejoin="round"/>
+            <polygon points="25,38 28,23 39,32" fill="#FEF3C7"/>
+            <polygon points="79,42 74,17 56,31" fill="#F59E0B" stroke="#1F2937" stroke-width="2.6" stroke-linejoin="round"/>
+            <polygon points="75,38 72,23 61,32" fill="#FEF3C7"/>
+            <ellipse cx="50" cy="57" rx="31" ry="27" fill="#F59E0B" stroke="#1F2937" stroke-width="2.6"/>
+            <path d="M23 61 C28 48 42 52 50 58 C58 52 72 48 77 61 C74 76 62 83 50 83 C38 83 26 76 23 61 Z" fill="#FFFBEB"/>
+            <ellipse cx="38" cy="41" rx="3.2" ry="2" fill="#FFFBEB"/>
+            <ellipse cx="62" cy="41" rx="3.2" ry="2" fill="#FFFBEB"/>
+          `;
+        } else if (speciesIdx === 5) {
+          // 5: Happy Frog
+          earsAndBase = `
+            <circle cx="32" cy="30" r="12" fill="#4ADE80" stroke="#1F2937" stroke-width="2.6"/>
+            <circle cx="68" cy="30" r="12" fill="#4ADE80" stroke="#1F2937" stroke-width="2.6"/>
+            <ellipse cx="50" cy="58" rx="32" ry="25" fill="#4ADE80" stroke="#1F2937" stroke-width="2.6"/>
+            <ellipse cx="50" cy="67" rx="22" ry="13" fill="#DCFCE7"/>
+          `;
+        } else if (speciesIdx === 6) {
+          // 6: Baby Penguin
+          earsAndBase = `
+            <ellipse cx="50" cy="56" rx="31" ry="29" fill="#334155" stroke="#1F2937" stroke-width="2.6"/>
+            <path d="M25 58 C25 41 37 38 50 47 C63 38 75 41 75 58 C75 74 64 83 50 83 C36 83 25 74 25 58 Z" fill="#FFFFFF"/>
+          `;
+        } else if (speciesIdx === 7) {
+          // 7: Fluffy Little Lion
+          earsAndBase = `
+            <circle cx="50" cy="55" r="35" fill="#EA580C" stroke="#1F2937" stroke-width="2.6" stroke-dasharray="11 5"/>
+            <circle cx="27" cy="31" r="9" fill="#FBBF24" stroke="#1F2937" stroke-width="2.4"/>
+            <circle cx="73" cy="31" r="9" fill="#FBBF24" stroke="#1F2937" stroke-width="2.4"/>
+            <ellipse cx="50" cy="56" rx="27" ry="25" fill="#FDE68A" stroke="#1F2937" stroke-width="2.6"/>
+          `;
+        } else if (speciesIdx === 8) {
+          // 8: Cute Koala
+          earsAndBase = `
+            <circle cx="20" cy="46" r="14" fill="#94A3B8" stroke="#1F2937" stroke-width="2.6"/>
+            <circle cx="20" cy="46" r="8" fill="#F1F5F9"/>
+            <circle cx="80" cy="46" r="14" fill="#94A3B8" stroke="#1F2937" stroke-width="2.6"/>
+            <circle cx="80" cy="46" r="8" fill="#F1F5F9"/>
+            <ellipse cx="50" cy="57" rx="29" ry="26" fill="#CBD5E1" stroke="#1F2937" stroke-width="2.6"/>
+          `;
+        } else if (speciesIdx === 9) {
+          // 9: Cute AI Robot Buddy
+          earsAndBase = `
+            <line x1="50" y1="12" x2="50" y2="26" stroke="#1F2937" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="50" cy="12" r="5" fill="#F43F5E" stroke="#1F2937" stroke-width="2.2"/>
+            <rect x="13" y="45" width="8" height="18" rx="4" fill="${charPal.accent}" stroke="#1F2937" stroke-width="2.4"/>
+            <rect x="79" y="45" width="8" height="18" rx="4" fill="${charPal.accent}" stroke="#1F2937" stroke-width="2.4"/>
+            <rect x="20" y="27" width="60" height="54" rx="22" fill="${charPal.fur}" stroke="#1F2937" stroke-width="2.6"/>
+          `;
+        } else if (speciesIdx === 10) {
+          // 10: Baby Unicorn
+          earsAndBase = `
+            <polygon points="23,41 25,21 40,33" fill="${charPal.fur}" stroke="#1F2937" stroke-width="2.5" stroke-linejoin="round"/>
+            <polygon points="77,41 75,21 60,33" fill="${charPal.fur}" stroke="#1F2937" stroke-width="2.5" stroke-linejoin="round"/>
+            <ellipse cx="50" cy="58" rx="30" ry="26" fill="${charPal.fur}" stroke="#1F2937" stroke-width="2.6"/>
+            <polygon points="44,32 50,10 56,32" fill="#FBBF24" stroke="#1F2937" stroke-width="2.4" stroke-linejoin="round"/>
+            <circle cx="42" cy="33" r="6" fill="#F472B6"/>
+            <circle cx="58" cy="33" r="6" fill="#38BDF8"/>
+            <circle cx="50" cy="31" r="6.5" fill="#A78BFA"/>
+          `;
+        } else if (speciesIdx === 11) {
+          // 11: Little Chick / Duckling
+          earsAndBase = `
+            <path d="M46 28 C42 17 49 15 50 26 C53 16 60 19 54 28" fill="#FACC15" stroke="#1F2937" stroke-width="2.4" stroke-linecap="round"/>
+            <ellipse cx="50" cy="57" rx="31" ry="28" fill="#FEF08A" stroke="#1F2937" stroke-width="2.6"/>
+          `;
+        } else if (speciesIdx === 12) {
+          // 12: Cute Hamster with Puffy Cheeks
+          earsAndBase = `
+            <circle cx="26" cy="31" r="10.5" fill="#FDBA74" stroke="#1F2937" stroke-width="2.5"/>
+            <circle cx="26" cy="31" r="5.5" fill="#FDA4AF"/>
+            <circle cx="74" cy="31" r="10.5" fill="#FDBA74" stroke="#1F2937" stroke-width="2.5"/>
+            <circle cx="74" cy="31" r="5.5" fill="#FDA4AF"/>
+            <path d="M20 55 C20 35 33 28 50 28 C67 28 80 35 80 55 C84 68 74 83 50 83 C26 83 16 68 20 55 Z" fill="#FFFBEB" stroke="#1F2937" stroke-width="2.6"/>
+            <path d="M23 48 C27 30 40 28 50 40 C60 28 73 30 77 48 Z" fill="#FDBA74"/>
+          `;
+        } else {
+          // 13: Chibi Student Kid with Cute Hair
+          const hairColors = ['#1F2937', '#7C2D12', '#B45309', '#4C1D95', '#BE185D', '#0F766E'];
+          const hairCol = hairColors[h2 % hairColors.length];
+          earsAndBase = `
+            <circle cx="19" cy="56" r="6" fill="#FDE0C8" stroke="#1F2937" stroke-width="2.4"/>
+            <circle cx="81" cy="56" r="6" fill="#FDE0C8" stroke="#1F2937" stroke-width="2.4"/>
+            <ellipse cx="50" cy="56" rx="29" ry="27" fill="#FDE0C8" stroke="#1F2937" stroke-width="2.6"/>
+            <path d="M20 52 C20 30 34 23 50 23 C66 23 80 30 80 52 C73 41 65 44 59 37 C53 45 44 44 38 37 C31 44 24 42 20 52 Z" fill="${hairCol}" stroke="#1F2937" stroke-width="2.5" stroke-linejoin="round"/>
+          `;
+        }
+
+        // Cute Rosy Cheeks
+        const cheeksSvg = `
+          <ellipse cx="29" cy="61" rx="6" ry="3.6" fill="#FF7597" opacity="0.65"/>
+          <ellipse cx="71" cy="61" rx="6" ry="3.6" fill="#FF7597" opacity="0.65"/>
+        `;
+
+        // 6 Adorable Eye Styles
+        let eyesSvg = '';
+        if (eyeIdx === 0) {
+          // Big Kawaii Double-Sparkle Eyes
+          eyesSvg = `
+            <circle cx="36" cy="52" r="5.5" fill="#1F2937"/>
+            <circle cx="34.2" cy="50.2" r="2.1" fill="#FFFFFF"/>
+            <circle cx="37.8" cy="53.8" r="1" fill="#FFFFFF"/>
+            <circle cx="64" cy="52" r="5.5" fill="#1F2937"/>
+            <circle cx="62.2" cy="50.2" r="2.1" fill="#FFFFFF"/>
+            <circle cx="65.8" cy="53.8" r="1" fill="#FFFFFF"/>
+          `;
+        } else if (eyeIdx === 1) {
+          // Happy Laughing Arcs (^ ^)
+          eyesSvg = `
+            <path d="M30 53 Q36 45 42 53" fill="none" stroke="#1F2937" stroke-width="3" stroke-linecap="round"/>
+            <path d="M58 53 Q64 45 70 53" fill="none" stroke="#1F2937" stroke-width="3" stroke-linecap="round"/>
+          `;
+        } else if (eyeIdx === 2) {
+          // Playful Wink ;)
+          eyesSvg = `
+            <circle cx="36" cy="52" r="5.5" fill="#1F2937"/>
+            <circle cx="34.2" cy="50.2" r="2.1" fill="#FFFFFF"/>
+            <path d="M58 52 Q64 45 70 52" fill="none" stroke="#1F2937" stroke-width="3" stroke-linecap="round"/>
+          `;
+        } else if (eyeIdx === 3) {
+          // Cute Round Glasses + Sparkle Eyes
+          eyesSvg = `
+            <circle cx="36" cy="52" r="4.8" fill="#1F2937"/>
+            <circle cx="34.5" cy="50.5" r="1.8" fill="#FFFFFF"/>
+            <circle cx="64" cy="52" r="4.8" fill="#1F2937"/>
+            <circle cx="62.5" cy="50.5" r="1.8" fill="#FFFFFF"/>
+            <circle cx="36" cy="52" r="9.5" fill="none" stroke="#1F2937" stroke-width="2.4"/>
+            <circle cx="64" cy="52" r="9.5" fill="none" stroke="#1F2937" stroke-width="2.4"/>
+            <line x1="45.5" y1="52" x2="54.5" y2="52" stroke="#1F2937" stroke-width="2.4"/>
+          `;
+        } else if (eyeIdx === 4) {
+          // Starry Amazed Eyes
+          eyesSvg = `
+            <circle cx="36" cy="52" r="5.8" fill="#1F2937"/>
+            <polygon points="36,48 37.2,50.8 40,52 37.2,53.2 36,56 34.8,53.2 32,52 34.8,50.8" fill="#FDE047"/>
+            <circle cx="64" cy="52" r="5.8" fill="#1F2937"/>
+            <polygon points="64,48 65.2,50.8 68,52 65.2,53.2 64,56 62.8,53.2 60,52 62.8,50.8" fill="#FDE047"/>
+          `;
+        } else {
+          // Cozy Big Oval Eyes with Eyebrows
+          eyesSvg = `
+            <ellipse cx="36" cy="52" rx="4.8" ry="5.8" fill="#1F2937"/>
+            <circle cx="34.5" cy="49.8" r="2" fill="#FFFFFF"/>
+            <ellipse cx="64" cy="52" rx="4.8" ry="5.8" fill="#1F2937"/>
+            <circle cx="62.5" cy="49.8" r="2" fill="#FFFFFF"/>
+            <path d="M31 43 Q36 41 41 43 M59 43 Q64 41 69 43" fill="none" stroke="#1F2937" stroke-width="2.2" stroke-linecap="round"/>
+          `;
+        }
+
+        // Nose & 6 Cute Mouths
+        let noseAndMouthSvg = '';
+        if (speciesIdx === 6 || speciesIdx === 11) {
+          // Cute Orange Beak for Penguin / Chick
+          noseAndMouthSvg = `<polygon points="44,57 56,57 50,65" fill="#F97316" stroke="#1F2937" stroke-width="2" stroke-linejoin="round"/>`;
+        } else if (speciesIdx === 8) {
+          // Koala Oval Nose + Smile
+          noseAndMouthSvg = `
+            <ellipse cx="50" cy="57" rx="5" ry="6.5" fill="#1F2937"/>
+            <path d="M44 67 Q50 72 56 67" fill="none" stroke="#1F2937" stroke-width="2.4" stroke-linecap="round"/>
+          `;
+        } else {
+          const noseDot = (speciesIdx === 13 || speciesIdx === 5 || speciesIdx === 9)
+            ? ''
+            : `<ellipse cx="50" cy="58" rx="3.4" ry="2.5" fill="#1F2937"/>`;
+          if (mouthIdx === 0) {
+            // Kawaii Cat 'ω' Smile
+            noseAndMouthSvg = `${noseDot}<path d="M43 64 Q46.5 68.5 50 64 Q53.5 68.5 57 64" fill="none" stroke="#1F2937" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+          } else if (mouthIdx === 1) {
+            // Happy Open Laughing Mouth with Pink Tongue
+            noseAndMouthSvg = `${noseDot}
+              <path d="M43 63 Q50 73 57 63 Z" fill="#F43F5E" stroke="#1F2937" stroke-width="2.3" stroke-linejoin="round"/>
+            `;
+          } else if (mouthIdx === 2) {
+            // Cute Side Tongue Out (:P)
+            noseAndMouthSvg = `${noseDot}
+              <path d="M44 64 Q50 69 56 64" fill="none" stroke="#1F2937" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M50 66 Q53 72 56 66 Z" fill="#FB7185" stroke="#1F2937" stroke-width="1.8"/>
+            `;
+          } else if (mouthIdx === 3) {
+            // Big Warm Smile
+            noseAndMouthSvg = `${noseDot}<path d="M42 63 Q50 71 58 63" fill="none" stroke="#1F2937" stroke-width="2.6" stroke-linecap="round"/>`;
+          } else if (mouthIdx === 4) {
+            // Cute Little Surprised 'o'
+            noseAndMouthSvg = `${noseDot}<circle cx="50" cy="65.5" r="3.4" fill="#FB7185" stroke="#1F2937" stroke-width="2.2"/>`;
+          } else {
+            // Sweet Gentle Grin
+            noseAndMouthSvg = `${noseDot}<path d="M45 64.5 Q50 68.5 55 64.5" fill="none" stroke="#1F2937" stroke-width="2.5" stroke-linecap="round"/>`;
+          }
+        }
+
+        // Head Accessories (Crown, Sprout Leaf, Bow Ribbon, Star Pin, Halo)
+        let accSvg = '';
+        if (accIdx === 1 && speciesIdx !== 9 && speciesIdx !== 10) {
+          // Mini Golden Crown
+          accSvg = `<polygon points="39,26 42,14 50,21 58,14 61,26" fill="#FACC15" stroke="#1F2937" stroke-width="2.2" stroke-linejoin="round"/>`;
+        } else if (accIdx === 2 && speciesIdx !== 9 && speciesIdx !== 10 && speciesIdx !== 11) {
+          // Cute Green Sprout Leaf
+          accSvg = `
+            <path d="M50 28 Q50 18 57 15" fill="none" stroke="#15803D" stroke-width="2.4" stroke-linecap="round"/>
+            <ellipse cx="58" cy="15" rx="5.5" ry="3.2" transform="rotate(-20 58 15)" fill="#4ADE80" stroke="#1F2937" stroke-width="1.8"/>
+          `;
+        } else if (accIdx === 3) {
+          // Cute Red Bow Ribbon on Side
+          accSvg = `
+            <g transform="translate(68, 28) rotate(18)">
+              <polygon points="-8,-5 0,0 -8,5" fill="#F43F5E" stroke="#1F2937" stroke-width="1.8"/>
+              <polygon points="8,-5 0,0 8,5" fill="#F43F5E" stroke="#1F2937" stroke-width="1.8"/>
+              <circle cx="0" cy="0" r="2.5" fill="#FFE4E6" stroke="#1F2937" stroke-width="1.6"/>
+            </g>
+          `;
+        } else if (accIdx === 4) {
+          // Cute Star Hairpin / Sparkles
+          accSvg = `<polygon points="75,18 76.8,22 81,22.5 77.8,25.2 78.8,29.5 75,27.2 71.2,29.5 72.2,25.2 69,22.5 73.2,22" fill="#FDE047" stroke="#1F2937" stroke-width="1.5"/>`;
+        }
+
+        return `
+          <svg class="w-full h-full block select-none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="${bgPair[0]}"/>
+                <stop offset="100%" stop-color="${bgPair[1]}"/>
+              </linearGradient>
+            </defs>
+            <rect width="100" height="100" rx="50" fill="url(#${gradId})"/>
+            <circle cx="22" cy="20" r="3" fill="#FFFFFF" opacity="0.35"/>
+            <circle cx="82" cy="24" r="2" fill="#FFFFFF" opacity="0.3"/>
+            ${earsAndBase}
+            ${cheeksSvg}
+            ${eyesSvg}
+            ${noseAndMouthSvg}
+            ${accSvg}
+          </svg>
+        `;
+      }
+
       function updateLuxuryComposerHeader() {
         const savedNick = getSavedNickname() || 'ผู้ใช้งาน';
         const savedRole = getSavedRole() || 'นักเรียน';
         const roomStr = syncConfig.roomCode || '-';
-        const initChar = (savedNick || 'น').trim().charAt(0).toUpperCase();
+        const activeAvSeed = getActiveUserAvatarSeed(savedNick);
+        const avSvgHtml = buildCuteCartoonAvatarSvg(activeAvSeed);
 
         const avatarEl = document.getElementById('composerAvatarInitial');
         const nameLabelEl = document.getElementById('composerAuthorNameLabel');
@@ -3441,13 +3798,16 @@
         const hdrNameEl = document.getElementById('headerUserNameLabel');
         const modalAvatarEl = document.getElementById('modalAuthorAvatarPreview');
 
-        if (avatarEl) avatarEl.textContent = initChar;
+        if (avatarEl) avatarEl.innerHTML = avSvgHtml;
         if (nameLabelEl) nameLabelEl.textContent = savedNick;
         if (roleLabelEl) roleLabelEl.textContent = savedRole;
         if (compRoomEl) { compRoomEl.textContent = roomStr; compRoomEl.title = roomStr; }
         if (hdrRoomEl) { hdrRoomEl.textContent = roomStr; hdrRoomEl.title = roomStr; }
         if (hdrNameEl) { hdrNameEl.textContent = savedNick; hdrNameEl.title = savedNick; }
-        if (modalAvatarEl) modalAvatarEl.textContent = initChar;
+        if (modalAvatarEl) {
+          modalAvatarEl.className = 'w-11 h-11 rounded-full overflow-hidden flex items-center justify-center shrink-0 ring-2 ring-white/30 shadow-md';
+          modalAvatarEl.innerHTML = avSvgHtml;
+        }
       }
 
       const FEELING_DEFS = [
@@ -4349,6 +4709,7 @@
         return [
           post.id,
           post.nickname || '',
+          post.avatarSeed || '',
           post.role || '',
           post.rating || 5,
           post.text || '',
@@ -4391,8 +4752,8 @@
             .map(
               c => `
             <div class="btn-open-comments flex items-start gap-2 cursor-pointer group/cmt">
-              <div class="w-6 h-6 rounded-full bg-neutral-900 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                ${escapeHtml((c.nickname || 'น').trim().charAt(0).toUpperCase())}
+              <div class="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center shrink-0 mt-0.5 ring-1 ring-black/10 shadow-xs bg-white">
+                ${buildCuteCartoonAvatarSvg(c.avatarSeed || (c.nickname + '#' + c.id))}
               </div>
               <div class="flex-1 min-w-0 px-3 py-1.5 rounded-2xl bg-neutral-100 group-hover/cmt:bg-orange-50/60 border border-neutral-200 group-hover/cmt:border-orange-200 text-xs transition">
                 <div class="flex items-center justify-between gap-1.5">
@@ -4666,8 +5027,8 @@
               <div class="flex items-start justify-between gap-2 mb-3.5">
                 <div class="flex items-center gap-3 min-w-0">
                   <div class="relative shrink-0">
-                    <div class="w-11 h-11 rounded-full ${teamBadge.cls} font-bold text-sm flex items-center justify-center ring-2 ring-white shadow-sm">
-                      ${escapeHtml(initial)}
+                    <div class="w-11 h-11 rounded-full overflow-hidden flex items-center justify-center ring-2 ring-white shadow-md bg-white">
+                      ${buildCuteCartoonAvatarSvg(post.avatarSeed || (post.nickname + '#' + post.id))}
                     </div>
                     <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-orange-500 ring-2 ring-white"></span>
                   </div>
@@ -4901,6 +5262,7 @@
                 const newCmtObj = {
                   id: 'c-' + cNow + '-' + Math.random().toString(36).slice(2, 5),
                   nickname: nickVal,
+                  avatarSeed: nickVal + '#c_' + cNow + '_' + Math.random().toString(36).slice(2, 6),
                   text: textVal,
                   createdAtMs: cNow,
                   dateStr: formatThaiDateStr(cNow),
@@ -5014,7 +5376,11 @@
         if (!post.image && mediaCache.has(post.id)) post.image = mediaCache.get(post.id);
 
         document.getElementById('detailCardHeader').className = `px-6 pt-5 pb-4 border-b border-black/5 flex items-start justify-between gap-3 ${getCardStyle(post.color)}`;
-        document.getElementById('detailAuthorInitial').textContent = (post.nickname || 'น').trim().charAt(0).toUpperCase();
+        const detailAvEl = document.getElementById('detailAuthorInitial');
+        if (detailAvEl) {
+          detailAvEl.className = 'w-11 h-11 rounded-full overflow-hidden flex items-center justify-center shrink-0 ring-2 ring-white shadow-md bg-white';
+          detailAvEl.innerHTML = buildCuteCartoonAvatarSvg(post.avatarSeed || (post.nickname + '#' + post.id));
+        }
         document.getElementById('detailAuthorName').textContent = post.nickname;
         document.getElementById('detailRoleBadge').textContent = post.role || 'นักเรียน';
         const r = typeof post.rating === 'number' ? Math.min(5, Math.max(1, post.rating)) : 5;
@@ -5122,7 +5488,7 @@
           const cInit = (comment.nickname || 'น').trim().charAt(0).toUpperCase();
           item.innerHTML = `
             <div class="flex items-start gap-2.5 min-w-0 flex-1">
-              <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">${escapeHtml(cInit)}</div>
+              <div class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center shrink-0 mt-0.5 ring-1 ring-black/10 shadow-xs bg-white">${buildCuteCartoonAvatarSvg(comment.avatarSeed || (comment.nickname + '#' + comment.id))}</div>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="font-bold text-xs text-slate-900">${escapeHtml(comment.nickname)}</span>
@@ -5495,6 +5861,13 @@
         };
 
         document.getElementById('btnInlineCancelEdit').addEventListener('click', resetInlineComposer);
+        const compAvBtn = document.getElementById('composerAvatarInitial');
+        if (compAvBtn) {
+          compAvBtn.addEventListener('click', () => {
+            shuffleUserAvatarSeed(getSavedNickname() || 'ผู้ใช้งาน');
+            showToast('🎨 สุ่มเปลี่ยนตัวการ์ตูน Avatar น่ารักใหม่แล้ว');
+          });
+        }
         const handleUniversalFilesSelected = async (fileList) => {
           if (!fileList || fileList.length === 0) return;
           const filesArr = Array.from(fileList);
@@ -5692,9 +6065,12 @@
             if (finalFileObj && finalFileObj.fileDataUrl) {
               savePostImageLocallyAllLayers(newId + '__file', finalFileObj.fileDataUrl);
             }
+            const postAvSeed = getActiveUserAvatarSeed(nickname) + '_' + newId;
+            shuffleUserAvatarSeed(nickname);
             savedPost = {
               id: newId,
               nickname,
+              avatarSeed: postAvSeed,
               role,
               rating: selectedRating,
               text: cleanedText,
@@ -5987,6 +6363,7 @@
           const newCmtObj = {
             id: 'c-' + cNow + '-' + Math.random().toString(36).slice(2, 5),
             nickname: nick,
+            avatarSeed: nick + '#c_' + cNow + '_' + Math.random().toString(36).slice(2, 6),
             text,
             createdAtMs: cNow,
             dateStr: formatThaiDateStr(cNow),
