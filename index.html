@@ -261,8 +261,8 @@
 <body class="h-screen overflow-hidden flex flex-col select-none bg-white">
 
   <!-- ENTRY OVERLAY (White, Black, Orange, Gray Theme | Bare Two-People Silhouette Logo Without Box) -->
-  <div id="loginScreenOverlay" class="fixed inset-0 z-50 login-bg-surface flex items-center justify-center px-4 pt-10 pb-6 overflow-y-auto">
-    <div class="login-card-surface rounded-[28px] max-w-[420px] w-full p-7 sm:p-8 animate-pop mt-4 sm:my-auto mb-auto">
+  <div id="loginScreenOverlay" class="fixed inset-0 z-50 login-bg-surface px-4 pt-10 pb-64 overflow-y-auto w-full h-full">
+    <div class="login-card-surface mx-auto mt-4 sm:mt-10 mb-auto rounded-[28px] max-w-[420px] w-full p-7 sm:p-8 animate-pop relative">
       <!-- Bare Two-People Icon (No Box) -->
       <div class="flex items-center justify-center mx-auto mb-3">
         <svg class="w-14 h-14 text-neutral-900" viewBox="0 0 64 56" fill="currentColor" aria-hidden="true">
@@ -6908,7 +6908,7 @@
           updateImagePreviewUI();
         };
 
-        document.getElementById('inlineImageFileInput').addEventListener('change', async e => {
+        const _inlineImgFileInp = document.getElementById('inlineImageFileInput'); if (_inlineImgFileInp) _inlineImgFileInp.addEventListener('change', async e => {
           await handleUniversalFilesSelected(e.target.files);
           e.target.value = '';
         });
@@ -7133,7 +7133,7 @@
           });
         });
 
-        document.getElementById('inputImageFile').addEventListener('change', async e => {
+        const _inpImgFileInp = document.getElementById('inputImageFile'); if (_inpImgFileInp) _inpImgFileInp.addEventListener('change', async e => {
           await handleUniversalFilesSelected(e.target.files);
           e.target.value = '';
         });
