@@ -1,6 +1,6 @@
 // Vercel Serverless API Connected to Turso LibSQL + Permanent Cloud KV + JSONBlob Cold-Start Persistence
 // Guarantees boxes/data NEVER disappear over time, even after serverless cold starts or cache expirations.
-const DEFAULT_TURSO_URL = process.env.TURSO_DATABASE_URL || 'libsql://ailsed-metawat888.aws-ap-southeast-1.turso.io';
+const DEFAULT_TURSO_URL = process.env.TURSO_DATABASE_URL || 'libsql://ailseddatabase-metawat888.aws-ap-southeast-1.turso.io';
 const KV_APP_KEY = 'r9f8k2m4';
 const memoryRooms = global.__THINK_BOARD_ROOMS__ || (global.__THINK_BOARD_ROOMS__ = {});
 const globalTombstones = global.__THINK_TOMBSTONES__ || (global.__THINK_TOMBSTONES__ = new Set());
