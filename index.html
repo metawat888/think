@@ -429,7 +429,7 @@
             <div class="flex items-center gap-2 flex-wrap min-w-0">
               <span class="px-2.5 py-0.5 rounded-lg bg-orange-500 text-white text-xs font-bold inline-flex items-center gap-1 max-w-[160px] sm:max-w-[220px]"><span class="shrink-0">Board:</span><span id="composerRoomCodeLabel" class="truncate">-</span></span>
               <span id="composerAuthorNameLabel" class="font-bold text-sm text-neutral-900 truncate">ผู้ใช้งาน</span>
-              <span id="composerRoleBadgeLabel" class="px-2 py-0.5 rounded-full bg-neutral-100 border border-neutral-200 text-neutral-600 text-[10px] font-bold">นักเรียน</span>
+              <span id="composerRoleBadgeLabel" class="hidden px-2 py-0.5 rounded-full bg-neutral-100 border border-neutral-200 text-neutral-600 text-[10px] font-bold">นักเรียน</span>
               <button id="composerIconCodeBadge" type="button" title="คลิกเพื่อดู คัดลอก หรือกรอกรหัส Icon ประจำตัว" class="px-2.5 py-0.5 rounded-full bg-neutral-900 hover:bg-orange-500 text-white text-[10px] font-mono font-extrabold inline-flex items-center gap-1 transition cursor-pointer shadow-2xs">
                 <span>🔑</span><span id="composerIconCodeText">TB-0000-0000</span>
               </button>
@@ -691,7 +691,7 @@
           <div class="min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
               <span id="detailAuthorName" class="font-bold text-base text-slate-900 truncate">ชื่อ</span>
-              <span id="detailRoleBadge" class="px-2 py-0.5 rounded-md bg-slate-900/10 text-slate-800 text-[10px] font-bold">นักเรียน</span>
+              <span id="detailRoleBadge" class="hidden px-2 py-0.5 rounded-md bg-slate-900/10 text-slate-800 text-[10px] font-bold">นักเรียน</span>
               <span id="detailStarsBadge" class="text-xs font-bold text-amber-600">⭐⭐⭐⭐⭐</span>
             </div>
             <div id="detailPostTime" class="text-xs text-slate-500"></div>
@@ -5618,7 +5618,7 @@
                   <div class="min-w-0">
                     <div class="flex items-center gap-1.5 flex-wrap">
                       <span class="font-bold text-sm sm:text-[15px] text-neutral-900 truncate tracking-tight">${escapeHtml(post.nickname)}</span>
-                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 border border-neutral-200 text-neutral-700">${escapeHtml(roleStr)}</span>
+                      <span class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 border border-neutral-200 text-neutral-700">${escapeHtml(roleStr)}</span>
                       <span class="px-2 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-[10px] leading-none">${starsStr}</span>
                       <span class="card-pinned-badge ${post.pinned ? '' : 'hidden'} px-2 py-0.5 rounded-full bg-orange-500 text-white text-[10px] font-bold">📌 ปักหมุด</span>
                     </div>
