@@ -262,7 +262,7 @@
 
   <!-- ENTRY OVERLAY (White, Black, Orange, Gray Theme | Bare Two-People Silhouette Logo Without Box) -->
   <div id="loginScreenOverlay" class="fixed inset-0 z-50 login-bg-surface flex items-center justify-center px-4 pt-10 pb-6 overflow-y-auto">
-    <div class="login-card-surface rounded-[28px] max-w-[420px] w-full p-7 sm:p-8 animate-pop my-auto">
+    <div class="login-card-surface rounded-[28px] max-w-[420px] w-full p-7 sm:p-8 animate-pop mt-4 sm:my-auto mb-auto">
       <!-- Bare Two-People Icon (No Box) -->
       <div class="flex items-center justify-center mx-auto mb-3">
         <svg class="w-14 h-14 text-neutral-900" viewBox="0 0 64 56" fill="currentColor" aria-hidden="true">
@@ -451,14 +451,7 @@
           <div class="rounded-2xl bg-neutral-50 border border-neutral-200 focus-within:border-orange-500 focus-within:bg-white transition p-2.5 sm:p-3 flex flex-col gap-2">
             <div class="flex items-center gap-2">
               <!-- + Button for Adding Universal Files (Images, PPT, PDF, Word, Excel, Video, Audio, All Files) -->
-              <label
-                for="inlineImageFileInput"
-                class="w-10 h-10 rounded-xl bg-neutral-200/80 hover:bg-orange-500 text-neutral-800 hover:text-white font-bold text-xl flex items-center justify-center shrink-0 cursor-pointer transition select-none"
-                title="เพิ่มรูปภาพ ไฟล์ PDF, PPT, Word, Excel หรือไฟล์ทุกชนิด"
-              >
-                +
-                <input id="inlineImageFileInput" type="file" multiple class="hidden" />
-              </label>
+              
 
               <textarea
                 id="inlinePostText"
@@ -625,13 +618,10 @@
         <div id="modalMediaSection" class="p-3.5 rounded-2xl bg-slate-950/80 border border-white/10 space-y-2.5">
           <div class="text-xs font-bold text-emerald-300 flex items-center justify-between">
             <span>🖼️ เพิ่มรูปภาพ & ▶️ วิดีโอ YouTube ลงในโพสต์</span>
-            <span class="text-[10px] text-slate-400 font-medium">รองรับไฟล์ภาพและลิงก์ทุกชนิด</span>
+            <span class="text-[10px] text-slate-400 font-medium">รองรับลิงก์ทุกชนิด (YouTube, Ai Lab, ฯลฯ)</span>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <label for="inputImageFile" class="py-2.5 px-3 rounded-xl border border-dashed border-emerald-500/60 hover:border-emerald-400 bg-slate-900/90 text-xs font-semibold text-emerald-300 flex items-center justify-center gap-1.5 cursor-pointer transition">
-              <span>🖼️ อัปโหลดรูปภาพ</span>
-              <input id="inputImageFile" type="file" multiple class="hidden" />
-            </label>
+          <div class="grid grid-cols-1 gap-2">
+            
             <input id="inputImageUrl" type="text" placeholder="หรือวางลิงก์รูปภาพ (https://...)" class="px-3 py-2 rounded-xl bg-slate-900/90 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400" />
           </div>
 
