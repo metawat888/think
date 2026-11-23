@@ -36,9 +36,9 @@
   <link rel="manifest" href="manifest.json" />
   <title>Think Board</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gun@0.2020.1240/gun.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/gun@0.2020.1240/gun.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -310,6 +310,29 @@
           </div>
         </div>
 
+        <!-- Reusable Icon Code Box on Login Screen (ใส่รหัส Icon เดิมเพื่อได้รูปเดิมทันที) -->
+        <div class="p-3 rounded-2xl bg-neutral-100/90 border border-neutral-300">
+          <div class="flex items-center justify-between gap-2 mb-1.5">
+            <label for="loginIconCodeInput" class="block text-xs font-bold text-neutral-800">🔑 รหัส Icon ประจำตัว (ใส่รหัสเดิมได้รูปเดิมทันที)</label>
+            <button id="btnLoginCopyIconCode" type="button" class="text-[11px] font-bold text-orange-600 hover:underline">คัดลอกรหัส</button>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="loginAvatarPreviewBox" type="button" title="คลิกเพื่อเลือกไอคอน" class="w-11 h-11 rounded-full overflow-hidden bg-white ring-2 ring-orange-500 shrink-0 shadow-xs cursor-pointer hover:scale-105 transition"></button>
+            <input
+              id="loginIconCodeInput"
+              type="text"
+              placeholder="เช่น TB-0408-2131..."
+              class="flex-1 min-w-0 px-3 py-2.5 rounded-xl bg-white border border-neutral-300 text-neutral-900 font-mono text-xs sm:text-sm font-extrabold uppercase tracking-wider focus:outline-none focus:border-orange-500 transition"
+            />
+            <button id="btnLoginRandomIconCode" type="button" title="สุ่มรหัส Icon ใหม่" class="px-2.5 py-2.5 rounded-xl bg-white hover:bg-neutral-900 text-neutral-900 hover:text-white border border-neutral-300 text-xs font-bold shrink-0 transition">
+              🎲 สุ่ม
+            </button>
+            <button id="btnLoginOpenIconPicker" type="button" title="เปิดคลังเลือก Icon ทั้งหมด" class="px-2.5 py-2.5 rounded-xl bg-orange-500 hover:bg-neutral-900 text-white text-xs font-bold shrink-0 transition">
+              เลือก
+            </button>
+          </div>
+        </div>
+
         <p id="loginErrorMsg" class="hidden text-xs font-semibold text-orange-600 text-center">
           กรุณากรอกรหัส Board และชื่อของคุณ
         </p>
@@ -407,6 +430,9 @@
               <span class="px-2.5 py-0.5 rounded-lg bg-orange-500 text-white text-xs font-bold inline-flex items-center gap-1 max-w-[160px] sm:max-w-[220px]"><span class="shrink-0">Board:</span><span id="composerRoomCodeLabel" class="truncate">-</span></span>
               <span id="composerAuthorNameLabel" class="font-bold text-sm text-neutral-900 truncate">ผู้ใช้งาน</span>
               <span id="composerRoleBadgeLabel" class="px-2 py-0.5 rounded-full bg-neutral-100 border border-neutral-200 text-neutral-600 text-[10px] font-bold">นักเรียน</span>
+              <button id="composerIconCodeBadge" type="button" title="คลิกเพื่อดู คัดลอก หรือกรอกรหัส Icon ประจำตัว" class="px-2.5 py-0.5 rounded-full bg-neutral-900 hover:bg-orange-500 text-white text-[10px] font-mono font-extrabold inline-flex items-center gap-1 transition cursor-pointer shadow-2xs">
+                <span>🔑</span><span id="composerIconCodeText">TB-0000-0000</span>
+              </button>
               <span id="inlineEditModeBadge" class="hidden px-2 py-0.5 rounded-full bg-orange-100 border border-orange-300 text-orange-700 text-[10px] font-bold">แก้ไข</span>
             </div>
           </div>
@@ -876,6 +902,28 @@
         </div>
       </div>
 
+      <!-- Icon Code Input & Copy Bar (สร้างและนำรหัส Icon มาใส่เพื่อได้รูปเดิมทันที) -->
+      <div class="mt-3 p-3 rounded-2xl bg-neutral-100 border border-neutral-300 shrink-0">
+        <div class="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+          <span class="text-xs font-extrabold text-neutral-900">🔑 รหัส Icon ประจำตัว (จดหรือคัดลอกรหัสนี้ไว้ใส่ครั้งต่อไปจะได้รูปเดิมทันที)</span>
+          <span id="pickerActiveIconNameBadge" class="px-2 py-0.5 rounded-lg bg-orange-100 text-orange-700 border border-orange-300 text-[11px] font-bold">ไอคอนประจำตัว</span>
+        </div>
+        <div class="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
+          <input
+            id="inputAvatarIconCode"
+            type="text"
+            placeholder="พิมพ์หรือวางรหัส Icon เช่น TB-0408-2131..."
+            class="flex-1 min-w-[160px] px-3 py-2 rounded-xl bg-white border border-neutral-300 focus:border-orange-500 text-neutral-900 font-mono text-xs sm:text-sm font-extrabold uppercase tracking-wider focus:outline-none transition"
+          />
+          <button id="btnApplyAvatarIconCode" type="button" class="px-3.5 py-2 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white text-xs font-bold whitespace-nowrap transition shadow-xs">
+            ✨ ใช้รหัสนี้
+          </button>
+          <button id="btnCopyAvatarIconCode" type="button" class="px-3 py-2 rounded-xl bg-white hover:bg-neutral-200 text-neutral-900 border border-neutral-300 text-xs font-bold whitespace-nowrap transition">
+            📋 คัดลอกรหัส
+          </button>
+        </div>
+      </div>
+
       <!-- Category Filter Tabs -->
       <div class="flex items-center gap-1.5 pt-3 pb-2 overflow-x-auto no-scrollbar shrink-0">
         <button type="button" data-icon-cat="all" class="btn-avatar-cat-tab px-3 py-1.5 rounded-xl bg-neutral-900 text-white text-xs font-bold whitespace-nowrap transition">
@@ -1120,6 +1168,9 @@
       const mediaCache = new Map();
       const autoRunnerTimers = new Map();
       let isHydratingRoom = false;
+      // State trackers initialized at top of scope
+      // Avatar seed keys initialized at top of scope
+      // Media preview caches initialized at top of scope
 
       function loadTursoConfig() {
         try {
@@ -1899,18 +1950,34 @@
         if (cachedDbInstance) return Promise.resolve(cachedDbInstance);
         return new Promise(resolve => {
           if (!window.indexedDB) return resolve(null);
-          const req = indexedDB.open(IDB_NAME, 2);
-          req.onupgradeneeded = e => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
-            if (!db.objectStoreNames.contains(IDB_MEDIA_STORE)) db.createObjectStore(IDB_MEDIA_STORE);
+          let settled = false;
+          const finish = (val) => {
+            if (settled) return;
+            settled = true;
+            resolve(val);
           };
-          req.onsuccess = e => {
-            cachedDbInstance = e.target.result;
-            cachedDbInstance.onclose = () => { cachedDbInstance = null; };
-            resolve(cachedDbInstance);
-          };
-          req.onerror = () => resolve(null);
+          const timer = setTimeout(() => finish(null), 1200);
+          try {
+            const req = indexedDB.open(IDB_NAME, 2);
+            req.onupgradeneeded = e => {
+              try {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
+                if (!db.objectStoreNames.contains(IDB_MEDIA_STORE)) db.createObjectStore(IDB_MEDIA_STORE);
+              } catch (err) {}
+            };
+            req.onsuccess = e => {
+              clearTimeout(timer);
+              cachedDbInstance = e.target.result;
+              cachedDbInstance.onclose = () => { cachedDbInstance = null; };
+              finish(cachedDbInstance);
+            };
+            req.onerror = () => { clearTimeout(timer); finish(null); };
+            req.onblocked = () => { clearTimeout(timer); finish(null); };
+          } catch (err) {
+            clearTimeout(timer);
+            finish(null);
+          }
         });
       }
 
@@ -1956,6 +2023,10 @@
               state.posts.forEach(p => {
                 if (isPermanentlyDeleted(p.id)) {
                   pendingMedia--;
+                  if (pendingMedia === 0) {
+                    isHydratingRoom = false;
+                    resolve(changed);
+                  }
                   return;
                 }
                 const mReq = mediaStore.get(p.id);
@@ -2632,11 +2703,10 @@
       });
 
       async function switchRoom(newRoomCode) {
-        const cleanCode = (newRoomCode || '').trim();
-        if (!cleanCode) return;
-        // Only save previous room if we are actually switching from a different room that had loaded posts
+        const cleanCode = (newRoomCode || '').trim() || 'MAIN';
+        // Save previous room non-blockingly if switching from another room
         if (syncConfig.roomCode && syncConfig.roomCode.trim().toUpperCase() !== cleanCode.toUpperCase() && state.posts.length > 0) {
-          await saveLocalOnly();
+          try { saveLocalOnly(); } catch (e) {}
         }
 
         syncConfig.roomCode = cleanCode;
@@ -2648,21 +2718,32 @@
         renderedCardMap.clear();
         const nl = document.getElementById('notesLayer');
         if (nl) nl.innerHTML = '';
-        document.getElementById('modalNoteDetail').classList.add('hidden');
+        const detailModal = document.getElementById('modalNoteDetail');
+        if (detailModal) detailModal.classList.add('hidden');
+        const loginOv = document.getElementById('loginScreenOverlay');
+        if (loginOv) {
+          loginOv.classList.add('hidden');
+          loginOv.style.display = 'none';
+        }
 
+        // 1. Instant 0ms Synchronous Local Load & Render so user enters the Board immediately!
         state = loadRoomFromLocalStorage(cleanCode);
-        await hydrateRoomFromIndexedDB(cleanCode);
+        updateLuxuryComposerHeader();
         renderBoard();
 
-        await initTursoSchema();
-        subscribeGunRoom();
-        subscribeNtfyRoomStream(cleanCode);
-        await pullFromCloudAllEngines(true);
+        // 2. Non-blocking async hydration from IndexedDB, Turso, Vercel API, Gun.js & ntfy.sh
+        hydrateRoomFromIndexedDB(cleanCode).then(changed => {
+          if (changed) renderBoard();
+        }).catch(() => {});
 
-        // AUTO-HEAL CLOUD SYNC: If this device has surviving posts in local storage/IndexedDB, re-sync them to Turso, /api/board, and Cloud Blob so they never expire!
-        if (state.posts && state.posts.length > 0) {
-          autoHealCloudState();
-        }
+        initTursoSchema().catch(() => {});
+        try { subscribeGunRoom(); } catch (e) {}
+        try { subscribeNtfyRoomStream(cleanCode); } catch (e) {}
+        pullFromCloudAllEngines(true).then(() => {
+          if (state.posts && state.posts.length > 0) {
+            autoHealCloudState();
+          }
+        }).catch(() => {});
       }
 
       async function autoHealCloudState() {
@@ -3560,19 +3641,35 @@
 
       function shuffleUserAvatarSeed(nickname) {
         const cleanNick = String(nickname || getSavedNickname() || 'ผู้ใช้งาน').trim() || 'ผู้ใช้งาน';
-        const prevSeed = currentComposerAvatarSeed;
-        let nextSeed = '';
+        const prevTraits = parseAvatarTraitsFromSeed(currentComposerAvatarSeed || cleanNick);
+        let nextCode = '';
         for (let attempt = 0; attempt < 12; attempt++) {
-          const candidate = cleanNick + '#av_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8) + '_' + attempt;
-          if (!prevSeed || (hashAvatarSeed(candidate, 3) % 14) !== (hashAvatarSeed(prevSeed, 3) % 14) || (hashAvatarSeed(candidate, 1) % 24) !== (hashAvatarSeed(prevSeed, 1) % 24)) {
-            nextSeed = candidate;
+          const candidateTraits = {
+            speciesIdx: Math.floor(Math.random() * 36),
+            bgIdx: Math.floor(Math.random() * CUTE_BG_PALETTES.length),
+            furIdx: Math.floor(Math.random() * CUTE_CHAR_COLORS.length),
+            eyeIdx: Math.floor(Math.random() * 6),
+            mouthIdx: Math.floor(Math.random() * 6),
+            accIdx: Math.floor(Math.random() * 8)
+          };
+          if (candidateTraits.speciesIdx !== prevTraits.speciesIdx || candidateTraits.bgIdx !== prevTraits.bgIdx) {
+            nextCode = traitsToCanonicalIconCode(candidateTraits);
             break;
           }
         }
-        if (!nextSeed) nextSeed = cleanNick + '#av_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
-        saveAvatarSeedForNick(cleanNick, nextSeed);
+        if (!nextCode) {
+          nextCode = traitsToCanonicalIconCode({
+            speciesIdx: (prevTraits.speciesIdx + 1) % 36,
+            bgIdx: (prevTraits.bgIdx + 3) % CUTE_BG_PALETTES.length,
+            furIdx: (prevTraits.furIdx + 1) % CUTE_CHAR_COLORS.length,
+            eyeIdx: (prevTraits.eyeIdx + 1) % 6,
+            mouthIdx: (prevTraits.mouthIdx + 1) % 6,
+            accIdx: (prevTraits.accIdx + 1) % 8
+          });
+        }
+        saveAvatarSeedForNick(cleanNick, nextCode);
         updateLuxuryComposerHeader();
-        return nextSeed;
+        return nextCode;
       }
 
       function hashAvatarSeed(str, salt = 0) {
@@ -3614,30 +3711,93 @@
         { fur: '#C7D2FE', inner: '#F9A8D4', muzzle: '#EEF2FF', accent: '#4F46E5' }  // Periwinkle
       ];
 
+      function traitsToCanonicalIconCode(traits) {
+        const sp = Math.max(0, Math.min(35, Number(traits.speciesIdx) || 0));
+        const bg = Math.max(0, Math.min(CUTE_BG_PALETTES.length - 1, Number(traits.bgIdx) || 0));
+        const fur = Math.max(0, Math.min(CUTE_CHAR_COLORS.length - 1, Number(traits.furIdx) || 0));
+        const eye = Math.max(0, Math.min(5, Number(traits.eyeIdx) || 0));
+        const mouth = Math.max(0, Math.min(5, Number(traits.mouthIdx) || 0));
+        const acc = Math.max(0, Math.min(7, Number(traits.accIdx) || 0));
+        const ss = String(sp).padStart(2, '0');
+        const bb = String(bg).padStart(2, '0');
+        const fHex = fur.toString(16).toUpperCase();
+        return `TB-${ss}${bb}-${fHex}${eye}${mouth}${acc}`;
+      }
+
+      function parseAvatarTraitsFromSeed(seedInput) {
+        const raw = String(seedInput || 'default_think_avatar').trim();
+        // 1. Check Canonical Icon Code format: TB-SSBB-FEMA or SSBB-FEMA or SSBBFEMA (case-insensitive)
+        const cleanCode = raw.toUpperCase().replace(/\s+/g, '');
+        const codeMatch = cleanCode.match(/^(?:TB[-_]?)?(\d{2})(\d{2})[-_]?([0-9A-F])(\d)(\d)(\d)$/);
+        if (codeMatch) {
+          const speciesIdx = Math.max(0, Math.min(35, parseInt(codeMatch[1], 10) || 0));
+          const bgIdx = Math.max(0, Math.min(CUTE_BG_PALETTES.length - 1, parseInt(codeMatch[2], 10) || 0));
+          const furIdx = Math.max(0, Math.min(CUTE_CHAR_COLORS.length - 1, parseInt(codeMatch[3], 16) || 0));
+          const eyeIdx = Math.max(0, Math.min(5, parseInt(codeMatch[4], 10) || 0));
+          const mouthIdx = Math.max(0, Math.min(5, parseInt(codeMatch[5], 10) || 0));
+          const accIdx = Math.max(0, Math.min(7, parseInt(codeMatch[6], 10) || 0));
+          return { speciesIdx, bgIdx, furIdx, eyeIdx, mouthIdx, accIdx };
+        }
+
+        // 2. Check preset:speciesIdx:bgIdx:eyeIdx:mouthIdx:accIdx[:furIdx]
+        if (raw.startsWith('preset:')) {
+          const pts = raw.split(':');
+          const speciesIdx = Math.max(0, Math.min(35, parseInt(pts[1], 10) || 0));
+          const bgIdx = Math.max(0, Math.min(CUTE_BG_PALETTES.length - 1, parseInt(pts[2], 10) || 0));
+          const eyeIdx = Math.max(0, Math.min(5, parseInt(pts[3], 10) || 0));
+          const mouthIdx = Math.max(0, Math.min(5, parseInt(pts[4], 10) || 0));
+          const accIdx = Math.max(0, Math.min(7, parseInt(pts[5], 10) || 0));
+          const furIdx = pts[6] !== undefined
+            ? Math.max(0, Math.min(CUTE_CHAR_COLORS.length - 1, parseInt(pts[6], 10) || 0))
+            : ((speciesIdx * 3 + bgIdx) % CUTE_CHAR_COLORS.length);
+          return { speciesIdx, bgIdx, furIdx, eyeIdx, mouthIdx, accIdx };
+        }
+
+        // 3. Check short 1-2 digit number "1".."36"
+        if (/^\d{1,2}$/.test(cleanCode)) {
+          const num = Math.max(1, Math.min(36, parseInt(cleanCode, 10) || 1)) - 1;
+          return {
+            speciesIdx: num,
+            bgIdx: (num * 3) % CUTE_BG_PALETTES.length,
+            furIdx: num % CUTE_CHAR_COLORS.length,
+            eyeIdx: 0,
+            mouthIdx: 0,
+            accIdx: 0
+          };
+        }
+
+        // 4. Deterministic hash of any custom user code or legacy seed
+        const h1 = hashAvatarSeed(raw, 1);
+        const h2 = hashAvatarSeed(raw, 2);
+        const h3 = hashAvatarSeed(raw, 3);
+        const h4 = hashAvatarSeed(raw, 4);
+        const h5 = hashAvatarSeed(raw, 5);
+        return {
+          speciesIdx: h3 % 36,
+          bgIdx: h1 % CUTE_BG_PALETTES.length,
+          furIdx: h2 % CUTE_CHAR_COLORS.length,
+          eyeIdx: h4 % 6,
+          mouthIdx: (h4 >>> 4) % 6,
+          accIdx: h5 % 8
+        };
+      }
+
+      function getCanonicalIconCode(seedInput) {
+        return traitsToCanonicalIconCode(parseAvatarTraitsFromSeed(seedInput));
+      }
+
       function buildCuteCartoonAvatarSvg(seedInput) {
         const seed = String(seedInput || 'default_think_avatar');
-        const h1 = hashAvatarSeed(seed, 1);
-        const h2 = hashAvatarSeed(seed, 2);
-        const h3 = hashAvatarSeed(seed, 3);
-        const h4 = hashAvatarSeed(seed, 4);
-        const h5 = hashAvatarSeed(seed, 5);
-
-        let bgIdx = h1 % CUTE_BG_PALETTES.length;
-        let speciesIdx = h3 % 36; // 36 distinct cartoon, device & universal icon archetypes
-        let eyeIdx = h4 % 6;
-        let mouthIdx = (h4 >>> 4) % 6;
-        let accIdx = h5 % 8;
-        if (seed.startsWith('preset:')) {
-          const pts = seed.split(':');
-          speciesIdx = Math.max(0, Math.min(35, parseInt(pts[1], 10) || 0));
-          bgIdx = Math.max(0, Math.min(CUTE_BG_PALETTES.length - 1, parseInt(pts[2], 10) || 0));
-          eyeIdx = parseInt(pts[3], 10) || 0;
-          mouthIdx = parseInt(pts[4], 10) || 0;
-          accIdx = parseInt(pts[5], 10) || 0;
-        }
+        const traits = parseAvatarTraitsFromSeed(seed);
+        const bgIdx = traits.bgIdx;
+        const speciesIdx = traits.speciesIdx;
+        const furIdx = traits.furIdx;
+        const eyeIdx = traits.eyeIdx;
+        const mouthIdx = traits.mouthIdx;
+        const accIdx = traits.accIdx;
         const bgPair = CUTE_BG_PALETTES[bgIdx];
-        const charPal = CUTE_CHAR_COLORS[h2 % CUTE_CHAR_COLORS.length];
-        const gradId = 'avG_' + (h1 % 999999) + '_' + speciesIdx + '_' + bgIdx;
+        const charPal = CUTE_CHAR_COLORS[furIdx];
+        const gradId = 'avG_' + speciesIdx + '_' + bgIdx + '_' + furIdx + '_' + eyeIdx + '_' + mouthIdx + '_' + accIdx;
 
         // Device & Universal Icons (Archetypes 14..35) with kawaii vector details
         if (speciesIdx >= 14) {
@@ -4159,7 +4319,15 @@
         const hdrNameEl = document.getElementById('headerUserNameLabel');
         const modalAvatarEl = document.getElementById('modalAuthorAvatarPreview');
 
+        const canonicalCode = getCanonicalIconCode(activeAvSeed);
+        const codeTextEl = document.getElementById('composerIconCodeText');
+        const loginCodeInp = document.getElementById('loginIconCodeInput');
+        const loginAvBox = document.getElementById('loginAvatarPreviewBox');
+
         if (avatarEl) avatarEl.innerHTML = avSvgHtml;
+        if (codeTextEl) codeTextEl.textContent = canonicalCode;
+        if (loginCodeInp && document.activeElement !== loginCodeInp) loginCodeInp.value = canonicalCode;
+        if (loginAvBox) loginAvBox.innerHTML = avSvgHtml;
         if (nameLabelEl) nameLabelEl.textContent = savedNick;
         if (roleLabelEl) roleLabelEl.textContent = savedRole;
         if (compRoomEl) { compRoomEl.textContent = roomStr; compRoomEl.title = roomStr; }
@@ -4215,9 +4383,12 @@
       let lightboxGalleryState = { images: [], index: 0, autoTimer: null };
       let docModalState = { post: null, pages: [], pageIndex: 0, autoTimer: null };
 
-      if (window.pdfjsLib) {
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-      }
+      const ensurePdfJsWorker = () => {
+        if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions && !window.pdfjsLib.GlobalWorkerOptions.workerSrc) {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+      };
+      ensurePdfJsWorker();
 
       function isImageFileObj(file) {
         if (!file) return false;
@@ -4390,6 +4561,7 @@
 
         try {
           // 1. PDF Multi-Page Canvas Renderer via PDF.js
+          ensurePdfJsWorker();
           if ((ext === 'PDF' || (post.fileMime && post.fileMime.includes('pdf'))) && window.pdfjsLib && bytes) {
             const pdfDoc = await window.pdfjsLib.getDocument({ data: bytes }).promise;
             const total = pdfDoc.numPages || 1;
@@ -6146,9 +6318,50 @@
         const loginRoleSelect = document.getElementById('loginRoleSelect');
         const loginErrorMsg = document.getElementById('loginErrorMsg');
 
-        loginRoomInput.value = '';
+        const storedRoomsInitial = discoverAllStoredRooms();
+        loginRoomInput.value = roomFromUrl || syncConfig.roomCode || storedRoomsInitial[0] || '';
         loginNicknameInput.value = getSavedNickname() || '';
         loginRoleSelect.value = getSavedRole();
+
+        const enterBoardDirectly = (targetRoom, targetNick, targetRole) => {
+          const rVal = String(targetRoom || loginRoomInput.value || syncConfig.roomCode || discoverAllStoredRooms()[0] || '').trim();
+          const nVal = String(targetNick || loginNicknameInput.value || getSavedNickname() || '').trim();
+          const rlVal = targetRole || (loginRoleSelect && loginRoleSelect.value) || getSavedRole() || 'นักเรียน';
+
+          if (!rVal) {
+            if (loginErrorMsg) {
+              loginErrorMsg.textContent = 'กรุณากรอกรหัส Board ที่ต้องการเข้าใช้งาน';
+              loginErrorMsg.classList.remove('hidden');
+            }
+            if (loginRoomInput) loginRoomInput.focus();
+            return;
+          }
+          const finalNick = nVal || 'ผู้ใช้งาน';
+          if (loginErrorMsg) loginErrorMsg.classList.add('hidden');
+          saveNickname(finalNick, rlVal);
+          const loginIconCodeEl = document.getElementById('loginIconCodeInput');
+          const typedIconCode = loginIconCodeEl ? (loginIconCodeEl.value || '').trim() : '';
+          if (typedIconCode) {
+            const normalizedCode = getCanonicalIconCode(typedIconCode);
+            saveAvatarSeedForNick(finalNick, normalizedCode);
+          } else {
+            currentComposerAvatarOwner = finalNick;
+            getActiveUserAvatarSeed(finalNick);
+          }
+          const inpNick = document.getElementById('inputNickname');
+          const inpRole = document.getElementById('inputReviewerRole');
+          const inpCmtNick = document.getElementById('inputCommentNickname');
+          if (inpNick) inpNick.value = finalNick;
+          if (inpRole) inpRole.value = rlVal;
+          if (inpCmtNick) inpCmtNick.value = finalNick;
+
+          if (loginOverlay) {
+            loginOverlay.classList.add('hidden');
+            loginOverlay.style.display = 'none';
+          }
+          updateLuxuryComposerHeader();
+          switchRoom(rVal);
+        };
 
         const renderRecentRoomChipsOnLogin = () => {
           const wrap = document.getElementById('loginRecentRoomsWrap');
@@ -6160,44 +6373,49 @@
             return;
           }
           wrap.classList.remove('hidden');
-          wrap.innerHTML = `<span class="text-[11px] font-bold text-neutral-500">เข้าล่าสุด:</span>` + rooms.map(r =>
-            `<button type="button" data-quick-room="${escapeHtml(r)}" class="btn-quick-login-room px-2.5 py-0.5 rounded-lg bg-neutral-200/80 hover:bg-orange-500 text-neutral-800 hover:text-white text-xs font-bold transition">Board: ${escapeHtml(r)}</button>`
+          wrap.innerHTML = `<span class="text-[11px] font-bold text-neutral-500">เข้าด่วน:</span>` + rooms.map(r =>
+            `<button type="button" data-quick-room="${escapeHtml(r)}" class="btn-quick-login-room px-2.5 py-1 rounded-lg bg-neutral-200 hover:bg-orange-500 text-neutral-900 hover:text-white text-xs font-bold transition shadow-2xs">Board: ${escapeHtml(r)}</button>`
           ).join('');
           wrap.querySelectorAll('.btn-quick-login-room').forEach(btn => {
             btn.addEventListener('click', () => {
-              loginRoomInput.value = btn.getAttribute('data-quick-room') || '';
-              if (!loginNicknameInput.value) loginNicknameInput.focus();
+              const qRoom = btn.getAttribute('data-quick-room') || '';
+              loginRoomInput.value = qRoom;
+              const curNick = (loginNicknameInput.value || getSavedNickname() || '').trim();
+              if (curNick) {
+                enterBoardDirectly(qRoom, curNick, loginRoleSelect.value);
+              } else {
+                loginNicknameInput.focus();
+              }
             });
           });
         };
         renderRecentRoomChipsOnLogin();
 
-        if (hasActiveSession() && syncConfig.roomCode) {
+        // Auto-enter Board if URL has ?room=... or user has an active session/roomCode
+        if ((roomFromUrl || (hasActiveSession() && syncConfig.roomCode))) {
+          const autoRoom = roomFromUrl || syncConfig.roomCode;
+          const autoNick = getSavedNickname() || 'ผู้ใช้งาน';
+          saveNickname(autoNick, getSavedRole());
           loginOverlay.classList.add('hidden');
+          loginOverlay.style.display = 'none';
+          syncConfig.roomCode = autoRoom;
+          updateLuxuryComposerHeader();
         }
 
-        document.getElementById('formDarkLogin').addEventListener('submit', async e => {
-          e.preventDefault();
-          const roomVal = (loginRoomInput.value || '').trim();
-          const nickVal = (loginNicknameInput.value || '').trim();
-          const roleVal = loginRoleSelect.value || 'นักเรียน';
-
-          if (!roomVal || !nickVal) {
-            loginErrorMsg.classList.remove('hidden');
-            return;
-          }
-          loginErrorMsg.classList.add('hidden');
-          saveNickname(nickVal, roleVal);
-          currentComposerAvatarOwner = nickVal;
-          currentComposerAvatarSeed = '';
-          getActiveUserAvatarSeed(nickVal);
-          updateLuxuryComposerHeader();
-          document.getElementById('inputNickname').value = nickVal;
-          document.getElementById('inputReviewerRole').value = roleVal;
-          document.getElementById('inputCommentNickname').value = nickVal;
-          loginOverlay.classList.add('hidden');
-          await switchRoom(roomVal);
-        });
+        const formLoginEl = document.getElementById('formDarkLogin');
+        if (formLoginEl) {
+          formLoginEl.addEventListener('submit', e => {
+            e.preventDefault();
+            enterBoardDirectly(loginRoomInput.value, loginNicknameInput.value, loginRoleSelect.value);
+          });
+        }
+        const btnSubmitLoginEl = document.getElementById('btnSubmitDarkLogin');
+        if (btnSubmitLoginEl) {
+          btnSubmitLoginEl.addEventListener('click', e => {
+            e.preventDefault();
+            enterBoardDirectly(loginRoomInput.value, loginNicknameInput.value, loginRoleSelect.value);
+          });
+        }
 
         document.querySelectorAll('.star-btn').forEach(btn => {
           btn.addEventListener('click', () => {
@@ -6212,16 +6430,34 @@
           });
         });
 
-        document.getElementById('btnOutBoard').addEventListener('click', async () => {
-          await saveLocalOnly();
+        const openLoginSwitchOverlay = () => {
+          try { saveLocalOnly(); } catch (e) {}
           try { localStorage.removeItem(LS_ACTIVE_SESSION_KEY); } catch (e) {}
-          loginRoomInput.value = '';
+          loginRoomInput.value = syncConfig.roomCode || '';
           loginNicknameInput.value = getSavedNickname() || '';
           loginRoleSelect.value = getSavedRole();
           loginErrorMsg.classList.add('hidden');
           renderRecentRoomChipsOnLogin();
           loginOverlay.classList.remove('hidden');
-        });
+          loginOverlay.style.display = '';
+          setTimeout(() => {
+            loginRoomInput.focus();
+            loginRoomInput.select();
+          }, 50);
+        };
+        document.getElementById('btnOutBoard').addEventListener('click', openLoginSwitchOverlay);
+        const hdrBoardPill = document.getElementById('headerBoardCodePill');
+        if (hdrBoardPill) {
+          hdrBoardPill.classList.add('cursor-pointer', 'hover:border-orange-500', 'transition');
+          hdrBoardPill.title = 'คลิกเพื่อสลับรหัส Board';
+          hdrBoardPill.addEventListener('click', openLoginSwitchOverlay);
+        }
+        const hdrUserPill = document.getElementById('headerUserNamePill');
+        if (hdrUserPill) {
+          hdrUserPill.classList.add('cursor-pointer', 'hover:border-orange-500', 'transition');
+          hdrUserPill.title = 'คลิกเพื่อเปลี่ยนชื่อหรือสลับ Board';
+          hdrUserPill.addEventListener('click', openLoginSwitchOverlay);
+        }
 
         // Keyboard Arrow Left/Right & Escape support for Lightbox and Full-Screen Document Previewer
         window.addEventListener('keydown', e => {
@@ -6333,21 +6569,39 @@
         let pickerSelectedBgIdx = 0;
         let pickerActiveCategory = 'all';
 
+        const getArchetypeNameForSeed = (seedStr) => {
+          const tr = parseAvatarTraitsFromSeed(seedStr);
+          const found = ALL_ICON_ARCHETYPES.find(a => a.idx === tr.speciesIdx);
+          return found ? found.name : 'ไอคอนประจำตัว';
+        };
+
         const applyChosenAvatarSeed = (newSeed, labelText) => {
-          const cleanName = (getSavedNickname() || 'ผู้ใช้งาน').trim() || 'ผู้ใช้งาน';
-          saveAvatarSeedForNick(cleanName, newSeed);
+          const canonical = getCanonicalIconCode(newSeed);
+          const cleanName = (getSavedNickname() || (document.getElementById('loginNicknameInput') && document.getElementById('loginNicknameInput').value) || 'ผู้ใช้งาน').trim() || 'ผู้ใช้งาน';
+          saveAvatarSeedForNick(cleanName, canonical);
           updateLuxuryComposerHeader();
           const prevBox = document.getElementById('pickerCurrentPreviewBox');
-          if (prevBox) prevBox.innerHTML = buildCuteCartoonAvatarSvg(newSeed);
-          if (labelText) showToast('✨ เลือก ' + labelText + ' สำหรับโพสต์แล้ว');
+          if (prevBox) prevBox.innerHTML = buildCuteCartoonAvatarSvg(canonical);
+          const codeInp = document.getElementById('inputAvatarIconCode');
+          if (codeInp) codeInp.value = canonical;
+          const nameBadge = document.getElementById('pickerActiveIconNameBadge');
+          if (nameBadge) nameBadge.textContent = `${getArchetypeNameForSeed(canonical)} • ${canonical}`;
+          if (labelText) showToast(`✨ ใช้ ${labelText} (รหัส ${canonical}) แล้ว`);
         };
 
         const renderAvatarIconPickerModal = () => {
           const prevBox = document.getElementById('pickerCurrentPreviewBox');
           const swatchWrap = document.getElementById('pickerBgColorSwatches');
           const gridEl = document.getElementById('pickerIconsGrid');
+          const codeInp = document.getElementById('inputAvatarIconCode');
+          const nameBadge = document.getElementById('pickerActiveIconNameBadge');
           const activeSeed = getActiveUserAvatarSeed(getSavedNickname() || 'ผู้ใช้งาน');
-          if (prevBox) prevBox.innerHTML = buildCuteCartoonAvatarSvg(activeSeed);
+          const activeCanonical = getCanonicalIconCode(activeSeed);
+          const activeTraits = parseAvatarTraitsFromSeed(activeCanonical);
+
+          if (prevBox) prevBox.innerHTML = buildCuteCartoonAvatarSvg(activeCanonical);
+          if (codeInp && document.activeElement !== codeInp) codeInp.value = activeCanonical;
+          if (nameBadge) nameBadge.textContent = `${getArchetypeNameForSeed(activeCanonical)} • ${activeCanonical}`;
 
           if (swatchWrap) {
             swatchWrap.innerHTML = CUTE_BG_PALETTES.map((pair, bIdx) => `
@@ -6356,6 +6610,8 @@
             swatchWrap.querySelectorAll('.btn-picker-bg-swatch').forEach(btn => {
               btn.addEventListener('click', () => {
                 pickerSelectedBgIdx = parseInt(btn.getAttribute('data-bg-idx'), 10) || 0;
+                const updatedCode = traitsToCanonicalIconCode(Object.assign({}, activeTraits, { bgIdx: pickerSelectedBgIdx }));
+                applyChosenAvatarSeed(updatedCode, 'สีพื้นหลังใหม่');
                 renderAvatarIconPickerModal();
               });
             });
@@ -6364,12 +6620,20 @@
           if (gridEl) {
             const filtered = ALL_ICON_ARCHETYPES.filter(item => pickerActiveCategory === 'all' || item.cat === pickerActiveCategory);
             gridEl.innerHTML = filtered.map(item => {
-              const presetSeed = `preset:${item.idx}:${pickerSelectedBgIdx}:0:0:0`;
-              const isSelected = activeSeed === presetSeed || activeSeed.startsWith(`preset:${item.idx}:`);
+              const presetCode = traitsToCanonicalIconCode({
+                speciesIdx: item.idx,
+                bgIdx: pickerSelectedBgIdx,
+                furIdx: (item.idx * 3 + pickerSelectedBgIdx) % CUTE_CHAR_COLORS.length,
+                eyeIdx: 0,
+                mouthIdx: 0,
+                accIdx: 0
+              });
+              const isSelected = activeTraits.speciesIdx === item.idx;
               return `
-                <button type="button" data-preset-seed="${presetSeed}" data-icon-name="${item.name}" class="btn-pick-avatar-item group p-2 rounded-2xl border ${isSelected ? 'border-orange-500 bg-orange-50/70 ring-2 ring-orange-400' : 'border-neutral-200 hover:border-orange-400 bg-neutral-50/70 hover:bg-white'} flex flex-col items-center gap-1.5 transition shadow-2xs">
-                  <div class="w-12 h-12 rounded-full overflow-hidden shadow-xs group-hover:scale-105 transition">${buildCuteCartoonAvatarSvg(presetSeed)}</div>
+                <button type="button" data-preset-seed="${presetCode}" data-icon-name="${item.name}" class="btn-pick-avatar-item group p-2 rounded-2xl border ${isSelected ? 'border-orange-500 bg-orange-50/70 ring-2 ring-orange-400' : 'border-neutral-200 hover:border-orange-400 bg-neutral-50/70 hover:bg-white'} flex flex-col items-center gap-1 transition shadow-2xs">
+                  <div class="w-12 h-12 rounded-full overflow-hidden shadow-xs group-hover:scale-105 transition">${buildCuteCartoonAvatarSvg(presetCode)}</div>
                   <span class="text-[11px] font-bold text-neutral-800 truncate w-full text-center">${item.name}</span>
+                  <span class="text-[9px] font-mono font-bold text-neutral-400 truncate w-full text-center">${presetCode}</span>
                 </button>
               `;
             }).join('');
@@ -6398,6 +6662,109 @@
         if (compAvBtn) {
           compAvBtn.addEventListener('click', () => {
             openAvatarIconPickerModal();
+          });
+        }
+        const compCodeBadge = document.getElementById('composerIconCodeBadge');
+        if (compCodeBadge) {
+          compCodeBadge.addEventListener('click', () => {
+            openAvatarIconPickerModal();
+            setTimeout(() => {
+              const codeInp = document.getElementById('inputAvatarIconCode');
+              if (codeInp) { codeInp.focus(); codeInp.select(); }
+            }, 60);
+          });
+        }
+        const inpModalIconCode = document.getElementById('inputAvatarIconCode');
+        if (inpModalIconCode) {
+          inpModalIconCode.addEventListener('input', () => {
+            const val = (inpModalIconCode.value || '').trim();
+            if (!val) return;
+            const prevBox = document.getElementById('pickerCurrentPreviewBox');
+            const nameBadge = document.getElementById('pickerActiveIconNameBadge');
+            const canonical = getCanonicalIconCode(val);
+            if (prevBox) prevBox.innerHTML = buildCuteCartoonAvatarSvg(val);
+            if (nameBadge) nameBadge.textContent = `${getArchetypeNameForSeed(val)} • ${canonical}`;
+          });
+          inpModalIconCode.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              document.getElementById('btnApplyAvatarIconCode').click();
+            }
+          });
+        }
+        const btnApplyIconCode = document.getElementById('btnApplyAvatarIconCode');
+        if (btnApplyIconCode) {
+          btnApplyIconCode.addEventListener('click', () => {
+            const rawVal = (inpModalIconCode && inpModalIconCode.value || '').trim();
+            if (!rawVal) {
+              showToast('กรุณากรอกรหัส Icon ที่ต้องการ');
+              return;
+            }
+            const canonical = getCanonicalIconCode(rawVal);
+            const tr = parseAvatarTraitsFromSeed(canonical);
+            pickerSelectedBgIdx = tr.bgIdx;
+            applyChosenAvatarSeed(canonical, getArchetypeNameForSeed(canonical));
+            renderAvatarIconPickerModal();
+          });
+        }
+        const copyIconCodeToClipboard = (codeStr) => {
+          const clean = String(codeStr || '').trim();
+          if (!clean) return;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(clean).then(() => {
+              showToast(`📋 คัดลอกรหัส Icon: ${clean} เรียบร้อยแล้ว`);
+            }).catch(() => {
+              showToast(`🔑 รหัส Icon ของคุณคือ ${clean}`);
+            });
+          } else {
+            showToast(`🔑 รหัส Icon ของคุณคือ ${clean}`);
+          }
+        };
+        const btnCopyIconCode = document.getElementById('btnCopyAvatarIconCode');
+        if (btnCopyIconCode) {
+          btnCopyIconCode.addEventListener('click', () => {
+            const cur = (inpModalIconCode && inpModalIconCode.value) || getCanonicalIconCode(getActiveUserAvatarSeed(getSavedNickname() || 'ผู้ใช้งาน'));
+            copyIconCodeToClipboard(cur);
+          });
+        }
+
+        // Login Screen Icon Code Controls (Live preview, Randomize, Open Picker, Copy)
+        const loginIconCodeInp = document.getElementById('loginIconCodeInput');
+        const loginAvPreviewBox = document.getElementById('loginAvatarPreviewBox');
+        const btnLoginRandCode = document.getElementById('btnLoginRandomIconCode');
+        const btnLoginOpenPicker = document.getElementById('btnLoginOpenIconPicker');
+        const btnLoginCopyCode = document.getElementById('btnLoginCopyIconCode');
+
+        updateLuxuryComposerHeader();
+
+        if (loginIconCodeInp) {
+          loginIconCodeInp.addEventListener('input', () => {
+            const val = (loginIconCodeInp.value || '').trim();
+            if (!val) return;
+            if (loginAvPreviewBox) loginAvPreviewBox.innerHTML = buildCuteCartoonAvatarSvg(val);
+            const cleanName = (loginNicknameInput.value || getSavedNickname() || 'ผู้ใช้งาน').trim() || 'ผู้ใช้งาน';
+            saveAvatarSeedForNick(cleanName, getCanonicalIconCode(val));
+          });
+        }
+        if (btnLoginRandCode) {
+          btnLoginRandCode.addEventListener('click', () => {
+            const cleanName = (loginNicknameInput.value || getSavedNickname() || 'ผู้ใช้งาน').trim() || 'ผู้ใช้งาน';
+            const newCode = shuffleUserAvatarSeed(cleanName);
+            if (loginIconCodeInp) loginIconCodeInp.value = newCode;
+            if (loginAvPreviewBox) loginAvPreviewBox.innerHTML = buildCuteCartoonAvatarSvg(newCode);
+            showToast(`🎲 สุ่มรหัส Icon ใหม่: ${newCode}`);
+          });
+        }
+        if (btnLoginOpenPicker) {
+          btnLoginOpenPicker.addEventListener('click', openAvatarIconPickerModal);
+        }
+        if (loginAvPreviewBox) {
+          loginAvPreviewBox.addEventListener('click', openAvatarIconPickerModal);
+        }
+        if (btnLoginCopyCode) {
+          btnLoginCopyCode.addEventListener('click', () => {
+            const codeVal = (loginIconCodeInp && loginIconCodeInp.value) || getCanonicalIconCode(getActiveUserAvatarSeed(getSavedNickname() || 'ผู้ใช้งาน'));
+            copyIconCodeToClipboard(codeVal);
           });
         }
         const modalAvBtn = document.getElementById('modalAuthorAvatarPreview');
