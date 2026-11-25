@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "ClassBoard — กระดานไวท์บอร์ดแสดงความคิดเห็นนักเรียนสไตล์ Facebook พร้อมระบบก้อน Data ไม่หาย",
+  "type": "module",
   "scripts": {
     "start": "npx serve ."
   }
