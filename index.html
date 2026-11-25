@@ -259,7 +259,17 @@
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
+
+  <!-- Quill (Think Docs) -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+  <!-- Jspreadsheet (Think Sheets) -->
+  <script src="https://bossanova.uk/jspreadsheet/v4/jexcel.js"></script>
+  <link rel="stylesheet" href="https://bossanova.uk/jspreadsheet/v4/jexcel.css" type="text/css" />
+  <script src="https://jsuites.net/v4/jsuites.js"></script>
+  <link rel="stylesheet" href="https://jsuites.net/v4/jsuites.css" type="text/css" />
+
 </head>
 <body class="h-screen overflow-hidden flex flex-col select-none bg-white">
 
@@ -408,9 +418,7 @@
         </div>
 
         
-        <button id="btnExportPDF" type="button" class="h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-orange-100 hover:bg-orange-500 text-orange-700 hover:text-white border border-orange-300 hover:border-orange-500 text-xs font-bold inline-flex items-center justify-center gap-1 shrink-0 transition" title="บันทึกบอร์ดเป็น PDF">
-          <span>📑 Export PDF</span>
-        </button>
+        
 <button id="btnOutBoard" type="button" class="h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white border border-neutral-900 hover:border-orange-500 text-xs font-bold inline-flex items-center justify-center gap-1 shrink-0 transition" title="ออกจาก Board">
           <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
@@ -492,9 +500,14 @@
               <button type="button" id="btnComposerDraw" class="px-2.5 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold flex items-center gap-1 transition">
                 <span>🎨</span> วาดรูป
               </button>
-              <button type="button" id="btnComposerPoll" class="px-2.5 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold flex items-center gap-1 transition">
-                <span>📊</span> สร้างโพล
+              <button type="button" id="btnComposerDoc" class="px-2.5 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold flex items-center gap-1 transition">
+                <span>📝</span> เอกสาร
               </button>
+              <button type="button" id="btnComposerSheet" class="px-2.5 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold flex items-center gap-1 transition">
+                <span>📊</span> ตาราง
+              </button>
+
+              
               <select id="composerTagSelect" class="px-2.5 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold border-none focus:ring-0 cursor-pointer">
                 <option value="">🏷️ ไม่ระบุแท็ก</option>
                 <option value="คำถาม">#คำถาม</option>
@@ -504,33 +517,7 @@
               </select>
             </div>
 
-            <!-- POLL UI (Hidden) -->
-            <div id="composerPollUI" class="hidden flex-col gap-2 pt-2 border-t border-neutral-200">
-               <div class="text-xs font-bold text-neutral-600">ตั้งคำถามโพล:</div>
-               <input type="text" id="pollQuestionInput" placeholder="คำถาม..." class="w-full px-3 py-2 rounded-xl bg-white border border-neutral-300 text-xs font-semibold text-neutral-900 focus:outline-none focus:border-orange-500" />
-               <div id="pollOptionsContainer" class="flex flex-col gap-2 mt-1">
-                 <input type="text" class="poll-option-input w-full px-3 py-1.5 rounded-xl bg-neutral-50 border border-neutral-200 text-xs text-neutral-900" placeholder="ตัวเลือกที่ 1..." />
-                 <input type="text" class="poll-option-input w-full px-3 py-1.5 rounded-xl bg-neutral-50 border border-neutral-200 text-xs text-neutral-900" placeholder="ตัวเลือกที่ 2..." />
-               </div>
-               <button type="button" id="btnAddPollOption" class="text-[11px] font-bold text-orange-600 text-left mt-1">+ เพิ่มตัวเลือก</button>
-               <button type="button" id="btnCancelPoll" class="text-[11px] font-bold text-rose-500 text-left mt-1">✕ ยกเลิกโพล</button>
             </div>
-<div id="inlineAutoDetectBar" class="hidden pt-2 border-t border-neutral-200 flex flex-wrap items-center justify-between gap-2 text-xs">
-              <div id="inlineAutoDetectBadges" class="flex flex-wrap items-center gap-2"></div>
-              <div class="flex flex-wrap items-center gap-2">
-                <div id="inlinePastedImagePreviewWrap" class="hidden flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded-xl px-2.5 py-1.5 max-w-full overflow-x-auto">
-                  <img id="inlinePastedImageEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="รูปที่แนบ" class="hidden h-8 w-10 object-cover rounded-lg border border-neutral-300" />
-                  <div id="inlineMultiImageListEl" class="flex items-center gap-1.5"></div>
-                  <span id="inlineMultiImageCountBadge" class="px-2 py-0.5 rounded-lg bg-neutral-900 text-white text-[10px] font-bold shrink-0">1 รูป</span>
-                  <button id="btnClearInlineImage" type="button" class="text-neutral-600 hover:text-orange-600 font-bold text-xs px-1 shrink-0" title="ลบรูปทั้งหมด">✕</button>
-                </div>
-                <div id="inlineAttachedFilePreviewWrap" class="hidden flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded-xl px-2.5 py-1.5 max-w-full">
-                  <span id="inlineAttachedFileExtBadge" class="px-2 py-0.5 rounded-lg bg-neutral-900 text-white text-[10px] font-extrabold uppercase shrink-0">FILE</span>
-                  <span id="inlineAttachedFileNameEl" class="text-xs font-bold text-neutral-900 truncate max-w-[180px] sm:max-w-[260px]">filename.pdf</span>
-                  <span id="inlineAttachedFileSizeEl" class="text-[10px] font-semibold text-neutral-500 shrink-0"></span>
-                  <button id="btnClearInlineFile" type="button" class="text-neutral-600 hover:text-orange-600 font-bold text-xs px-1 shrink-0">✕</button>
-                </div>
-              </div>
             </div>
           </div>
         </form>
@@ -1013,6 +1000,39 @@
       </div>
     </div>
   </div>
+
+  <!-- MODAL: THINK DOCS -->
+  <div id="modalThinkDoc" class="fixed inset-0 z-50 hidden bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-white rounded-3xl w-full max-w-4xl flex flex-col shadow-2xl overflow-hidden animate-pop h-[85vh]">
+      <div class="px-4 py-3 bg-neutral-100 border-b border-neutral-200 flex justify-between items-center shrink-0">
+        <div class="font-bold text-neutral-900 text-sm">📝 สร้างเอกสาร (Think Docs)</div>
+        <div class="flex gap-2">
+          <button id="btnDocCancel" type="button" class="px-3 py-1.5 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 text-xs font-bold rounded-xl transition">ยกเลิก</button>
+          <button id="btnDocSave" type="button" class="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition shadow-md">✅ แนบเอกสาร</button>
+        </div>
+      </div>
+      <div class="flex-1 bg-white overflow-hidden flex flex-col relative text-neutral-900">
+         <div id="quillEditor" class="flex-1 h-full font-sarabun text-base"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: THINK SHEETS -->
+  <div id="modalThinkSheet" class="fixed inset-0 z-50 hidden bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-white rounded-3xl w-full max-w-4xl flex flex-col shadow-2xl overflow-hidden animate-pop h-[85vh]">
+      <div class="px-4 py-3 bg-neutral-100 border-b border-neutral-200 flex justify-between items-center shrink-0">
+        <div class="font-bold text-neutral-900 text-sm">📊 สร้างตารางข้อมูล (Think Sheets)</div>
+        <div class="flex gap-2">
+          <button id="btnSheetCancel" type="button" class="px-3 py-1.5 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 text-xs font-bold rounded-xl transition">ยกเลิก</button>
+          <button id="btnSheetSave" type="button" class="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition shadow-md">✅ แนบตาราง</button>
+        </div>
+      </div>
+      <div class="flex-1 bg-white overflow-auto p-4 text-neutral-900">
+         <div id="spreadsheetEditor"></div>
+      </div>
+    </div>
+  </div>
+
 <div id="toastArea" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <script>
@@ -5746,6 +5766,9 @@
 
               <!-- Post Text & Media Showcase -->
               <div class="note-clickable-body cursor-pointer group">
+                ${post.thinkDoc ? `<div class="p-3.5 rounded-2xl bg-white border border-neutral-200 shadow-sm ql-editor font-sarabun text-sm mb-3" style="white-space: normal;" onclick="event.stopPropagation()">${post.thinkDoc}</div>` : ''}
+                ${post.thinkSheet ? `<div class="p-3 rounded-2xl bg-white border border-neutral-200 shadow-sm overflow-x-auto mb-3" onclick="event.stopPropagation()"><table class="w-full border-collapse text-left">${post.thinkSheet.map((row, rIdx) => `<tr>${row.map(cell => `<td class="border border-neutral-300 px-2 py-1 text-xs ${rIdx===0?'bg-neutral-100 font-bold':''}">${escapeHtml(cell)}</td>`).join('')}</tr>`).join('')}</table></div>` : ''}
+
                 ${
                   post.tag
                     ? `<div class="mb-2"><span class="px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-[10px] font-bold border border-orange-200">#${escapeHtml(post.tag)}</span></div>`
@@ -5762,29 +5785,7 @@
                        </div>`
                     : ''
                 }
-                ${
-                  post.poll
-                    ? `<div class="p-4 rounded-2xl bg-white border border-neutral-200 mb-3 shadow-sm" onclick="event.stopPropagation()">
-                         <div class="font-bold text-sm text-neutral-900 mb-3 flex items-start gap-2">
-                           <span class="text-xl">📊</span> <span>${escapeHtml(post.poll.question)}</span>
-                         </div>
-                         <div class="space-y-2">
-                           ${post.poll.options.map(opt => {
-                             const pct = post.poll.totalVotes > 0 ? Math.round((opt.votes / post.poll.totalVotes) * 100) : 0;
-                             const hasVotedThis = post.poll.votedBy[getSavedNickname()] === opt.id;
-                             return `
-                               <button type="button" data-poll-opt="${opt.id}" class="btn-vote-poll w-full text-left relative overflow-hidden rounded-xl border ${hasVotedThis ? 'border-orange-500 ring-1 ring-orange-500' : 'border-neutral-200'} bg-neutral-50 hover:bg-neutral-100 transition p-2.5 flex items-center justify-between z-0">
-                                 <div class="absolute left-0 top-0 bottom-0 bg-orange-100 -z-10 transition-all duration-500" style="width: ${pct}%"></div>
-                                 <span class="text-xs font-semibold ${hasVotedThis ? 'text-orange-700' : 'text-neutral-700'} relative z-10">${escapeHtml(opt.text)}</span>
-                                 <span class="text-[10px] font-bold text-neutral-500 relative z-10">${pct}% (${opt.votes})</span>
-                               </button>
-                             `;
-                           }).join('')}
-                         </div>
-                         <div class="text-[10px] text-neutral-400 mt-2 text-right">โหวตแล้ว ${post.poll.totalVotes || 0} คน</div>
-                       </div>`
-                    : ''
-                }
+                
                 ${buildMultiImageGalleryHtml(post)}
                 ${buildUniversalFileAttachmentHtml(post)}
                 ${
@@ -5938,36 +5939,7 @@
             }
 
             
-            // Poll Voting Logic
-            card.querySelectorAll('.btn-vote-poll').forEach(btn => {
-              btn.addEventListener('click', e => {
-                e.stopPropagation();
-                if (!post.poll) return;
-                const optId = btn.getAttribute('data-poll-opt');
-                const nick = getSavedNickname() || 'ผู้ใช้งาน';
-                const previousVote = post.poll.votedBy[nick];
-                
-                if (previousVote === optId) {
-                  // Unvote
-                  post.poll.options.forEach(o => { if(o.id === optId) o.votes = Math.max(0, o.votes - 1); });
-                  delete post.poll.votedBy[nick];
-                  post.poll.totalVotes = Math.max(0, post.poll.totalVotes - 1);
-                } else {
-                  // Switch vote or new vote
-                  if (previousVote) {
-                    post.poll.options.forEach(o => { if(o.id === previousVote) o.votes = Math.max(0, o.votes - 1); });
-                  } else {
-                    post.poll.totalVotes++;
-                  }
-                  post.poll.options.forEach(o => { if(o.id === optId) o.votes++; });
-                  post.poll.votedBy[nick] = optId;
-                }
-                post.updatedAtMs = Date.now();
-                card.dataset.renderSig = computePostRenderSignature(post);
-                persistStatePermanently(post);
-                renderBoard(); // Re-render to show updated progress bars
-              });
-            });
+            
 
             card.querySelectorAll('.btn-feeling-react').forEach(btnEl => {
               btnEl.addEventListener('click', e => {
@@ -7160,7 +7132,13 @@
           const useProxyMode = Boolean(finalWebRunUrl && (rawInput.includes('จอขาว') || rawInput.toLowerCase().includes('proxy')));
 
           const finalFileObj = pendingFileAttachment;
-          if (!rawInput && !finalImage && !finalFileObj) {
+          
+          const hasThinkDoc = typeof window.pendingThinkDoc === 'string' && window.pendingThinkDoc.length > 0;
+          const hasThinkSheet = typeof window.pendingThinkSheet !== 'undefined' && window.pendingThinkSheet !== null;
+          const selectedTag = document.getElementById('composerTagSelect') ? document.getElementById('composerTagSelect').value : '';
+          
+          if (!rawInput && !finalImage && !finalFileObj && !hasThinkDoc && !hasThinkSheet) {
+
             showToast('กรุณาพิมพ์โพสต์ หรือแนบรูปภาพ / ไฟล์');
             return inlinePostText.focus();
           }
@@ -7177,6 +7155,10 @@
               target.role = role;
               target.rating = selectedRating;
               target.text = cleanedText;
+              target.tag = selectedTag;
+              target.thinkDoc = hasThinkDoc ? window.pendingThinkDoc : (window.pendingThinkDoc === '' ? '' : target.thinkDoc);
+              target.thinkSheet = hasThinkSheet ? window.pendingThinkSheet : (window.pendingThinkSheet === null ? null : target.thinkSheet);
+
               target.color = selectedColor;
               target.images = finalImagesArr.length > 0 ? finalImagesArr : getPostImagesArray(target);
               target.imageCount = target.images.length;
@@ -7228,6 +7210,10 @@
               role,
               rating: selectedRating,
               text: cleanedText,
+              tag: selectedTag,
+              thinkDoc: hasThinkDoc ? window.pendingThinkDoc : '',
+              thinkSheet: hasThinkSheet ? window.pendingThinkSheet : null,
+
               image: finalImage,
               images: finalImagesArr,
               imageCount: finalImagesArr.length,
@@ -7719,70 +7705,6 @@
     
       // --- FINAL FEATURES JAVASCRIPT ---
 
-      // 1. PDF Export
-      const btnExportPDF = document.getElementById('btnExportPDF');
-      if (btnExportPDF) {
-        btnExportPDF.addEventListener('click', () => {
-          const element = document.getElementById('notesLayer');
-          if (!element || element.children.length === 0) {
-            showToast('ไม่มีข้อมูลกระดานให้ Export');
-            return;
-          }
-          
-          showToast('กำลังเตรียมไฟล์ PDF โปรดรอสักครู่...');
-          
-          // Temporarily fix styles for rendering
-          const originalOverflow = element.style.overflow;
-          const originalHeight = element.style.height;
-          element.style.overflow = 'visible';
-          element.style.height = 'auto';
-
-          const opt = {
-            margin:       [10, 10, 10, 10],
-            filename:     'ClassBoard_Export_' + (syncConfig.roomCode || 'Board') + '.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, logging: false },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-          };
-
-          html2pdf().set(opt).from(element).save().then(() => {
-             element.style.overflow = originalOverflow;
-             element.style.height = originalHeight;
-             showToast('✅ บันทึก PDF สำเร็จ');
-          }).catch(() => {
-             element.style.overflow = originalOverflow;
-             element.style.height = originalHeight;
-             showToast('❌ เกิดข้อผิดพลาดในการสร้าง PDF');
-          });
-        });
-      }
-
-      // 2. Poll UI Logic in Composer
-      const btnComposerPoll = document.getElementById('btnComposerPoll');
-      const pollUI = document.getElementById('composerPollUI');
-      const btnAddPollOption = document.getElementById('btnAddPollOption');
-      const btnCancelPoll = document.getElementById('btnCancelPoll');
-      const pollOptionsContainer = document.getElementById('pollOptionsContainer');
-
-      if (btnComposerPoll && pollUI) {
-        btnComposerPoll.addEventListener('click', () => {
-          pollUI.classList.remove('hidden');
-          pollUI.classList.add('flex');
-        });
-        btnCancelPoll.addEventListener('click', () => {
-          pollUI.classList.add('hidden');
-          pollUI.classList.remove('flex');
-          document.getElementById('pollQuestionInput').value = '';
-        });
-        btnAddPollOption.addEventListener('click', () => {
-          const inp = document.createElement('input');
-          inp.type = 'text';
-          inp.className = 'poll-option-input w-full px-3 py-1.5 rounded-xl bg-neutral-50 border border-neutral-200 text-xs text-neutral-900 mt-2';
-          inp.placeholder = 'ตัวเลือกเพิ่มเติม...';
-          pollOptionsContainer.appendChild(inp);
-        });
-      }
-
       // 3. Drawing Canvas Modal Logic
       const btnComposerDraw = document.getElementById('btnComposerDraw');
       const modalDrawCanvas = document.getElementById('modalDrawCanvas');
@@ -7896,6 +7818,83 @@
           modalDrawCanvas.classList.add('hidden');
         });
       }
+
+
+      // --- Think Docs & Think Sheets Logic ---
+      window.pendingThinkDoc = '';
+      window.pendingThinkSheet = null;
+      let quillInstance = null;
+      let sheetInstance = null;
+
+      const btnComposerDoc = document.getElementById('btnComposerDoc');
+      if (btnComposerDoc) {
+        btnComposerDoc.addEventListener('click', () => {
+          document.getElementById('modalThinkDoc').classList.remove('hidden');
+          if (!quillInstance) {
+            quillInstance = new Quill('#quillEditor', {
+              theme: 'snow',
+              placeholder: 'พิมพ์เอกสาร หรือรายงานของคุณที่นี่...',
+              modules: {
+                toolbar: [
+                  [{ 'header': [1, 2, 3, false] }],
+                  ['bold', 'italic', 'underline', 'strike'],
+                  [{ 'color': [] }, { 'background': [] }],
+                  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                  [{ 'align': [] }],
+                  ['link', 'image', 'clean']
+                ]
+              }
+            });
+          }
+        });
+      }
+
+      document.getElementById('btnDocCancel')?.addEventListener('click', () => {
+        document.getElementById('modalThinkDoc').classList.add('hidden');
+      });
+      document.getElementById('btnDocSave')?.addEventListener('click', () => {
+        if (quillInstance && quillInstance.getText().trim().length > 0) {
+          window.pendingThinkDoc = quillInstance.root.innerHTML;
+          showToast('📝 แนบเอกสารเตรียมโพสต์แล้ว');
+        } else {
+          window.pendingThinkDoc = '';
+        }
+        document.getElementById('modalThinkDoc').classList.add('hidden');
+      });
+
+      const btnComposerSheet = document.getElementById('btnComposerSheet');
+      if (btnComposerSheet) {
+        btnComposerSheet.addEventListener('click', () => {
+          document.getElementById('modalThinkSheet').classList.remove('hidden');
+          if (!sheetInstance) {
+            sheetInstance = jspreadsheet(document.getElementById('spreadsheetEditor'), {
+              data: [
+                ['หัวข้อ 1', 'หัวข้อ 2', 'หัวข้อ 3', 'หัวข้อ 4'],
+                ['', '', '', ''],
+                ['', '', '', ''],
+                ['', '', '', ''],
+                ['', '', '', '']
+              ],
+              minDimensions: [4, 5],
+              defaultColWidth: 120,
+              tableOverflow: true,
+              tableWidth: '100%',
+              tableHeight: '400px'
+            });
+          }
+        });
+      }
+
+      document.getElementById('btnSheetCancel')?.addEventListener('click', () => {
+        document.getElementById('modalThinkSheet').classList.add('hidden');
+      });
+      document.getElementById('btnSheetSave')?.addEventListener('click', () => {
+        if (sheetInstance) {
+          window.pendingThinkSheet = sheetInstance.getData();
+          showToast('📊 แนบตารางข้อมูลเตรียมโพสต์แล้ว');
+        }
+        document.getElementById('modalThinkSheet').classList.add('hidden');
+      });
 
 })();
   </script>
