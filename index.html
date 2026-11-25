@@ -126,7 +126,7 @@
       transition: border-color 0.15s ease;
     }
     .note-card:hover {
-      border-color: #fdba74;
+      border-color: #10b981;
     }
 
     
@@ -250,7 +250,7 @@
       left: 0;
       right: 0;
       height: 2px;
-      background: linear-gradient(90deg, transparent, #f97316, #171717, #f97316, transparent);
+      background: linear-gradient(90deg, transparent, #059669, #171717, #059669, transparent);
       box-shadow: 0 0 10px rgba(249, 115, 22, 0.7);
       pointer-events: none;
       z-index: 15;
@@ -281,7 +281,7 @@
             id="loginRoomInput"
             type="text"
             placeholder="กรอกรหัส Board..."
-            class="w-full px-4 py-3 rounded-2xl bg-neutral-100 border border-neutral-300 text-neutral-900 placeholder-neutral-400 text-sm font-semibold focus:outline-none focus:bg-white focus:border-orange-500 transition"
+            class="w-full px-4 py-3 rounded-2xl bg-neutral-100 border border-neutral-300 text-neutral-900 placeholder-neutral-400 text-sm font-semibold focus:outline-none focus:bg-white focus:border-emerald-600 transition"
           />
           <div id="loginRecentRoomsWrap" class="hidden mt-2 flex flex-wrap items-center gap-1.5"></div>
         </div>
@@ -293,14 +293,14 @@
               id="loginNicknameInput"
               type="text"
               placeholder="พิมพ์ชื่อ..."
-              class="w-full px-4 py-3 rounded-2xl bg-neutral-100 border border-neutral-300 text-neutral-900 placeholder-neutral-400 text-sm font-semibold focus:outline-none focus:bg-white focus:border-orange-500 transition"
+              class="w-full px-4 py-3 rounded-2xl bg-neutral-100 border border-neutral-300 text-neutral-900 placeholder-neutral-400 text-sm font-semibold focus:outline-none focus:bg-white focus:border-emerald-600 transition"
             />
           </div>
           <div class="hidden">
             <label for="loginRoleSelect" class="block text-xs font-bold text-neutral-700 mb-1.5">สถานะ</label>
             <select
               id="loginRoleSelect"
-              class="w-full px-3 py-3 rounded-2xl bg-neutral-100 border border-neutral-300 text-neutral-900 text-xs font-semibold focus:outline-none focus:bg-white focus:border-orange-500 transition"
+              class="w-full px-3 py-3 rounded-2xl bg-neutral-100 border border-neutral-300 text-neutral-900 text-xs font-semibold focus:outline-none focus:bg-white focus:border-emerald-600 transition"
             >
               <option value="นักเรียน">นักเรียน</option>
               <option value="ผู้เข้ามาศึกษา">ผู้เข้ามาศึกษา</option>
@@ -314,26 +314,26 @@
         <div class="p-3 rounded-2xl bg-neutral-100/90 border border-neutral-300">
           <div class="flex items-center justify-between gap-2 mb-1.5">
             <label for="loginIconCodeInput" class="block text-xs font-bold text-neutral-800">🔑 รหัส Icon ประจำตัว (ใส่รหัสเดิมได้รูปเดิมทันที)</label>
-            <button id="btnLoginCopyIconCode" type="button" class="text-[11px] font-bold text-orange-600 hover:underline">คัดลอกรหัส</button>
+            <button id="btnLoginCopyIconCode" type="button" class="text-[11px] font-bold text-emerald-700 hover:underline">คัดลอกรหัส</button>
           </div>
           <div class="flex items-center gap-2">
-            <button id="loginAvatarPreviewBox" type="button" title="คลิกเพื่อเลือกไอคอน" class="w-11 h-11 rounded-full overflow-hidden bg-white ring-2 ring-orange-500 shrink-0 shadow-xs cursor-pointer hover:scale-105 transition"></button>
+            <button id="loginAvatarPreviewBox" type="button" title="คลิกเพื่อเลือกไอคอน" class="w-11 h-11 rounded-full overflow-hidden bg-white ring-2 ring-emerald-600 shrink-0 shadow-xs cursor-pointer hover:scale-105 transition"></button>
             <input
               id="loginIconCodeInput"
               type="text"
               placeholder="เช่น TB-0408-2131..."
-              class="flex-1 min-w-0 px-3 py-2.5 rounded-xl bg-white border border-neutral-300 text-neutral-900 font-mono text-xs sm:text-sm font-extrabold uppercase tracking-wider focus:outline-none focus:border-orange-500 transition"
+              class="flex-1 min-w-0 px-3 py-2.5 rounded-xl bg-white border border-neutral-300 text-neutral-900 font-mono text-xs sm:text-sm font-extrabold uppercase tracking-wider focus:outline-none focus:border-emerald-600 transition"
             />
             <button id="btnLoginRandomIconCode" type="button" title="สุ่มรหัส Icon ใหม่" class="px-2.5 py-2.5 rounded-xl bg-white hover:bg-neutral-900 text-neutral-900 hover:text-white border border-neutral-300 text-xs font-bold shrink-0 transition">
               🎲 สุ่ม
             </button>
-            <button id="btnLoginOpenIconPicker" type="button" title="เปิดคลังเลือก Icon ทั้งหมด" class="px-2.5 py-2.5 rounded-xl bg-orange-500 hover:bg-neutral-900 text-white text-xs font-bold shrink-0 transition">
+            <button id="btnLoginOpenIconPicker" type="button" title="เปิดคลังเลือก Icon ทั้งหมด" class="px-2.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-neutral-900 text-white text-xs font-bold shrink-0 transition">
               เลือก
             </button>
           </div>
         </div>
 
-        <p id="loginErrorMsg" class="hidden text-xs font-semibold text-orange-600 text-center">
+        <p id="loginErrorMsg" class="hidden text-xs font-semibold text-emerald-700 text-center">
           กรุณากรอกรหัส Board และชื่อของคุณ
         </p>
 
@@ -341,7 +341,7 @@
           <button
             id="btnSubmitDarkLogin"
             type="submit"
-            class="w-full py-3.5 rounded-2xl bg-neutral-900 hover:bg-orange-500 active:scale-[0.99] text-white font-bold text-sm shadow-md transition"
+            class="w-full py-3.5 rounded-2xl bg-neutral-900 hover:bg-emerald-600 active:scale-[0.99] text-white font-bold text-sm shadow-md transition"
           >
             เข้า Board
           </button>
@@ -389,13 +389,13 @@
           <button id="btnSortPopular" type="button" class="h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-300 text-xs font-bold inline-flex items-center justify-center whitespace-nowrap transition" title="เรียงตามความนิยม">
             🔥 ยอดนิยม
           </button>
-          <span id="smartFeedCountBadge" class="hidden lg:inline-flex h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-white border border-neutral-300 text-orange-600 text-xs font-bold items-center justify-center whitespace-nowrap">0 โพสต์</span>
+          <span id="smartFeedCountBadge" class="hidden lg:inline-flex h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-white border border-neutral-300 text-emerald-700 text-xs font-bold items-center justify-center whitespace-nowrap">0 โพสต์</span>
         </div>
       </div>
 
       <!-- Right: Board Code (Truncated with ... if long) + User Name + Out Button (Identical Box Height & Style) -->
       <div class="flex items-center justify-end gap-1 sm:gap-1.5 min-w-0 shrink-0">
-        <div id="headerBoardCodePill" class="h-8 sm:h-9 px-2 sm:px-3 rounded-xl bg-white border border-neutral-300 text-xs font-bold text-orange-600 inline-flex items-center gap-1 min-w-0 max-w-[92px] sm:max-w-[170px]" title="รหัส Board">
+        <div id="headerBoardCodePill" class="h-8 sm:h-9 px-2 sm:px-3 rounded-xl bg-white border border-neutral-300 text-xs font-bold text-emerald-700 inline-flex items-center gap-1 min-w-0 max-w-[92px] sm:max-w-[170px]" title="รหัส Board">
           <span class="text-neutral-600 font-semibold shrink-0">Board:</span>
           <span id="headerBoardCodeLabel" class="truncate block">-</span>
         </div>
@@ -404,7 +404,7 @@
           <span id="headerUserNameLabel" class="truncate block">ผู้ใช้งาน</span>
         </div>
 
-        <button id="btnOutBoard" type="button" class="h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white border border-neutral-900 hover:border-orange-500 text-xs font-bold inline-flex items-center justify-center gap-1 shrink-0 transition" title="ออกจาก Board">
+        <button id="btnOutBoard" type="button" class="h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-neutral-900 hover:bg-emerald-600 text-white border border-neutral-900 hover:border-emerald-600 text-xs font-bold inline-flex items-center justify-center gap-1 shrink-0 transition" title="ออกจาก Board">
           <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
           </svg>
@@ -423,17 +423,17 @@
         <!-- Top Bar Inside Composer: Board Code & Name + Stars -->
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div class="flex items-center gap-2.5 min-w-0">
-            <button id="composerAvatarInitial" type="button" title="คลิกเพื่อสุ่มเปลี่ยนตัวการ์ตูน Avatar น่ารักใหม่" class="relative w-10 h-10 rounded-full overflow-hidden bg-neutral-100 ring-2 ring-orange-400 hover:ring-neutral-900 hover:scale-105 active:scale-95 flex items-center justify-center shrink-0 transition cursor-pointer shadow-sm">
+            <button id="composerAvatarInitial" type="button" title="คลิกเพื่อสุ่มเปลี่ยนตัวการ์ตูน Avatar น่ารักใหม่" class="relative w-10 h-10 rounded-full overflow-hidden bg-neutral-100 ring-2 ring-emerald-500 hover:ring-neutral-900 hover:scale-105 active:scale-95 flex items-center justify-center shrink-0 transition cursor-pointer shadow-sm">
               น
             </button>
             <div class="flex items-center gap-2 flex-wrap min-w-0">
-              <span class="px-2.5 py-0.5 rounded-lg bg-orange-500 text-white text-xs font-bold inline-flex items-center gap-1 max-w-[160px] sm:max-w-[220px]"><span class="shrink-0">Board:</span><span id="composerRoomCodeLabel" class="truncate">-</span></span>
+              <span class="px-2.5 py-0.5 rounded-lg bg-emerald-600 text-white text-xs font-bold inline-flex items-center gap-1 max-w-[160px] sm:max-w-[220px]"><span class="shrink-0">Board:</span><span id="composerRoomCodeLabel" class="truncate">-</span></span>
               <span id="composerAuthorNameLabel" class="font-bold text-sm text-neutral-900 truncate">ผู้ใช้งาน</span>
               <span id="composerRoleBadgeLabel" class="hidden px-2 py-0.5 rounded-full bg-neutral-100 border border-neutral-200 text-neutral-600 text-[10px] font-bold">นักเรียน</span>
-              <button id="composerIconCodeBadge" type="button" title="คลิกเพื่อดู คัดลอก หรือกรอกรหัส Icon ประจำตัว" class="px-2.5 py-0.5 rounded-full bg-neutral-900 hover:bg-orange-500 text-white text-[10px] font-mono font-extrabold inline-flex items-center gap-1 transition cursor-pointer shadow-2xs">
+              <button id="composerIconCodeBadge" type="button" title="คลิกเพื่อดู คัดลอก หรือกรอกรหัส Icon ประจำตัว" class="px-2.5 py-0.5 rounded-full bg-neutral-900 hover:bg-emerald-600 text-white text-[10px] font-mono font-extrabold inline-flex items-center gap-1 transition cursor-pointer shadow-2xs">
                 <span>🔑</span><span id="composerIconCodeText">TB-0000-0000</span>
               </button>
-              <span id="inlineEditModeBadge" class="hidden px-2 py-0.5 rounded-full bg-orange-100 border border-orange-300 text-orange-700 text-[10px] font-bold">แก้ไข</span>
+              <span id="inlineEditModeBadge" class="hidden px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-400 text-emerald-800 text-[10px] font-bold">แก้ไข</span>
             </div>
           </div>
 
@@ -448,7 +448,7 @@
 
         <!-- Direct Input Box with + Button ONLY for Adding Image, Clean Textarea (No Instructional Text), and Post Button -->
         <form id="formInlineDirectPost" class="relative">
-          <div class="rounded-2xl bg-neutral-50 border border-neutral-200 focus-within:border-orange-500 focus-within:bg-white transition p-2.5 sm:p-3 flex flex-col gap-2">
+          <div class="rounded-2xl bg-neutral-50 border border-neutral-200 focus-within:border-emerald-600 focus-within:bg-white transition p-2.5 sm:p-3 flex flex-col gap-2">
             <div class="flex items-center gap-2">
               <!-- + Button for Adding Universal Files (Images, PPT, PDF, Word, Excel, Video, Audio, All Files) -->
               
@@ -471,7 +471,7 @@
                 <button
                   id="btnInlinePostSubmit"
                   type="submit"
-                  class="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-neutral-900 active:scale-[0.98] text-white font-bold text-xs sm:text-sm shadow-sm transition"
+                  class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-neutral-900 active:scale-[0.98] text-white font-bold text-xs sm:text-sm shadow-sm transition"
                 >
                   โพสต์
                 </button>
@@ -486,13 +486,13 @@
                   <img id="inlinePastedImageEl" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="รูปที่แนบ" class="hidden h-8 w-10 object-cover rounded-lg border border-neutral-300" />
                   <div id="inlineMultiImageListEl" class="flex items-center gap-1.5"></div>
                   <span id="inlineMultiImageCountBadge" class="px-2 py-0.5 rounded-lg bg-neutral-900 text-white text-[10px] font-bold shrink-0">1 รูป</span>
-                  <button id="btnClearInlineImage" type="button" class="text-neutral-600 hover:text-orange-600 font-bold text-xs px-1 shrink-0" title="ลบรูปทั้งหมด">✕</button>
+                  <button id="btnClearInlineImage" type="button" class="text-neutral-600 hover:text-emerald-700 font-bold text-xs px-1 shrink-0" title="ลบรูปทั้งหมด">✕</button>
                 </div>
                 <div id="inlineAttachedFilePreviewWrap" class="hidden flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded-xl px-2.5 py-1.5 max-w-full">
                   <span id="inlineAttachedFileExtBadge" class="px-2 py-0.5 rounded-lg bg-neutral-900 text-white text-[10px] font-extrabold uppercase shrink-0">FILE</span>
                   <span id="inlineAttachedFileNameEl" class="text-xs font-bold text-neutral-900 truncate max-w-[180px] sm:max-w-[260px]">filename.pdf</span>
                   <span id="inlineAttachedFileSizeEl" class="text-[10px] font-semibold text-neutral-500 shrink-0"></span>
-                  <button id="btnClearInlineFile" type="button" class="text-neutral-600 hover:text-orange-600 font-bold text-xs px-1 shrink-0">✕</button>
+                  <button id="btnClearInlineFile" type="button" class="text-neutral-600 hover:text-emerald-700 font-bold text-xs px-1 shrink-0">✕</button>
                 </div>
               </div>
             </div>
@@ -552,7 +552,7 @@
           </div>
           <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div class="sm:col-span-2">
-              <label for="inputNickname" class="block text-[11px] font-semibold text-slate-400 mb-0.5">ชื่อผู้โพสต์ <span class="text-orange-400">*</span></label>
+              <label for="inputNickname" class="block text-[11px] font-semibold text-slate-400 mb-0.5">ชื่อผู้โพสต์ <span class="text-emerald-500">*</span></label>
               <input id="inputNickname" type="text" placeholder="พิมพ์ชื่อของคุณ..." class="w-full px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-sm font-bold text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition" />
             </div>
             <div>
@@ -603,8 +603,8 @@
               <span class="w-3 h-3 rounded-full bg-sky-500"></span>
               <span>ฟ้า</span>
             </button>
-            <button type="button" data-color="orange" class="color-swatch py-2 px-2 rounded-xl bg-[#ffedd5] text-orange-950 font-bold text-xs flex items-center justify-center gap-1.5 border border-orange-400 transition">
-              <span class="w-3 h-3 rounded-full bg-orange-500"></span>
+            <button type="button" data-color="orange" class="color-swatch py-2 px-2 rounded-xl bg-[#d1fae5] text-orange-950 font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500 transition">
+              <span class="w-3 h-3 rounded-full bg-emerald-600"></span>
               <span>ส้ม</span>
             </button>
             <button type="button" data-color="gray" class="color-swatch py-2 px-2 rounded-xl bg-[#f1f5f9] text-slate-900 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-400 transition">
@@ -636,7 +636,7 @@
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input id="inputYoutubeUrl" type="text" placeholder="▶️ วางลิงก์ YouTube (watch / youtu.be / shorts)" class="w-full px-3 py-2 rounded-xl bg-slate-900/90 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-400" />
+            <input id="inputYoutubeUrl" type="text" placeholder="▶️ วางลิงก์ YouTube (watch / youtu.be / shorts)" class="w-full px-3 py-2 rounded-xl bg-slate-900/90 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
             <input id="inputExternalUrl" type="text" placeholder="🔗 ลิงก์เอกสาร / ไฟล์แนบ (ถ้ามี)" class="w-full px-3 py-2 rounded-xl bg-slate-900/90 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400" />
           </div>
         </div>
@@ -660,7 +660,7 @@
             <button type="button" data-autocmd="รีเฟรชอัตโนมัติทุก 30 วินาที (Auto Refresh 30s)" class="btn-preset-autocmd px-2 py-1 rounded-lg bg-slate-900 hover:bg-emerald-500/20 border border-slate-700 text-[10px] font-semibold text-emerald-300 transition">
               🔄 Auto Refresh 30s
             </button>
-            <button type="button" data-autocmd="คลิกปุ่มเริ่มต้นและรันระบบอัตโนมัติ (Auto Click & Start)" class="btn-preset-autocmd px-2 py-1 rounded-lg bg-slate-900 hover:bg-orange-500/20 border border-slate-700 text-[10px] font-semibold text-orange-300 transition">
+            <button type="button" data-autocmd="คลิกปุ่มเริ่มต้นและรันระบบอัตโนมัติ (Auto Click & Start)" class="btn-preset-autocmd px-2 py-1 rounded-lg bg-slate-900 hover:bg-emerald-600/20 border border-slate-700 text-[10px] font-semibold text-emerald-400 transition">
               🖱️ Auto Click & Start
             </button>
             <button type="button" data-autocmd="โหมดแก้จอขาว + รันอัตโนมัติ (Proxy Render + Auto Run)" class="btn-preset-autocmd px-2 py-1 rounded-lg bg-slate-900 hover:bg-purple-500/20 border border-slate-700 text-[10px] font-semibold text-purple-300 transition">
@@ -698,7 +698,7 @@
           </div>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
-          <button id="btnEditNoteFromDetail" type="button" class="px-2.5 py-1.5 rounded-xl bg-neutral-100 hover:bg-orange-500 text-neutral-800 hover:text-white border border-neutral-300 text-xs font-bold flex items-center gap-1 transition" title="แก้ไขกล่อง (ใช้รหัสผ่าน)">
+          <button id="btnEditNoteFromDetail" type="button" class="px-2.5 py-1.5 rounded-xl bg-neutral-100 hover:bg-emerald-600 text-neutral-800 hover:text-white border border-neutral-300 text-xs font-bold flex items-center gap-1 transition" title="แก้ไขกล่อง (ใช้รหัสผ่าน)">
             <span>✏️</span>
             <span>แก้ไข</span>
           </button>
@@ -723,7 +723,7 @@
           </div>
           <div class="px-3 py-2 bg-slate-900 text-white flex items-center justify-between text-xs">
             <span class="truncate text-slate-300">▶️ วิดีโอ YouTube</span>
-            <a id="detailYoutubeDirectLink" href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="text-orange-400 hover:underline font-semibold">เปิดดูบน YouTube ↗</a>
+            <a id="detailYoutubeDirectLink" href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="text-emerald-500 hover:underline font-semibold">เปิดดูบน YouTube ↗</a>
           </div>
         </div>
 
@@ -783,10 +783,10 @@
       </div>
 
       <form id="formAddComment" class="p-4 bg-neutral-50 border-t border-neutral-200 flex flex-col sm:flex-row gap-2">
-        <input id="inputCommentNickname" type="text" placeholder="ชื่อของคุณ *" class="sm:w-36 px-3 py-2 rounded-xl bg-white border border-neutral-300 text-xs font-semibold text-neutral-900 focus:outline-none focus:border-orange-500 shrink-0" />
+        <input id="inputCommentNickname" type="text" placeholder="ชื่อของคุณ *" class="sm:w-36 px-3 py-2 rounded-xl bg-white border border-neutral-300 text-xs font-semibold text-neutral-900 focus:outline-none focus:border-emerald-600 shrink-0" />
         <div class="flex-1 flex gap-2">
-          <input id="inputCommentText" type="text" placeholder="พิมพ์แสดงความคิดเห็น / พัฒนาต่อยอดร่วมกับเพื่อน..." class="flex-1 px-3.5 py-2 rounded-xl bg-white border border-neutral-300 text-xs sm:text-sm text-neutral-900 focus:outline-none focus:border-orange-500" />
-          <button id="btnSubmitDetailComment" type="submit" class="px-4 py-2 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white text-xs font-bold shrink-0 transition">
+          <input id="inputCommentText" type="text" placeholder="พิมพ์แสดงความคิดเห็น / พัฒนาต่อยอดร่วมกับเพื่อน..." class="flex-1 px-3.5 py-2 rounded-xl bg-white border border-neutral-300 text-xs sm:text-sm text-neutral-900 focus:outline-none focus:border-emerald-600" />
+          <button id="btnSubmitDetailComment" type="submit" class="px-4 py-2 rounded-xl bg-neutral-900 hover:bg-emerald-600 text-white text-xs font-bold shrink-0 transition">
             ส่ง
           </button>
         </div>
@@ -800,7 +800,7 @@
       <div class="w-full flex items-center justify-between mb-2.5 px-1">
         <span id="lightboxCounterBadge" class="px-3 py-1 rounded-xl bg-white/15 text-white text-xs font-bold">1 / 1</span>
         <div class="flex items-center gap-2">
-          <button id="btnLightboxToggleAuto" type="button" class="px-3 py-1 rounded-xl bg-white/15 hover:bg-orange-500 text-white text-xs font-bold transition">
+          <button id="btnLightboxToggleAuto" type="button" class="px-3 py-1 rounded-xl bg-white/15 hover:bg-emerald-600 text-white text-xs font-bold transition">
             ↻ ไหลวน
           </button>
           <button id="btnCloseLightbox" type="button" class="px-3 py-1 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition">
@@ -809,11 +809,11 @@
         </div>
       </div>
       <div id="lightboxTouchArea" class="relative w-full flex items-center justify-center">
-        <button id="btnLightboxPrev" type="button" class="hidden absolute left-2 z-10 w-10 h-10 rounded-full bg-black/65 hover:bg-orange-500 text-white font-bold text-xl flex items-center justify-center shadow-lg transition">
+        <button id="btnLightboxPrev" type="button" class="hidden absolute left-2 z-10 w-10 h-10 rounded-full bg-black/65 hover:bg-emerald-600 text-white font-bold text-xl flex items-center justify-center shadow-lg transition">
           ‹
         </button>
         <img id="lightboxImage" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="ภาพขยาย" class="max-w-full max-h-[78vh] rounded-2xl shadow-2xl object-contain bg-white select-none" />
-        <button id="btnLightboxNext" type="button" class="hidden absolute right-2 z-10 w-10 h-10 rounded-full bg-black/65 hover:bg-orange-500 text-white font-bold text-xl flex items-center justify-center shadow-lg transition">
+        <button id="btnLightboxNext" type="button" class="hidden absolute right-2 z-10 w-10 h-10 rounded-full bg-black/65 hover:bg-emerald-600 text-white font-bold text-xl flex items-center justify-center shadow-lg transition">
           ›
         </button>
       </div>
@@ -825,15 +825,15 @@
     <div class="bg-white rounded-3xl max-w-4xl w-full h-[90vh] flex flex-col shadow-2xl border border-neutral-300 overflow-hidden animate-pop">
       <div class="px-4 py-3 bg-neutral-900 text-white flex items-center justify-between gap-2 shrink-0">
         <div class="flex items-center gap-2 min-w-0">
-          <span id="docModalExtBadge" class="px-2 py-0.5 rounded-lg bg-orange-500 text-white text-xs font-extrabold uppercase shrink-0">PDF</span>
+          <span id="docModalExtBadge" class="px-2 py-0.5 rounded-lg bg-emerald-600 text-white text-xs font-extrabold uppercase shrink-0">PDF</span>
           <span id="docModalTitle" class="font-bold text-xs sm:text-sm truncate">ตัวอย่างเอกสาร</span>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
-          <button id="btnDocModalPrev" type="button" class="px-2.5 py-1 rounded-xl bg-white/15 hover:bg-orange-500 text-white text-xs font-bold transition">‹ หน้าก่อน</button>
+          <button id="btnDocModalPrev" type="button" class="px-2.5 py-1 rounded-xl bg-white/15 hover:bg-emerald-600 text-white text-xs font-bold transition">‹ หน้าก่อน</button>
           <span id="docModalPageBadge" class="px-2.5 py-1 rounded-xl bg-white/10 text-white text-xs font-bold whitespace-nowrap">หน้า 1 / 1</span>
-          <button id="btnDocModalNext" type="button" class="px-2.5 py-1 rounded-xl bg-white/15 hover:bg-orange-500 text-white text-xs font-bold transition">หน้าถัดไป ›</button>
-          <button id="btnDocModalAutoFlip" type="button" class="px-2.5 py-1 rounded-xl bg-white/15 hover:bg-orange-500 text-white text-xs font-bold transition">↻ ไหลวน</button>
-          <a id="btnDocModalDownload" href="#" download="document" class="px-3 py-1 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition">ดาวน์โหลด</a>
+          <button id="btnDocModalNext" type="button" class="px-2.5 py-1 rounded-xl bg-white/15 hover:bg-emerald-600 text-white text-xs font-bold transition">หน้าถัดไป ›</button>
+          <button id="btnDocModalAutoFlip" type="button" class="px-2.5 py-1 rounded-xl bg-white/15 hover:bg-emerald-600 text-white text-xs font-bold transition">↻ ไหลวน</button>
+          <a id="btnDocModalDownload" href="#" download="document" class="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition">ดาวน์โหลด</a>
           <button id="btnCloseDocModal" type="button" class="px-2.5 py-1 rounded-xl bg-white/20 hover:bg-rose-600 text-white text-xs font-bold transition">✕</button>
         </div>
       </div>
@@ -854,8 +854,8 @@
       <p id="deletePinModalDesc" class="text-xs text-slate-400 mb-4">เมื่อลบด้วยรหัสผ่าน ข้อมูลกล่องนี้จะถูกลบถาวรในทุกอุปกรณ์ทันที</p>
       <form id="formDeletePin" class="space-y-3">
         <div>
-          <input id="inputDeletePin" type="password" inputmode="numeric" maxlength="8" placeholder="รหัสผ่าน..." class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-center tracking-widest text-base font-bold text-white focus:outline-none focus:border-orange-500 transition" />
-          <p id="deletePinError" class="hidden text-xs font-semibold text-orange-400 text-center mt-1.5">
+          <input id="inputDeletePin" type="password" inputmode="numeric" maxlength="8" placeholder="รหัสผ่าน..." class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-center tracking-widest text-base font-bold text-white focus:outline-none focus:border-emerald-600 transition" />
+          <p id="deletePinError" class="hidden text-xs font-semibold text-emerald-500 text-center mt-1.5">
             รหัสผ่านไม่ถูกต้อง
           </p>
         </div>
@@ -863,7 +863,7 @@
           <button id="btnCancelDeletePin" type="button" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">
             ยกเลิก
           </button>
-          <button id="btnConfirmDeletePin" type="submit" class="px-5 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold transition">
+          <button id="btnConfirmDeletePin" type="submit" class="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold transition">
             ยืนยันการลบ
           </button>
         </div>
@@ -876,14 +876,14 @@
     <div class="bg-white border border-neutral-300 rounded-3xl max-w-2xl w-full p-4 sm:p-5 shadow-2xl relative max-h-[90vh] flex flex-col">
       <div class="flex items-center justify-between gap-2 pb-3 border-b border-neutral-200 shrink-0">
         <div class="flex items-center gap-3 min-w-0">
-          <div id="pickerCurrentPreviewBox" class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-orange-500 shadow-sm shrink-0"></div>
+          <div id="pickerCurrentPreviewBox" class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-emerald-600 shadow-sm shrink-0"></div>
           <div class="min-w-0">
             <h3 class="text-sm sm:text-base font-extrabold text-neutral-900 truncate">เลือก Avatar &amp; Icon ทุกชนิด ทุกอุปกรณ์</h3>
             <p class="text-[11px] text-neutral-500 truncate">คลิกเลือกรูปการ์ตูน อุปกรณ์ไอที หรือไอคอนที่ต้องการ (ใช้ตรงกับกล่องโพสต์ 100%)</p>
           </div>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
-          <button id="btnRandomizeAvatarInModal" type="button" class="px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-neutral-900 text-white text-xs font-bold transition shadow-xs">
+          <button id="btnRandomizeAvatarInModal" type="button" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-neutral-900 text-white text-xs font-bold transition shadow-xs">
             🎲 สุ่มใหม่
           </button>
           <button id="btnCloseAvatarIconPicker" type="button" class="w-8 h-8 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold text-sm flex items-center justify-center transition">
@@ -896,16 +896,16 @@
       <div class="mt-3 p-3 rounded-2xl bg-neutral-100 border border-neutral-300 shrink-0">
         <div class="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
           <span class="text-xs font-extrabold text-neutral-900">🔑 รหัส Icon ประจำตัว (จดหรือคัดลอกรหัสนี้ไว้ใส่ครั้งต่อไปจะได้รูปเดิมทันที)</span>
-          <span id="pickerActiveIconNameBadge" class="px-2 py-0.5 rounded-lg bg-orange-100 text-orange-700 border border-orange-300 text-[11px] font-bold">ไอคอนประจำตัว</span>
+          <span id="pickerActiveIconNameBadge" class="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-400 text-[11px] font-bold">ไอคอนประจำตัว</span>
         </div>
         <div class="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
           <input
             id="inputAvatarIconCode"
             type="text"
             placeholder="พิมพ์หรือวางรหัส Icon เช่น TB-0408-2131..."
-            class="flex-1 min-w-[160px] px-3 py-2 rounded-xl bg-white border border-neutral-300 focus:border-orange-500 text-neutral-900 font-mono text-xs sm:text-sm font-extrabold uppercase tracking-wider focus:outline-none transition"
+            class="flex-1 min-w-[160px] px-3 py-2 rounded-xl bg-white border border-neutral-300 focus:border-emerald-600 text-neutral-900 font-mono text-xs sm:text-sm font-extrabold uppercase tracking-wider focus:outline-none transition"
           />
-          <button id="btnApplyAvatarIconCode" type="button" class="px-3.5 py-2 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white text-xs font-bold whitespace-nowrap transition shadow-xs">
+          <button id="btnApplyAvatarIconCode" type="button" class="px-3.5 py-2 rounded-xl bg-neutral-900 hover:bg-emerald-600 text-white text-xs font-bold whitespace-nowrap transition shadow-xs">
             ✨ ใช้รหัสนี้
           </button>
           <button id="btnCopyAvatarIconCode" type="button" class="px-3 py-2 rounded-xl bg-white hover:bg-neutral-200 text-neutral-900 border border-neutral-300 text-xs font-bold whitespace-nowrap transition">
@@ -3573,7 +3573,7 @@
         return {
           label: 'โพสต์',
           cls: 'bg-neutral-900 text-white shadow-sm',
-          bar: 'bg-gradient-to-r from-neutral-900 via-orange-500 to-neutral-700'
+          bar: 'bg-gradient-to-r from-neutral-900 via-emerald-600 to-neutral-700'
         };
       }
 
@@ -4413,8 +4413,8 @@
         }
         if (ext === 'PPT' || ext === 'PPTX' || ext === 'KEY') {
           return {
-            bg: 'bg-orange-500 text-white',
-            tint: 'bg-orange-50 border-orange-200 text-orange-700',
+            bg: 'bg-emerald-600 text-white',
+            tint: 'bg-emerald-50 border-emerald-200 text-emerald-800',
             typeLabel: 'สไลด์นำเสนอ PowerPoint',
             svg: '<svg class="w-4 h-4 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 20h8M12 16v4"/></svg>'
           };
@@ -4622,10 +4622,10 @@
                   <div class="w-full h-auto min-h-[260px] rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 text-white p-5 sm:p-8 shadow-xl border border-neutral-700 flex flex-col justify-between">
                     <div>
                       <div class="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-white/15">
-                        <span class="px-2.5 py-0.5 rounded-lg bg-orange-500 text-white text-[11px] font-extrabold">SLIDE ${i + 1} / ${slideFiles.length}</span>
+                        <span class="px-2.5 py-0.5 rounded-lg bg-emerald-600 text-white text-[11px] font-extrabold">SLIDE ${i + 1} / ${slideFiles.length}</span>
                         <span class="text-[11px] text-neutral-400 truncate">${escapeHtml(post.fileName || 'Presentation.pptx')}</span>
                       </div>
-                      <h4 class="text-base sm:text-xl font-bold text-orange-400 leading-snug mb-3">${escapeHtml(title)}</h4>
+                      <h4 class="text-base sm:text-xl font-bold text-emerald-500 leading-snug mb-3">${escapeHtml(title)}</h4>
                       ${
                         bullets.length > 0
                           ? `<ul class="space-y-1.5 text-xs sm:text-sm text-neutral-100 list-disc pl-5 leading-relaxed">
@@ -4814,7 +4814,7 @@
                 <div class="text-xs text-neutral-500 mb-4">${escapeHtml(style.typeLabel)} ${post.fileSize ? '• ' + formatUniversalFileSize(post.fileSize) : ''}</div>
                 <div class="flex items-center justify-center gap-2">
                   <a href="${escapeHtml(blobUrl)}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-900 text-xs font-bold transition">เปิดไฟล์ในแท็บใหม่ ↗</a>
-                  <a href="${escapeHtml(blobUrl)}" download="${escapeHtml(post.fileName || 'file')}" class="px-4 py-2 rounded-xl bg-orange-500 hover:bg-neutral-900 text-white text-xs font-bold transition">ดาวน์โหลดไฟล์</a>
+                  <a href="${escapeHtml(blobUrl)}" download="${escapeHtml(post.fileName || 'file')}" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-neutral-900 text-white text-xs font-bold transition">ดาวน์โหลดไฟล์</a>
                 </div>
               </div>
             `
@@ -4887,22 +4887,22 @@
               </span>
 
               <!-- Top Right Auto-Loop Toggle -->
-              <button type="button" class="btn-carousel-autoloop absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-black/70 hover:bg-orange-500 text-white text-[11px] font-bold backdrop-blur-xs transition">
+              <button type="button" class="btn-carousel-autoloop absolute top-3 right-3 px-2.5 py-1 rounded-xl bg-black/70 hover:bg-emerald-600 text-white text-[11px] font-bold backdrop-blur-xs transition">
                 ↻ ไหลวน
               </button>
 
               <!-- Prev & Next Arrows -->
-              <button type="button" class="btn-carousel-prev absolute left-2.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/65 hover:bg-orange-500 text-white font-bold text-lg flex items-center justify-center shadow-md transition" title="รูปก่อนหน้า">
+              <button type="button" class="btn-carousel-prev absolute left-2.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/65 hover:bg-emerald-600 text-white font-bold text-lg flex items-center justify-center shadow-md transition" title="รูปก่อนหน้า">
                 ‹
               </button>
-              <button type="button" class="btn-carousel-next absolute right-2.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/65 hover:bg-orange-500 text-white font-bold text-lg flex items-center justify-center shadow-md transition" title="รูปถัดไป">
+              <button type="button" class="btn-carousel-next absolute right-2.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/65 hover:bg-emerald-600 text-white font-bold text-lg flex items-center justify-center shadow-md transition" title="รูปถัดไป">
                 ›
               </button>
             </div>
 
             <!-- Bottom Thumbnails & Dots Bar -->
             <div class="px-3 py-2 bg-neutral-900 border-t border-neutral-800 flex items-center justify-center gap-1.5 overflow-x-auto">
-              ${imgs.map((_, i) => `<button type="button" data-slide-to="${i}" class="carousel-dot-btn h-2 rounded-full transition-all ${i === 0 ? 'w-5 bg-orange-500' : 'w-2 bg-neutral-600 hover:bg-neutral-400'}"></button>`).join('')}
+              ${imgs.map((_, i) => `<button type="button" data-slide-to="${i}" class="carousel-dot-btn h-2 rounded-full transition-all ${i === 0 ? 'w-5 bg-emerald-600' : 'w-2 bg-neutral-600 hover:bg-neutral-400'}"></button>`).join('')}
             </div>
           </div>
         `;
@@ -4947,7 +4947,7 @@
           }
           if (counterEl) counterEl.textContent = `${idx + 1} / ${total}`;
           dotBtns.forEach((d, di) => {
-            d.className = `carousel-dot-btn h-2 rounded-full transition-all ${di === idx ? 'w-5 bg-orange-500' : 'w-2 bg-neutral-600 hover:bg-neutral-400'}`;
+            d.className = `carousel-dot-btn h-2 rounded-full transition-all ${di === idx ? 'w-5 bg-emerald-600' : 'w-2 bg-neutral-600 hover:bg-neutral-400'}`;
           });
         };
 
@@ -4971,7 +4971,7 @@
         if (autoBtn) {
           const syncAutoLabel = () => {
             autoBtn.textContent = stateObj.autoLoop ? '↻ ไหลวน' : '⏸ หยุด';
-            autoBtn.className = `btn-carousel-autoloop absolute top-3 right-3 px-2.5 py-1 rounded-xl ${stateObj.autoLoop ? 'bg-orange-500 text-white' : 'bg-black/70 text-neutral-300'} text-[11px] font-bold backdrop-blur-xs transition`;
+            autoBtn.className = `btn-carousel-autoloop absolute top-3 right-3 px-2.5 py-1 rounded-xl ${stateObj.autoLoop ? 'bg-emerald-600 text-white' : 'bg-black/70 text-neutral-300'} text-[11px] font-bold backdrop-blur-xs transition`;
           };
           syncAutoLabel();
           autoBtn.addEventListener('click', e => {
@@ -5141,14 +5141,14 @@
                     ? `<button type="button" class="btn-toggle-doc-preview px-2.5 py-1.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-900 border border-neutral-300 text-xs font-bold transition">
                          ซ่อนตัวอย่าง
                        </button>
-                       <button type="button" class="btn-open-fullscreen-doc px-2.5 py-1.5 rounded-xl bg-white hover:bg-orange-50 text-orange-600 border border-orange-200 text-xs font-bold transition" title="เปิดดูไฟล์แบบเต็มจอ">
+                       <button type="button" class="btn-open-fullscreen-doc px-2.5 py-1.5 rounded-xl bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold transition" title="เปิดดูไฟล์แบบเต็มจอ">
                          ⛶ เปิดเต็มจอ
                        </button>`
                     : ''
                 }
                 ${
                   blobUrl
-                    ? `<a href="${escapeHtml(blobUrl)}" download="${escapeHtml(fName)}" class="btn-download-universal-file px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white text-xs font-bold flex items-center gap-1 transition">
+                    ? `<a href="${escapeHtml(blobUrl)}" download="${escapeHtml(fName)}" class="btn-download-universal-file px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-emerald-600 text-white text-xs font-bold flex items-center gap-1 transition">
                          <span>ดาวน์โหลด</span>
                        </a>`
                     : `<span class="px-2.5 py-1 rounded-xl bg-neutral-200 text-neutral-600 text-[11px] font-semibold">กำลังซิงค์ไฟล์...</span>`
@@ -5165,7 +5165,7 @@
                          <span class="doc-inline-page-label px-2.5 py-1 rounded-lg bg-white border border-neutral-300 font-bold text-neutral-800">หน้า 1 / 1</span>
                          <button type="button" class="btn-doc-inline-next px-2.5 py-1 rounded-lg bg-white hover:bg-neutral-900 text-neutral-900 hover:text-white border border-neutral-300 font-bold transition">หน้าถัดไป ›</button>
                        </div>
-                       <button type="button" class="btn-doc-inline-auto px-2.5 py-1 rounded-lg bg-white hover:bg-orange-500 text-neutral-800 hover:text-white border border-neutral-300 font-bold transition">
+                       <button type="button" class="btn-doc-inline-auto px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-600 text-neutral-800 hover:text-white border border-neutral-300 font-bold transition">
                          ↻ ไหลวน
                        </button>
                      </div>
@@ -5258,11 +5258,11 @@
               clearInterval(autoFlipTimer);
               autoFlipTimer = null;
               autoBtn.textContent = '↻ ไหลวน';
-              autoBtn.className = 'btn-doc-inline-auto px-2.5 py-1 rounded-lg bg-white hover:bg-orange-500 text-neutral-800 hover:text-white border border-neutral-300 font-bold transition';
+              autoBtn.className = 'btn-doc-inline-auto px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-600 text-neutral-800 hover:text-white border border-neutral-300 font-bold transition';
             } else {
               autoFlipTimer = setInterval(() => showDocPage(curPage + 1), 3500);
               autoBtn.textContent = '⏸ หยุดไหลวน';
-              autoBtn.className = 'btn-doc-inline-auto px-2.5 py-1 rounded-lg bg-orange-500 text-white border border-orange-500 font-bold transition';
+              autoBtn.className = 'btn-doc-inline-auto px-2.5 py-1 rounded-lg bg-emerald-600 text-white border border-emerald-600 font-bold transition';
             }
           });
         }
@@ -5326,7 +5326,7 @@
         return `
           ${
             cmts.length > 3
-              ? `<button type="button" class="btn-open-comments text-[11px] font-bold text-orange-600 hover:underline px-1 flex items-center gap-1 transition">
+              ? `<button type="button" class="btn-open-comments text-[11px] font-bold text-emerald-700 hover:underline px-1 flex items-center gap-1 transition">
                    <span>ดูความคิดเห็นทั้งหมด ${cmts.length} รายการ...</span>
                  </button>`
               : ''
@@ -5338,12 +5338,12 @@
               <div class="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center shrink-0 mt-0.5 ring-1 ring-black/10 shadow-xs bg-white">
                 ${buildCuteCartoonAvatarSvg(c.avatarSeed || (c.nickname + '#' + c.id))}
               </div>
-              <div class="flex-1 min-w-0 px-3 py-1.5 rounded-2xl bg-neutral-100 group-hover/cmt:bg-orange-50/60 border border-neutral-200 group-hover/cmt:border-orange-200 text-xs transition">
+              <div class="flex-1 min-w-0 px-3 py-1.5 rounded-2xl bg-neutral-100 group-hover/cmt:bg-emerald-50/60 border border-neutral-200 group-hover/cmt:border-emerald-200 text-xs transition">
                 <div class="flex items-center justify-between gap-1.5">
                   <span class="font-bold text-neutral-900 truncate">${escapeHtml(c.nickname)}</span>
                   <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-[9px] text-neutral-400">${escapeHtml(formatPostFullDateTime(c))}</span>
-                    <button type="button" data-reply-nick="${escapeHtml(c.nickname)}" class="btn-reply-inline-cmt text-[10px] font-bold text-orange-600 hover:underline" title="ตอบกลับเพื่อน">ตอบกลับ</button>
+                    <button type="button" data-reply-nick="${escapeHtml(c.nickname)}" class="btn-reply-inline-cmt text-[10px] font-bold text-emerald-700 hover:underline" title="ตอบกลับเพื่อน">ตอบกลับ</button>
                   </div>
                 </div>
                 <div class="text-neutral-700 break-words clamp-comment-text">${formatTextWithLinks(c.text)}</div>
@@ -5557,7 +5557,7 @@
             if (pinBadgeEl) pinBadgeEl.classList.toggle('hidden', !post.pinned);
             const pinBtnEl = card.querySelector('.btn-pin-note');
             if (pinBtnEl) {
-              pinBtnEl.className = `btn-pin-note px-2 py-1 rounded-full ${post.pinned ? 'bg-orange-500 text-white' : 'bg-neutral-100 hover:bg-neutral-900 text-neutral-700 hover:text-white'} text-[11px] font-bold flex items-center gap-0.5 transition`;
+              pinBtnEl.className = `btn-pin-note px-2 py-1 rounded-full ${post.pinned ? 'bg-emerald-600 text-white' : 'bg-neutral-100 hover:bg-neutral-900 text-neutral-700 hover:text-white'} text-[11px] font-bold flex items-center gap-0.5 transition`;
             }
             const cListWrap = card.querySelector('.card-comments-list-wrap');
             if (cListWrap) {
@@ -5604,7 +5604,7 @@
             card.className = `note-card w-full rounded-[28px] border ${colorCls} pt-5 pb-4 px-5 flex flex-col`;
 
             card.innerHTML = `
-              <div class="absolute top-0 left-0 right-0 h-1.5 ${teamBadge.bar || 'bg-orange-500'}"></div>
+              <div class="absolute top-0 left-0 right-0 h-1.5 ${teamBadge.bar || 'bg-emerald-600'}"></div>
 
               <!-- Author Header with Full Date (วัน เดือน ปี) -->
               <div class="flex items-start justify-between gap-2 mb-3.5">
@@ -5613,14 +5613,14 @@
                     <div class="w-11 h-11 rounded-full overflow-hidden flex items-center justify-center ring-2 ring-white shadow-md bg-white">
                       ${buildCuteCartoonAvatarSvg(post.avatarSeed || (post.nickname + '#' + post.id))}
                     </div>
-                    <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-orange-500 ring-2 ring-white"></span>
+                    <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-600 ring-2 ring-white"></span>
                   </div>
                   <div class="min-w-0">
                     <div class="flex items-center gap-1.5 flex-wrap">
                       <span class="font-bold text-sm sm:text-[15px] text-neutral-900 truncate tracking-tight">${escapeHtml(post.nickname)}</span>
                       <span class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 border border-neutral-200 text-neutral-700">${escapeHtml(roleStr)}</span>
-                      <span class="px-2 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-[10px] leading-none">${starsStr}</span>
-                      <span class="card-pinned-badge ${post.pinned ? '' : 'hidden'} px-2 py-0.5 rounded-full bg-orange-500 text-white text-[10px] font-bold">📌 ปักหมุด</span>
+                      <span class="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] leading-none">${starsStr}</span>
+                      <span class="card-pinned-badge ${post.pinned ? '' : 'hidden'} px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold">📌 ปักหมุด</span>
                     </div>
                     <div class="flex items-center gap-1.5 mt-1 text-[11px] text-neutral-500 font-medium">
                       <span>${escapeHtml(fullDateTimeStr)}</span>
@@ -5629,7 +5629,7 @@
                 </div>
 
                 <div class="flex items-center gap-1 shrink-0">
-                  <button type="button" class="btn-pin-note px-2 py-1 rounded-full ${post.pinned ? 'bg-orange-500 text-white' : 'bg-neutral-100 hover:bg-neutral-900 text-neutral-700 hover:text-white'} text-[11px] font-bold flex items-center gap-0.5 transition" title="ปักหมุดไว้บนสุด (ใช้รหัสผ่าน)">
+                  <button type="button" class="btn-pin-note px-2 py-1 rounded-full ${post.pinned ? 'bg-emerald-600 text-white' : 'bg-neutral-100 hover:bg-neutral-900 text-neutral-700 hover:text-white'} text-[11px] font-bold flex items-center gap-0.5 transition" title="ปักหมุดไว้บนสุด (ใช้รหัสผ่าน)">
                     <span>📌</span>
                   </button>
                   ${
@@ -5680,15 +5680,15 @@
                          </div>
                          <div class="px-4 py-2 bg-neutral-900 text-white flex items-center justify-between text-xs">
                            <span class="text-neutral-300 font-medium truncate">▶️ คลิกเล่นวิดีโอ YouTube</span>
-                           <a href="https://www.youtube.com/watch?v=${escapeHtml(ytId)}" target="_blank" rel="noopener noreferrer" class="text-orange-400 hover:underline font-bold shrink-0">ดูบน YouTube ↗</a>
+                           <a href="https://www.youtube.com/watch?v=${escapeHtml(ytId)}" target="_blank" rel="noopener noreferrer" class="text-emerald-500 hover:underline font-bold shrink-0">ดูบน YouTube ↗</a>
                          </div>
                        </div>`
                     : ''
                 }
                 ${
                   post.externalUrl && !ytId
-                    ? `<a href="${escapeHtml(normalizeWebUrl(post.externalUrl))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="mb-3 p-3 rounded-2xl bg-white hover:bg-neutral-50 border border-neutral-200 flex items-center gap-2.5 text-xs font-semibold text-orange-600 transition">
-                         <span class="w-7 h-7 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">🔗</span>
+                    ? `<a href="${escapeHtml(normalizeWebUrl(post.externalUrl))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="mb-3 p-3 rounded-2xl bg-white hover:bg-neutral-50 border border-neutral-200 flex items-center gap-2.5 text-xs font-semibold text-emerald-700 transition">
+                         <span class="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">🔗</span>
                          <span class="truncate flex-1">${escapeHtml(post.externalUrl)}</span>
                          <span class="text-[10px] text-neutral-400 shrink-0">เปิดลิงก์ ↗</span>
                        </a>`
@@ -5702,17 +5702,17 @@
                   ? `<div class="mb-3 rounded-2xl overflow-hidden border-2 border-neutral-800 bg-neutral-950 text-white shadow-sm" onclick="event.stopPropagation()">
                        <div class="px-3 py-1.5 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between gap-1.5">
                          <div class="flex items-center gap-1.5 min-w-0">
-                           <span class="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span>
-                           <span class="text-[11px] font-mono text-orange-300 truncate">${escapeHtml(webRunUrl)}</span>
+                           <span class="w-2 h-2 rounded-full bg-emerald-600 shrink-0"></span>
+                           <span class="text-[11px] font-mono text-emerald-400 truncate">${escapeHtml(webRunUrl)}</span>
                          </div>
                          <div class="flex items-center gap-1 shrink-0">
-                           <button type="button" class="btn-card-proxy px-2 py-0.5 rounded bg-neutral-800 hover:bg-orange-500 text-neutral-200 hover:text-white text-[10px] font-bold transition" title="แก้หน้าจอขาวด้วย Proxy Render">
+                           <button type="button" class="btn-card-proxy px-2 py-0.5 rounded bg-neutral-800 hover:bg-emerald-600 text-neutral-200 hover:text-white text-[10px] font-bold transition" title="แก้หน้าจอขาวด้วย Proxy Render">
                              🛡️ แก้จอขาว
                            </button>
                            <button type="button" class="btn-card-reload-web px-2 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[10px] font-bold transition" title="รีโหลดหน้าเว็บ">
                              🔄
                            </button>
-                           <button type="button" class="btn-open-comments px-2 py-0.5 rounded bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold transition" title="ขยายเต็มจอ">
+                           <button type="button" class="btn-open-comments px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold transition" title="ขยายเต็มจอ">
                              ⛶
                            </button>
                          </div>
@@ -5723,8 +5723,8 @@
                        </div>
 
                        <div class="px-3 py-1.5 bg-neutral-900 border-t border-neutral-800 flex items-center justify-between gap-2 text-[11px]">
-                         <span class="card-auto-status text-orange-400 font-semibold truncate">⚡ ${escapeHtml(webAutoCmd)}</span>
-                         <span class="px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 text-[9px] font-bold shrink-0">AUTO RUN</span>
+                         <span class="card-auto-status text-emerald-500 font-semibold truncate">⚡ ${escapeHtml(webAutoCmd)}</span>
+                         <span class="px-1.5 py-0.5 rounded bg-emerald-600/20 text-emerald-400 text-[9px] font-bold shrink-0">AUTO RUN</span>
                        </div>
                      </div>`
                   : ''
@@ -5749,7 +5749,7 @@
 
                 <form class="form-card-inline-comment flex items-center gap-1.5 pt-1">
                   <input type="text" class="input-card-inline-comment flex-1 px-3.5 py-1.5 rounded-full bg-neutral-100 focus:bg-white border border-neutral-200 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-neutral-900 transition" placeholder="เขียนความคิดเห็น..." />
-                  <button type="submit" class="px-3.5 py-1.5 rounded-full bg-neutral-900 hover:bg-orange-500 text-white text-[11px] font-bold shrink-0 transition">
+                  <button type="submit" class="px-3.5 py-1.5 rounded-full bg-neutral-900 hover:bg-emerald-600 text-white text-[11px] font-bold shrink-0 transition">
                     ส่ง
                   </button>
                 </form>
@@ -6076,12 +6076,12 @@
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="font-bold text-xs text-slate-900">${escapeHtml(comment.nickname)}</span>
                   <span class="text-[10px] text-neutral-400">${escapeHtml(formatPostFullDateTime(comment))}</span>
-                  <button type="button" class="btn-reply-detail-comment text-[10px] font-bold text-orange-600 hover:underline">ตอบกลับ</button>
+                  <button type="button" class="btn-reply-detail-comment text-[10px] font-bold text-emerald-700 hover:underline">ตอบกลับ</button>
                 </div>
                 <div class="text-xs sm:text-sm text-slate-700 mt-0.5 break-words leading-relaxed select-text">${formatTextWithLinks(comment.text)}</div>
               </div>
             </div>
-            <button type="button" class="btn-delete-comment p-1 rounded-lg text-slate-300 hover:text-orange-600 transition shrink-0" title="ลบถาวร">✕</button>
+            <button type="button" class="btn-delete-comment p-1 rounded-lg text-slate-300 hover:text-emerald-700 transition shrink-0" title="ลบถาวร">✕</button>
           `;
           const replyDetailBtn = item.querySelector('.btn-reply-detail-comment');
           if (replyDetailBtn) {
@@ -6162,7 +6162,7 @@
               return `
                 <div class="relative group/thumb shrink-0">
                   <img src="${escapeHtml(bUrl)}" class="h-9 w-11 object-cover rounded-lg border border-neutral-300 bg-white" alt="รูปที่ ${idx + 1}" />
-                  <button type="button" data-remove-img-idx="${idx}" class="btn-remove-single-pending-img absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-neutral-900 hover:bg-orange-600 text-white text-[9px] font-bold flex items-center justify-center shadow">✕</button>
+                  <button type="button" data-remove-img-idx="${idx}" class="btn-remove-single-pending-img absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-neutral-900 hover:bg-emerald-700 text-white text-[9px] font-bold flex items-center justify-center shadow">✕</button>
                 </div>
               `;
             }).join('');
@@ -6364,7 +6364,7 @@
           }
           wrap.classList.remove('hidden');
           wrap.innerHTML = `<span class="text-[11px] font-bold text-neutral-500">เข้าด่วน:</span>` + rooms.map(r =>
-            `<button type="button" data-quick-room="${escapeHtml(r)}" class="btn-quick-login-room px-2.5 py-1 rounded-lg bg-neutral-200 hover:bg-orange-500 text-neutral-900 hover:text-white text-xs font-bold transition shadow-2xs">Board: ${escapeHtml(r)}</button>`
+            `<button type="button" data-quick-room="${escapeHtml(r)}" class="btn-quick-login-room px-2.5 py-1 rounded-lg bg-neutral-200 hover:bg-emerald-600 text-neutral-900 hover:text-white text-xs font-bold transition shadow-2xs">Board: ${escapeHtml(r)}</button>`
           ).join('');
           wrap.querySelectorAll('.btn-quick-login-room').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -6438,13 +6438,13 @@
         document.getElementById('btnOutBoard').addEventListener('click', openLoginSwitchOverlay);
         const hdrBoardPill = document.getElementById('headerBoardCodePill');
         if (hdrBoardPill) {
-          hdrBoardPill.classList.add('cursor-pointer', 'hover:border-orange-500', 'transition');
+          hdrBoardPill.classList.add('cursor-pointer', 'hover:border-emerald-600', 'transition');
           hdrBoardPill.title = 'คลิกเพื่อสลับรหัส Board';
           hdrBoardPill.addEventListener('click', openLoginSwitchOverlay);
         }
         const hdrUserPill = document.getElementById('headerUserNamePill');
         if (hdrUserPill) {
-          hdrUserPill.classList.add('cursor-pointer', 'hover:border-orange-500', 'transition');
+          hdrUserPill.classList.add('cursor-pointer', 'hover:border-emerald-600', 'transition');
           hdrUserPill.title = 'คลิกเพื่อเปลี่ยนชื่อหรือสลับ Board';
           hdrUserPill.addEventListener('click', openLoginSwitchOverlay);
         }
@@ -6620,7 +6620,7 @@
               });
               const isSelected = activeTraits.speciesIdx === item.idx;
               return `
-                <button type="button" data-preset-seed="${presetCode}" data-icon-name="${item.name}" class="btn-pick-avatar-item group p-2 rounded-2xl border ${isSelected ? 'border-orange-500 bg-orange-50/70 ring-2 ring-orange-400' : 'border-neutral-200 hover:border-orange-400 bg-neutral-50/70 hover:bg-white'} flex flex-col items-center gap-1 transition shadow-2xs">
+                <button type="button" data-preset-seed="${presetCode}" data-icon-name="${item.name}" class="btn-pick-avatar-item group p-2 rounded-2xl border ${isSelected ? 'border-emerald-600 bg-emerald-50/70 ring-2 ring-emerald-500' : 'border-neutral-200 hover:border-emerald-500 bg-neutral-50/70 hover:bg-white'} flex flex-col items-center gap-1 transition shadow-2xs">
                   <div class="w-12 h-12 rounded-full overflow-hidden shadow-xs group-hover:scale-105 transition">${buildCuteCartoonAvatarSvg(presetCode)}</div>
                   <span class="text-[11px] font-bold text-neutral-800 truncate w-full text-center">${item.name}</span>
                   <span class="text-[9px] font-mono font-bold text-neutral-400 truncate w-full text-center">${presetCode}</span>
@@ -7513,7 +7513,7 @@
               btnSortLatest.className = 'h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-neutral-900 text-white border border-neutral-900 text-xs font-bold inline-flex items-center justify-center whitespace-nowrap transition';
               btnSortPopular.className = 'h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-300 text-xs font-bold inline-flex items-center justify-center whitespace-nowrap transition';
             } else {
-              btnSortPopular.className = 'h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-orange-500 text-white border border-orange-500 text-xs font-bold inline-flex items-center justify-center whitespace-nowrap transition';
+              btnSortPopular.className = 'h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-emerald-600 text-white border border-emerald-600 text-xs font-bold inline-flex items-center justify-center whitespace-nowrap transition';
               btnSortLatest.className = 'h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-300 text-xs font-bold inline-flex items-center justify-center whitespace-nowrap transition';
             }
           }
