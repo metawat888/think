@@ -257,6 +257,9 @@
       animation: autoScanLine 5s ease-in-out infinite;
     }
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="h-screen overflow-hidden flex flex-col select-none bg-white">
 
@@ -404,7 +407,11 @@
           <span id="headerUserNameLabel" class="truncate block">ผู้ใช้งาน</span>
         </div>
 
-        <button id="btnOutBoard" type="button" class="h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white border border-neutral-900 hover:border-orange-500 text-xs font-bold inline-flex items-center justify-center gap-1 shrink-0 transition" title="ออกจาก Board">
+        
+        <button id="btnExportPDF" type="button" class="h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-orange-100 hover:bg-orange-500 text-orange-700 hover:text-white border border-orange-300 hover:border-orange-500 text-xs font-bold inline-flex items-center justify-center gap-1 shrink-0 transition" title="บันทึกบอร์ดเป็น PDF">
+          <span>📑 Export PDF</span>
+        </button>
+<button id="btnOutBoard" type="button" class="h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-neutral-900 hover:bg-orange-500 text-white border border-neutral-900 hover:border-orange-500 text-xs font-bold inline-flex items-center justify-center gap-1 shrink-0 transition" title="ออกจาก Board">
           <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
           </svg>
@@ -479,7 +486,36 @@
             </div>
 
             <!-- Live Smart Auto-Detection & Universal File Preview Bar -->
-            <div id="inlineAutoDetectBar" class="hidden pt-2 border-t border-neutral-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+            
+            <!-- EXTRA TOOLS TOOLBAR -->
+            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-neutral-200">
+              <button type="button" id="btnComposerDraw" class="px-2.5 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold flex items-center gap-1 transition">
+                <span>🎨</span> วาดรูป
+              </button>
+              <button type="button" id="btnComposerPoll" class="px-2.5 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold flex items-center gap-1 transition">
+                <span>📊</span> สร้างโพล
+              </button>
+              <select id="composerTagSelect" class="px-2.5 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold border-none focus:ring-0 cursor-pointer">
+                <option value="">🏷️ ไม่ระบุแท็ก</option>
+                <option value="คำถาม">#คำถาม</option>
+                <option value="ส่งงาน">#ส่งงาน</option>
+                <option value="สรุปความรู้">#สรุปความรู้</option>
+                <option value="ทั่วไป">#ทั่วไป</option>
+              </select>
+            </div>
+
+            <!-- POLL UI (Hidden) -->
+            <div id="composerPollUI" class="hidden flex-col gap-2 pt-2 border-t border-neutral-200">
+               <div class="text-xs font-bold text-neutral-600">ตั้งคำถามโพล:</div>
+               <input type="text" id="pollQuestionInput" placeholder="คำถาม..." class="w-full px-3 py-2 rounded-xl bg-white border border-neutral-300 text-xs font-semibold text-neutral-900 focus:outline-none focus:border-orange-500" />
+               <div id="pollOptionsContainer" class="flex flex-col gap-2 mt-1">
+                 <input type="text" class="poll-option-input w-full px-3 py-1.5 rounded-xl bg-neutral-50 border border-neutral-200 text-xs text-neutral-900" placeholder="ตัวเลือกที่ 1..." />
+                 <input type="text" class="poll-option-input w-full px-3 py-1.5 rounded-xl bg-neutral-50 border border-neutral-200 text-xs text-neutral-900" placeholder="ตัวเลือกที่ 2..." />
+               </div>
+               <button type="button" id="btnAddPollOption" class="text-[11px] font-bold text-orange-600 text-left mt-1">+ เพิ่มตัวเลือก</button>
+               <button type="button" id="btnCancelPoll" class="text-[11px] font-bold text-rose-500 text-left mt-1">✕ ยกเลิกโพล</button>
+            </div>
+<div id="inlineAutoDetectBar" class="hidden pt-2 border-t border-neutral-200 flex flex-wrap items-center justify-between gap-2 text-xs">
               <div id="inlineAutoDetectBadges" class="flex flex-wrap items-center gap-2"></div>
               <div class="flex flex-wrap items-center gap-2">
                 <div id="inlinePastedImagePreviewWrap" class="hidden flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded-xl px-2.5 py-1.5 max-w-full overflow-x-auto">
@@ -529,7 +565,17 @@
 
 
     <!-- Auto-Arranged Responsive Social Feed Grid -->
-    <div id="notesLayer" class="relative w-full min-h-[calc(100vh-230px)] px-3 sm:px-6 pt-3 pb-28 notes-grid-mode"></div>
+    
+    <!-- TAG FILTERS -->
+    <div id="filterTagBar" class="w-full px-3 sm:px-6 pt-3 pb-1 flex items-center gap-2 overflow-x-auto no-scrollbar hidden">
+      <span class="text-xs font-bold text-neutral-500 shrink-0">🏷️ กรองหมวดหมู่:</span>
+      <button type="button" data-filter-tag="all" class="btn-filter-tag px-3 py-1.5 rounded-full bg-orange-500 text-white text-xs font-bold shrink-0 transition shadow-sm">ทั้งหมด</button>
+      <button type="button" data-filter-tag="คำถาม" class="btn-filter-tag px-3 py-1.5 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold shrink-0 transition">#คำถาม</button>
+      <button type="button" data-filter-tag="ส่งงาน" class="btn-filter-tag px-3 py-1.5 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold shrink-0 transition">#ส่งงาน</button>
+      <button type="button" data-filter-tag="สรุปความรู้" class="btn-filter-tag px-3 py-1.5 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold shrink-0 transition">#สรุปความรู้</button>
+      <button type="button" data-filter-tag="ทั่วไป" class="btn-filter-tag px-3 py-1.5 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold shrink-0 transition">#ทั่วไป</button>
+    </div>
+<div id="notesLayer" class="relative w-full min-h-[calc(100vh-230px)] px-3 sm:px-6 pt-3 pb-28 notes-grid-mode"></div>
   </main>
 
   <!-- MODAL 1: LUXURY FACEBOOK-STYLE COMPOSER MODAL -->
@@ -941,7 +987,33 @@
     </div>
   </div>
 
-  <div id="toastArea" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+  
+  <!-- MODAL: CANVAS DRAWING -->
+  <div id="modalDrawCanvas" class="fixed inset-0 z-50 hidden bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-white rounded-3xl w-full max-w-3xl flex flex-col shadow-2xl overflow-hidden animate-pop h-[80vh]">
+      <div class="px-4 py-3 bg-neutral-100 border-b border-neutral-200 flex justify-between items-center shrink-0">
+        <div class="font-bold text-neutral-900 text-sm">🎨 กระดานวาดรูป</div>
+        <div class="flex gap-2">
+          <button id="btnDrawClear" type="button" class="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-bold rounded-xl transition">ล้างกระดาน</button>
+          <button id="btnDrawCancel" type="button" class="px-3 py-1.5 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 text-xs font-bold rounded-xl transition">ยกเลิก</button>
+          <button id="btnDrawSave" type="button" class="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition shadow-md">✅ ใช้รูปนี้</button>
+        </div>
+      </div>
+      <div class="p-2 bg-neutral-50 flex items-center justify-center gap-3 border-b border-neutral-200 shrink-0">
+        <button class="draw-color-btn w-7 h-7 rounded-full bg-black ring-2 ring-orange-500 ring-offset-1" data-color="#000000"></button>
+        <button class="draw-color-btn w-7 h-7 rounded-full bg-red-500 border border-neutral-300" data-color="#EF4444"></button>
+        <button class="draw-color-btn w-7 h-7 rounded-full bg-blue-500 border border-neutral-300" data-color="#3B82F6"></button>
+        <button class="draw-color-btn w-7 h-7 rounded-full bg-green-500 border border-neutral-300" data-color="#22C55E"></button>
+        <button class="draw-color-btn w-7 h-7 rounded-full bg-yellow-400 border border-neutral-300" data-color="#FACC15"></button>
+        <div class="w-px h-6 bg-neutral-300 mx-1"></div>
+        <button id="btnDrawEraser" type="button" class="w-7 h-7 rounded-full bg-white border-2 border-neutral-300 flex items-center justify-center text-[12px] shadow-sm" title="ยางลบ">⬜</button>
+      </div>
+      <div id="drawCanvasContainer" class="relative w-full flex-1 bg-white cursor-crosshair touch-none overflow-hidden">
+        <canvas id="drawingCanvas" class="absolute top-0 left-0 w-full h-full"></canvas>
+      </div>
+    </div>
+  </div>
+<div id="toastArea" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <script>
     (function () {
@@ -3436,6 +3508,20 @@
           document.body.appendChild(p);
           setTimeout(() => p.remove(), 820);
         }
+
+        // Confetti Effect
+        try {
+          const btnPostId = btnEl.closest('.note-card').dataset.postId;
+          const targetPost = state.posts.find(p => p.id === btnPostId);
+          if (targetPost) {
+             const totalReactions = computeTotalPostReactions(targetPost);
+             if (totalReactions >= 10 && !targetPost.confettiFired) {
+                targetPost.confettiFired = true;
+                confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, zIndex: 9999 });
+             }
+          }
+        } catch(e) {}
+
       }
 
       function showToast(msg) {
@@ -3469,7 +3555,7 @@
           const buildInlineThumb = (img) => {
             try {
               const tc = document.createElement('canvas');
-              const tw = Math.min(160, img.width || 160);
+              const tw = Math.min(480, img.width || 480);
               const th = Math.max(1, Math.round(((img.height || 160) * tw) / (img.width || 160)));
               tc.width = tw;
               tc.height = th;
@@ -3479,11 +3565,11 @@
               tctx.fillStyle = '#ffffff';
               tctx.fillRect(0, 0, tw, th);
               tctx.drawImage(img, 0, 0, tw, th);
-              let inlineUrl = tc.toDataURL('image/webp', 0.52);
-              if (!inlineUrl.startsWith('data:image/webp') || inlineUrl.length > 2400) {
-                inlineUrl = tc.toDataURL('image/jpeg', 0.45);
+              let inlineUrl = tc.toDataURL('image/webp', 0.65);
+              if (!inlineUrl.startsWith('data:image/webp') || inlineUrl.length > 12000) {
+                inlineUrl = tc.toDataURL('image/jpeg', 0.55);
               }
-              window._lastInlinePreview = inlineUrl.length <= 2500 ? inlineUrl : '';
+              window._lastInlinePreview = inlineUrl.length <= 15000 ? inlineUrl : '';
               tc.width = 1;
               tc.height = 1;
             } catch (e) {}
@@ -5427,6 +5513,7 @@
 
         const searchInputEl = document.getElementById('inputSmartSearch');
         const queryStr = searchInputEl ? (searchInputEl.value || '').trim().toLowerCase() : '';
+       const filterTag = typeof activeFilterTag !== 'undefined' ? activeFilterTag : 'all';
         const sortMode = window._thinkFeedSortMode || 'latest';
 
         const filteredPosts = validPosts.filter(p => {
@@ -5438,7 +5525,12 @@
             p.webRunUrl || '',
             ...(Array.isArray(p.comments) ? p.comments.map(c => (c.nickname || '') + ' ' + (c.text || '')) : [])
           ].join(' ').toLowerCase();
-          return hay.includes(queryStr);
+          
+    if (filterTag !== 'all') {
+       if (p.tag !== filterTag) return false;
+    }
+    return hay.includes(queryStr);
+    
         });
 
         const sortedPosts = [...filteredPosts].sort((a, b) => {
@@ -5655,6 +5747,11 @@
               <!-- Post Text & Media Showcase -->
               <div class="note-clickable-body cursor-pointer group">
                 ${
+                  post.tag
+                    ? `<div class="mb-2"><span class="px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-[10px] font-bold border border-orange-200">#${escapeHtml(post.tag)}</span></div>`
+                    : ''
+                }
+                ${
                   post.text
                     ? `<div class="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200/80 mb-3">
                          <div class="${
@@ -5662,6 +5759,29 @@
                              ? 'text-base sm:text-[17px] font-semibold text-neutral-900 leading-snug'
                              : 'text-sm sm:text-[14.5px] text-neutral-800 leading-relaxed'
                          } ${isLongText ? 'clamp-post-text' : ''} whitespace-pre-line break-words">${formatTextWithLinks(post.text)}</div>
+                       </div>`
+                    : ''
+                }
+                ${
+                  post.poll
+                    ? `<div class="p-4 rounded-2xl bg-white border border-neutral-200 mb-3 shadow-sm" onclick="event.stopPropagation()">
+                         <div class="font-bold text-sm text-neutral-900 mb-3 flex items-start gap-2">
+                           <span class="text-xl">📊</span> <span>${escapeHtml(post.poll.question)}</span>
+                         </div>
+                         <div class="space-y-2">
+                           ${post.poll.options.map(opt => {
+                             const pct = post.poll.totalVotes > 0 ? Math.round((opt.votes / post.poll.totalVotes) * 100) : 0;
+                             const hasVotedThis = post.poll.votedBy[getSavedNickname()] === opt.id;
+                             return `
+                               <button type="button" data-poll-opt="${opt.id}" class="btn-vote-poll w-full text-left relative overflow-hidden rounded-xl border ${hasVotedThis ? 'border-orange-500 ring-1 ring-orange-500' : 'border-neutral-200'} bg-neutral-50 hover:bg-neutral-100 transition p-2.5 flex items-center justify-between z-0">
+                                 <div class="absolute left-0 top-0 bottom-0 bg-orange-100 -z-10 transition-all duration-500" style="width: ${pct}%"></div>
+                                 <span class="text-xs font-semibold ${hasVotedThis ? 'text-orange-700' : 'text-neutral-700'} relative z-10">${escapeHtml(opt.text)}</span>
+                                 <span class="text-[10px] font-bold text-neutral-500 relative z-10">${pct}% (${opt.votes})</span>
+                               </button>
+                             `;
+                           }).join('')}
+                         </div>
+                         <div class="text-[10px] text-neutral-400 mt-2 text-right">โหวตแล้ว ${post.poll.totalVotes || 0} คน</div>
                        </div>`
                     : ''
                 }
@@ -5816,6 +5936,38 @@
               }, 30000);
               autoRunnerTimers.set(post.id, timerId);
             }
+
+            
+            // Poll Voting Logic
+            card.querySelectorAll('.btn-vote-poll').forEach(btn => {
+              btn.addEventListener('click', e => {
+                e.stopPropagation();
+                if (!post.poll) return;
+                const optId = btn.getAttribute('data-poll-opt');
+                const nick = getSavedNickname() || 'ผู้ใช้งาน';
+                const previousVote = post.poll.votedBy[nick];
+                
+                if (previousVote === optId) {
+                  // Unvote
+                  post.poll.options.forEach(o => { if(o.id === optId) o.votes = Math.max(0, o.votes - 1); });
+                  delete post.poll.votedBy[nick];
+                  post.poll.totalVotes = Math.max(0, post.poll.totalVotes - 1);
+                } else {
+                  // Switch vote or new vote
+                  if (previousVote) {
+                    post.poll.options.forEach(o => { if(o.id === previousVote) o.votes = Math.max(0, o.votes - 1); });
+                  } else {
+                    post.poll.totalVotes++;
+                  }
+                  post.poll.options.forEach(o => { if(o.id === optId) o.votes++; });
+                  post.poll.votedBy[nick] = optId;
+                }
+                post.updatedAtMs = Date.now();
+                card.dataset.renderSig = computePostRenderSignature(post);
+                persistStatePermanently(post);
+                renderBoard(); // Re-render to show updated progress bars
+              });
+            });
 
             card.querySelectorAll('.btn-feeling-react').forEach(btnEl => {
               btnEl.addEventListener('click', e => {
@@ -7564,7 +7716,188 @@
       } else {
         initCrossDeviceSync();
       }
-    })();
+    
+      // --- FINAL FEATURES JAVASCRIPT ---
+
+      // 1. PDF Export
+      const btnExportPDF = document.getElementById('btnExportPDF');
+      if (btnExportPDF) {
+        btnExportPDF.addEventListener('click', () => {
+          const element = document.getElementById('notesLayer');
+          if (!element || element.children.length === 0) {
+            showToast('ไม่มีข้อมูลกระดานให้ Export');
+            return;
+          }
+          
+          showToast('กำลังเตรียมไฟล์ PDF โปรดรอสักครู่...');
+          
+          // Temporarily fix styles for rendering
+          const originalOverflow = element.style.overflow;
+          const originalHeight = element.style.height;
+          element.style.overflow = 'visible';
+          element.style.height = 'auto';
+
+          const opt = {
+            margin:       [10, 10, 10, 10],
+            filename:     'ClassBoard_Export_' + (syncConfig.roomCode || 'Board') + '.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          };
+
+          html2pdf().set(opt).from(element).save().then(() => {
+             element.style.overflow = originalOverflow;
+             element.style.height = originalHeight;
+             showToast('✅ บันทึก PDF สำเร็จ');
+          }).catch(() => {
+             element.style.overflow = originalOverflow;
+             element.style.height = originalHeight;
+             showToast('❌ เกิดข้อผิดพลาดในการสร้าง PDF');
+          });
+        });
+      }
+
+      // 2. Poll UI Logic in Composer
+      const btnComposerPoll = document.getElementById('btnComposerPoll');
+      const pollUI = document.getElementById('composerPollUI');
+      const btnAddPollOption = document.getElementById('btnAddPollOption');
+      const btnCancelPoll = document.getElementById('btnCancelPoll');
+      const pollOptionsContainer = document.getElementById('pollOptionsContainer');
+
+      if (btnComposerPoll && pollUI) {
+        btnComposerPoll.addEventListener('click', () => {
+          pollUI.classList.remove('hidden');
+          pollUI.classList.add('flex');
+        });
+        btnCancelPoll.addEventListener('click', () => {
+          pollUI.classList.add('hidden');
+          pollUI.classList.remove('flex');
+          document.getElementById('pollQuestionInput').value = '';
+        });
+        btnAddPollOption.addEventListener('click', () => {
+          const inp = document.createElement('input');
+          inp.type = 'text';
+          inp.className = 'poll-option-input w-full px-3 py-1.5 rounded-xl bg-neutral-50 border border-neutral-200 text-xs text-neutral-900 mt-2';
+          inp.placeholder = 'ตัวเลือกเพิ่มเติม...';
+          pollOptionsContainer.appendChild(inp);
+        });
+      }
+
+      // 3. Drawing Canvas Modal Logic
+      const btnComposerDraw = document.getElementById('btnComposerDraw');
+      const modalDrawCanvas = document.getElementById('modalDrawCanvas');
+      const canvas = document.getElementById('drawingCanvas');
+      const btnDrawCancel = document.getElementById('btnDrawCancel');
+      const btnDrawClear = document.getElementById('btnDrawClear');
+      const btnDrawSave = document.getElementById('btnDrawSave');
+      const colorBtns = document.querySelectorAll('.draw-color-btn');
+      const btnEraser = document.getElementById('btnDrawEraser');
+      
+      let drawCtx = null;
+      let isDrawing = false;
+      let drawColor = '#000000';
+      let drawLineWidth = 3;
+
+      if (canvas && modalDrawCanvas) {
+        drawCtx = canvas.getContext('2d');
+        
+        const resizeCanvas = () => {
+          const parent = canvas.parentElement;
+          canvas.width = parent.clientWidth;
+          canvas.height = parent.clientHeight;
+          // Set white background
+          drawCtx.fillStyle = '#ffffff';
+          drawCtx.fillRect(0, 0, canvas.width, canvas.height);
+          drawCtx.lineCap = 'round';
+          drawCtx.lineJoin = 'round';
+        };
+
+        btnComposerDraw.addEventListener('click', () => {
+          modalDrawCanvas.classList.remove('hidden');
+          setTimeout(resizeCanvas, 50);
+        });
+
+        btnDrawCancel.addEventListener('click', () => {
+          modalDrawCanvas.classList.add('hidden');
+        });
+
+        btnDrawClear.addEventListener('click', () => {
+          drawCtx.fillStyle = '#ffffff';
+          drawCtx.fillRect(0, 0, canvas.width, canvas.height);
+        });
+        
+        colorBtns.forEach(btn => {
+           btn.addEventListener('click', () => {
+              drawColor = btn.getAttribute('data-color');
+              drawLineWidth = 3;
+              colorBtns.forEach(b => b.classList.remove('ring-2', 'ring-orange-500', 'ring-offset-1'));
+              btnEraser.classList.remove('ring-2', 'ring-orange-500', 'ring-offset-1');
+              btn.classList.add('ring-2', 'ring-orange-500', 'ring-offset-1');
+           });
+        });
+        
+        if (btnEraser) {
+           btnEraser.addEventListener('click', () => {
+              drawColor = '#ffffff';
+              drawLineWidth = 20;
+              colorBtns.forEach(b => b.classList.remove('ring-2', 'ring-orange-500', 'ring-offset-1'));
+              btnEraser.classList.add('ring-2', 'ring-orange-500', 'ring-offset-1');
+           });
+        }
+
+        const startDraw = (e) => {
+          isDrawing = true;
+          drawCtx.beginPath();
+          const rect = canvas.getBoundingClientRect();
+          const x = (e.clientX || e.touches[0].clientX) - rect.left;
+          const y = (e.clientY || e.touches[0].clientY) - rect.top;
+          drawCtx.moveTo(x, y);
+          e.preventDefault();
+        };
+
+        const draw = (e) => {
+          if (!isDrawing) return;
+          const rect = canvas.getBoundingClientRect();
+          const x = (e.clientX || e.touches[0].clientX) - rect.left;
+          const y = (e.clientY || e.touches[0].clientY) - rect.top;
+          drawCtx.strokeStyle = drawColor;
+          drawCtx.lineWidth = drawLineWidth;
+          drawCtx.lineTo(x, y);
+          drawCtx.stroke();
+          e.preventDefault();
+        };
+
+        const stopDraw = () => {
+          isDrawing = false;
+        };
+
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDraw);
+        canvas.addEventListener('mouseout', stopDraw);
+
+        canvas.addEventListener('touchstart', startDraw, {passive: false});
+        canvas.addEventListener('touchmove', draw, {passive: false});
+        canvas.addEventListener('touchend', stopDraw);
+
+        btnDrawSave.addEventListener('click', () => {
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          // Set to the inline preview
+          const inlineImgEl = document.getElementById('inlinePastedImageEl');
+          const wrapEl = document.getElementById('inlinePastedImagePreviewWrap');
+          if (inlineImgEl && wrapEl) {
+             inlineImgEl.src = dataUrl;
+             inlineImgEl.classList.remove('hidden');
+             wrapEl.classList.remove('hidden');
+             // Add to pending array
+             pendingImagesList = [dataUrl];
+             document.getElementById('inlineMultiImageCountBadge').textContent = '1 รูป (วาดเอง)';
+          }
+          modalDrawCanvas.classList.add('hidden');
+        });
+      }
+
+})();
   </script>
 </body>
 </html>

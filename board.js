@@ -395,7 +395,7 @@ export default async function handler(req, res) {
         const lightNode = Object.assign({}, p);
         delete lightNode.images;
         delete lightNode.fileDataUrl;
-        if (lightNode.image && lightNode.image.startsWith('data:') && lightNode.image.length > 2800) {
+        if (lightNode.image && lightNode.image.startsWith('data:') && lightNode.image.length > 16000) {
           lightNode.image = lightNode.imageInline || '';
         }
         stmts.push({
