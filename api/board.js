@@ -1,6 +1,6 @@
 // Vercel Serverless API Connected to Turso LibSQL + Permanent Cloud KV + JSONBlob Cold-Start Persistence
 // Guarantees boxes/data NEVER disappear over time, even after serverless cold starts or cache expirations.
-const DEFAULT_TURSO_URL = process.env.TURSO_DATABASE_URL || 'libsql://ailsed-metawat888.aws-ap-southeast-1.turso.io';
+const DEFAULT_TURSO_URL = process.env.TURSO_DATABASE_URL || 'libsql://ailseddatabase-metawat888.aws-ap-southeast-1.turso.io';
 const KV_APP_KEY = 'r9f8k2m4';
 const memoryRooms = global.__THINK_BOARD_ROOMS__ || (global.__THINK_BOARD_ROOMS__ = {});
 const globalTombstones = global.__THINK_TOMBSTONES__ || (global.__THINK_TOMBSTONES__ = new Set());
@@ -136,32 +136,35 @@ function mergeRoomData(existing, incoming) {
       if (!rp || !rp.id || deletedSet.has(String(rp.id))) continue;
       const sId = String(rp.id);
       const lp = postMap.get(sId);
-      if (!lp || (rp.updatedAtMs || 0) >= (lp.updatedAtMs || 0)) {
-        const mergedComments = new Map();
-        for (const c of [...(lp?.comments || []), ...(rp.comments || [])]) {
-          if (c && c.id && !deletedSet.has(String(c.id))) mergedComments.set(String(c.id), c);
-        }
-        postMap.set(sId, {
-          ...lp,
-          ...rp,
-                    likes: Math.max(lp?.likes || 0, rp.likes || 0),
-          hearts: Math.max(lp?.hearts || 0, rp.hearts || 0),
-          cares: Math.max(lp?.cares || 0, rp.cares || 0),
-          hahas: Math.max(lp?.hahas || 0, rp.hahas || 0),
-          wows: Math.max(lp?.wows || 0, rp.wows || 0),
-          sads: Math.max(lp?.sads || 0, rp.sads || 0),
-          angrys: Math.max(lp?.angrys || 0, rp.angrys || 0),
-          imageBlobId: rp.imageBlobId || lp?.imageBlobId || '',
-          hasImage: Boolean(rp.hasImage || lp?.hasImage || rp.image || lp?.image),
-          imageInline: rp.imageInline || lp?.imageInline || '',
-          image: (rp.image && (!lp?.image || rp.image.length >= lp.image.length)) ? rp.image : (lp?.image || rp.image || rp.imageInline || lp?.imageInline || ''),
-          youtubeUrl: rp.youtubeUrl || lp?.youtubeUrl || '',
-          youtubeId: rp.youtubeId || lp?.youtubeId || '',
-          webRunUrl: rp.webRunUrl || lp?.webRunUrl || '',
-          webAutoCmd: rp.webAutoCmd !== undefined ? rp.webAutoCmd : (lp?.webAutoCmd || ''),
-          comments: Array.from(mergedComments.values())
-        });
+      const mergedComments = new Map();
+      for (const c of [...(lp?.comments || []), ...(rp.comments || [])]) {
+        if (c && c.id && !deletedSet.has(String(c.id))) mergedComments.set(String(c.id), c);
       }
+      const sortedComments = Array.from(mergedComments.values()).sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
+      const newer = (!lp || (rp.updatedAtMs || 0) >= (lp.updatedAtMs || 0)) ? rp : lp;
+      const older = newer === rp ? (lp || {}) : rp;
+      postMap.set(sId, {
+        ...older,
+        ...newer,
+        likes: Math.max(lp?.likes || 0, rp.likes || 0),
+        hearts: Math.max(lp?.hearts || 0, rp.hearts || 0),
+        cares: Math.max(lp?.cares || 0, rp.cares || 0),
+        hahas: Math.max(lp?.hahas || 0, rp.hahas || 0),
+        wows: Math.max(lp?.wows || 0, rp.wows || 0),
+        sads: Math.max(lp?.sads || 0, rp.sads || 0),
+        angrys: Math.max(lp?.angrys || 0, rp.angrys || 0),
+        imageBlobId: rp.imageBlobId || lp?.imageBlobId || '',
+        hasImage: Boolean(rp.hasImage || lp?.hasImage || rp.image || lp?.image),
+        imageInline: rp.imageInline || lp?.imageInline || '',
+        image: (rp.image && (!lp?.image || rp.image.length >= lp.image.length)) ? rp.image : (lp?.image || rp.image || rp.imageInline || lp?.imageInline || ''),
+        images: (Array.isArray(rp.images) && rp.images.length >= (Array.isArray(lp?.images) ? lp.images.length : 0)) ? rp.images : (lp?.images || rp.images),
+        fileDataUrl: (rp.fileDataUrl && (!lp?.fileDataUrl || rp.fileDataUrl.length >= lp.fileDataUrl.length)) ? rp.fileDataUrl : (lp?.fileDataUrl || rp.fileDataUrl || ''),
+        youtubeUrl: newer.youtubeUrl || older.youtubeUrl || '',
+        youtubeId: newer.youtubeId || older.youtubeId || '',
+        webRunUrl: newer.webRunUrl || older.webRunUrl || '',
+        webAutoCmd: newer.webAutoCmd !== undefined ? newer.webAutoCmd : (older.webAutoCmd || ''),
+        comments: sortedComments
+      });
     }
   }
   return {
@@ -235,13 +238,24 @@ export default async function handler(req, res) {
           image_blob_id TEXT DEFAULT '',
           updated_at INTEGER NOT NULL
         )`
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS think_comments (
+          id TEXT PRIMARY KEY,
+          post_id TEXT NOT NULL,
+          room_code TEXT NOT NULL,
+          comment_json TEXT NOT NULL,
+          created_at INTEGER NOT NULL,
+          deleted INTEGER NOT NULL DEFAULT 0
+        )`
       }
     ], clientToken);
 
     const dbRead = await tursoPipeline([
       { sql: `SELECT id FROM think_tombstones WHERE room_code = ?`, args: [room] },
       { sql: `SELECT id, post_json, updated_at, deleted FROM think_posts WHERE room_code = ?`, args: [room] },
-      { sql: `SELECT post_id, image_data, image_blob_id FROM think_images WHERE room_code = ?`, args: [room] }
+      { sql: `SELECT post_id, image_data, image_blob_id FROM think_images WHERE room_code = ?`, args: [room] },
+      { sql: `SELECT id, post_id, comment_json, deleted FROM think_comments WHERE room_code = ?`, args: [room] }
     ], clientToken);
 
     if (dbRead && Array.isArray(dbRead.results)) {
@@ -266,6 +280,26 @@ export default async function handler(req, res) {
         }
         if (pId && blobVal) dbBlobMap.set(pId, blobVal);
       }
+      const dbCommentsMap = new Map();
+      const cmtRows = dbRead.results[3]?.response?.result?.rows || [];
+      for (const r of cmtRows) {
+        const cId = r[0]?.value ? String(r[0].value) : '';
+        const pId = r[1]?.value ? String(r[1].value) : '';
+        const cJson = r[2]?.value;
+        const cDel = Number(r[3]?.value || 0);
+        if (cDel === 1 && cId) {
+          dbDeleted.push(cId);
+          globalTombstones.add(cId);
+        } else if (cId && pId && cJson && !globalTombstones.has(cId)) {
+          try {
+            const cObj = JSON.parse(cJson);
+            if (cObj && cObj.id) {
+              if (!dbCommentsMap.has(pId)) dbCommentsMap.set(pId, []);
+              dbCommentsMap.get(pId).push(cObj);
+            }
+          } catch (e) {}
+        }
+      }
       const postRows = dbRead.results[1]?.response?.result?.rows || [];
       for (const r of postRows) {
         const idVal = r[0]?.value ? String(r[0].value) : '';
@@ -281,8 +315,30 @@ export default async function handler(req, res) {
               parsed.image = dbImageMap.get(idVal);
               parsed.hasImage = true;
             }
+            if (dbImageMap.has(idVal + '__gallery')) {
+              try {
+                const gal = JSON.parse(dbImageMap.get(idVal + '__gallery'));
+                if (Array.isArray(gal) && gal.length > 0) {
+                  parsed.images = gal;
+                  parsed.image = gal[0];
+                  parsed.hasImage = true;
+                  parsed.imageCount = gal.length;
+                }
+              } catch (e) {}
+            }
+            if (dbImageMap.has(idVal + '__file')) {
+              parsed.fileDataUrl = dbImageMap.get(idVal + '__file');
+              parsed.hasFile = true;
+            }
             if (dbBlobMap.has(idVal) && !parsed.imageBlobId) {
               parsed.imageBlobId = dbBlobMap.get(idVal);
+            }
+            if (dbCommentsMap.has(idVal)) {
+              const cMap = new Map((Array.isArray(parsed.comments) ? parsed.comments : []).map(c => [c.id, c]));
+              for (const dc of dbCommentsMap.get(idVal)) {
+                if (dc && dc.id && !globalTombstones.has(String(dc.id)) && !cMap.has(dc.id)) cMap.set(dc.id, dc);
+              }
+              parsed.comments = Array.from(cMap.values()).sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
             }
             dbPosts.push(parsed);
           } catch (e) {}
@@ -336,6 +392,12 @@ export default async function handler(req, res) {
       }
       for (const p of merged.posts) {
         if (globalTombstones.has(String(p.id))) continue;
+        const lightNode = Object.assign({}, p);
+        delete lightNode.images;
+        delete lightNode.fileDataUrl;
+        if (lightNode.image && lightNode.image.startsWith('data:') && lightNode.image.length > 16000) {
+          lightNode.image = lightNode.imageInline || '';
+        }
         stmts.push({
           sql: `INSERT INTO think_posts (id, room_code, post_json, updated_at, deleted)
                 VALUES (?, ?, ?, ?, 0)
@@ -343,7 +405,7 @@ export default async function handler(req, res) {
                   post_json = excluded.post_json,
                   updated_at = excluded.updated_at
                 WHERE think_posts.deleted = 0 AND excluded.updated_at >= think_posts.updated_at`,
-          args: [p.id, room, JSON.stringify(p), p.updatedAtMs || Date.now()]
+          args: [p.id, room, JSON.stringify(lightNode), p.updatedAtMs || Date.now()]
         });
         if (p.image && p.image.length > 10) {
           stmts.push({
@@ -354,6 +416,35 @@ export default async function handler(req, res) {
                     image_blob_id = CASE WHEN LENGTH(excluded.image_blob_id) > 3 THEN excluded.image_blob_id ELSE think_images.image_blob_id END,
                     updated_at = excluded.updated_at`,
             args: [p.id, room, p.image, p.imageBlobId || '', Date.now()]
+          });
+        }
+        if (Array.isArray(p.images) && p.images.length > 1) {
+          stmts.push({
+            sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
+                  VALUES (?, ?, ?, ?, ?)
+                  ON CONFLICT(post_id) DO UPDATE SET
+                    image_data = CASE WHEN LENGTH(excluded.image_data) >= LENGTH(think_images.image_data) THEN excluded.image_data ELSE think_images.image_data END,
+                    updated_at = excluded.updated_at`,
+            args: [p.id + '__gallery', room, JSON.stringify(p.images), String(p.images.length), Date.now()]
+          });
+        }
+        if (p.fileDataUrl && p.fileDataUrl.length > 15 && p.fileDataUrl.length <= 900000) {
+          stmts.push({
+            sql: `INSERT INTO think_images (post_id, room_code, image_data, image_blob_id, updated_at)
+                  VALUES (?, ?, ?, ?, ?)
+                  ON CONFLICT(post_id) DO UPDATE SET
+                    image_data = CASE WHEN LENGTH(excluded.image_data) >= LENGTH(think_images.image_data) THEN excluded.image_data ELSE think_images.image_data END,
+                    updated_at = excluded.updated_at`,
+            args: [p.id + '__file', room, p.fileDataUrl, p.fileName || '', Date.now()]
+          });
+        }
+        for (const c of p.comments || []) {
+          if (!c || !c.id || globalTombstones.has(String(c.id))) continue;
+          stmts.push({
+            sql: `INSERT INTO think_comments (id, post_id, room_code, comment_json, created_at, deleted)
+                  VALUES (?, ?, ?, ?, ?, 0)
+                  ON CONFLICT(id) DO NOTHING`,
+            args: [c.id, p.id, room, JSON.stringify(c), c.createdAtMs || Date.now()]
           });
         }
       }
